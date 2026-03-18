@@ -1,0 +1,14 @@
+name: pocket-money
+recipe: laravel
+config:
+  php: '8.3'
+  composer_version: '2-latest'
+  webroot: public
+  xdebug: false
+  via: nginx
+  database: postgres:16
+
+tooling:
+  artisan:
+    service: appserver
+    cmd: php artisan
