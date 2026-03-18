@@ -34,10 +34,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/settings/export', [SettingsController::class, 'exportData'])->name('settings.export');
     Route::post('/uploads/sign', [ImageUploadController::class, 'sign'])->name('uploads.sign');
 
-    Route::get('/spenders/{spender}', [SpenderController::class, 'show'])->name('spenders.show');
-    Route::get('/accounts/{account}', [AccountController::class, 'show'])->name('accounts.show');
-    Route::post('/accounts/{account}/transfer', [TransferController::class, 'store'])->name('accounts.transfer');
-
     // Family routes available to any authenticated user (creating a family establishes parent status)
     Route::resource('families', FamilyController::class);
     Route::post('/families/{family}/invite', [FamilyController::class, 'invite'])->name('families.invite');
@@ -52,6 +48,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
         Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
     });
+
+    // Wildcard show routes AFTER resource routes to avoid capturing /spenders/create etc.
+    Route::get('/spenders/{spender}', [SpenderController::class, 'show'])->name('spenders.show');
+    Route::get('/accounts/{account}', [AccountController::class, 'show'])->name('accounts.show');
+    Route::post('/accounts/{account}/transfer', [TransferController::class, 'store'])->name('accounts.transfer');
 });
 
 Route::post('/webhooks/stripe', [\Laravel\Cashier\Http\Controllers\WebhookController::class, 'handleWebhook']);

@@ -1,42 +1,113 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Spender } from '@/types/models';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Badge } from '@/Components/ui/badge';
+import { PlusCircle, ArrowRight } from 'lucide-react';
 
 export default function SpenderShow({ spender }: { spender: Spender }) {
-  return (
-    <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{spender.name}</h2>}>
-      <Head title={spender.name} />
-      <div className="py-8 max-w-4xl mx-auto px-4 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {spender.accounts?.map(account => (
-            <Link key={account.id} href={route('accounts.show', account.id)} className="block bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-md transition">
-              <p className="text-sm text-gray-500 mb-1">{account.name}</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">${parseFloat(account.balance).toFixed(2)}</p>
-            </Link>
-          ))}
-        </div>
-        {(spender.savings_goals?.length ?? 0) > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
-            <h3 className="font-semibold mb-3">Savings Goals</h3>
-            <div className="space-y-3">
-              {spender.savings_goals?.map(goal => {
-                const pct = Math.min(100, (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100);
-                return (
-                  <div key={goal.id}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>{goal.name}</span>
-                      <span>${parseFloat(goal.current_amount).toFixed(2)} / ${parseFloat(goal.target_amount).toFixed(2)}</span>
-                    </div>
-                    <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                      <div className="h-2 bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
+    const totalBalance = spender.accounts?.reduce((sum, a) => sum + parseFloat(a.balance), 0) ?? 0;
+
+    return (
+        <AuthenticatedLayout header={
+            <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                    <AvatarImage src={spender.avatar_url ?? undefined} />
+                    <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white font-semibold">
+                        {spender.name[0].toUpperCase()}
+                    </AvatarFallback>
+                </Avatar>
+                <div>
+                    <h1 className="text-xl font-semibold leading-tight">{spender.name}</h1>
+                    <p className="text-sm text-muted-foreground">Total: ${totalBalance.toFixed(2)}</p>
+                </div>
             </div>
-          </div>
-        )}
-      </div>
-    </AuthenticatedLayout>
-  );
+        }>
+            <Head title={spender.name} />
+            <div className="space-y-6">
+                {/* Accounts */}
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Accounts</h2>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={route('accounts.create', { spender_id: spender.id })}>
+                                <PlusCircle className="h-4 w-4 mr-1.5" />
+                                Add account
+                            </Link>
+                        </Button>
+                    </div>
+
+                    {(spender.accounts?.length ?? 0) === 0 ? (
+                        <Card>
+                            <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                                No accounts yet. Add one to start tracking money.
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {spender.accounts?.map(account => (
+                                <Link key={account.id} href={route('accounts.show', account.id)}>
+                                    <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+                                        <CardContent className="pt-4">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <p className="text-sm font-medium">{account.name}</p>
+                                                {account.is_savings_pot && (
+                                                    <Badge variant="secondary" className="text-xs">Savings</Badge>
+                                                )}
+                                            </div>
+                                            <p className="text-2xl font-bold tabular-nums">
+                                                ${parseFloat(account.balance).toFixed(2)}
+                                            </p>
+                                            {(account.transactions?.length ?? 0) > 0 && (
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {account.transactions!.length} recent transaction{account.transactions!.length !== 1 ? 's' : ''}
+                                                </p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Savings Goals */}
+                {(spender.savings_goals?.length ?? 0) > 0 && (
+                    <div>
+                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Savings Goals</h2>
+                        <Card>
+                            <CardContent className="pt-4 space-y-4">
+                                {spender.savings_goals?.map(goal => {
+                                    const pct = Math.min(100, (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100);
+                                    return (
+                                        <div key={goal.id}>
+                                            <div className="flex justify-between text-sm mb-1.5">
+                                                <span className="font-medium">{goal.name}</span>
+                                                <span className="text-muted-foreground tabular-nums">
+                                                    ${parseFloat(goal.current_amount).toFixed(2)} / ${parseFloat(goal.target_amount).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-2 bg-primary rounded-full transition-all"
+                                                    style={{ width: `${pct}%` }}
+                                                />
+                                            </div>
+                                            {goal.target_date && (
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Target: {new Date(goal.target_date).toLocaleDateString()}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+            </div>
+        </AuthenticatedLayout>
+    );
 }

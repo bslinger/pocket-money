@@ -39,12 +39,7 @@ class SpenderController extends Controller
 
     public function store(StoreSpenderRequest $request)
     {
-        $request->validate(['family_id' => 'required|uuid|exists:families,id']);
-
-        $spender = Spender::create(array_merge(
-            $request->validated(),
-            ['family_id' => $request->family_id]
-        ));
+        $spender = Spender::create($request->validated());
 
         return redirect()->route('spenders.show', $spender);
     }

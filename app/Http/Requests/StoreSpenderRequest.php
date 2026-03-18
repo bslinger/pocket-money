@@ -14,8 +14,8 @@ class StoreSpenderRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'family_id'  => 'required|uuid|exists:families,id',
             'name'       => 'required|string|max:255',
-            'avatar_url' => 'nullable|url|max:255',
             'color'      => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ];
     }
