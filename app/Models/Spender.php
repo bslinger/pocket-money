@@ -48,4 +48,14 @@ class Spender extends Model
     {
         return $this->hasMany(SavingsGoal::class);
     }
+
+    public function chores(): BelongsToMany
+    {
+        return $this->belongsToMany(Chore::class, 'chore_spender')->withTimestamps();
+    }
+
+    public function choreCompletions(): HasMany
+    {
+        return $this->hasMany(ChoreCompletion::class);
+    }
 }

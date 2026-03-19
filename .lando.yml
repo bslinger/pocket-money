@@ -8,7 +8,24 @@ config:
   via: nginx
   database: postgres:16
 
+services:
+  node:
+    type: node:20
+    ssl: false
+    sslExpose: false
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports:
+      - '5173:5173'
+
+events:
+  post-start:
+    - appserver: php artisan migrate --force
+
 tooling:
   artisan:
     service: appserver
     cmd: php artisan
+  npm:
+    service: node
+  node:
+    service: node

@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreChoreRequest;
+use App\Models\Chore;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class ChoreController extends Controller
+{
+    public function index(Request $request)
+    {
+        $families = $request->user()
+            ->families()
+            ->with(['chores.spenders', 'spenders'])
+            ->get();
+
+        return Inertia::render('Chores/Index', [
+            'families' => $families,
+        ]);
+    }
+
+    public function create(Request $request)
+    {
+        $families  = $request->user()->families()->with('spenders')->get();
+        $spenders  = $families->flatMap(fn($f) => $f->spenders)->values();
+
+        return Inertia::render('Chores/Create', [
+            'families' => $families,
+            'spenders' => $spenders,
+        ]);
+    }
+
+    public function store(StoreChoreRequest $request)
+    {
+        $data = $request->validated();
+        $spenderIds = $data['spender_ids'];
+        unset($data['spender_ids']);
+
+        $chore = Chore::create(array_merge($data, ['created_by' => $request->user()->id]));
+        $chore->spenders()->sync($spenderIds);
+
+        return redirect()->route('chores.index');
+    }
+
+    public function edit(Chore $chore)
+    {
+        $chore->load('spenders');
+        $families = auth()->user()->families()->with('spenders')->get();
+        $spenders = $families->flatMap(fn($f) => $f->spenders)->values();
+
+        return Inertia::render('Chores/Edit', [
+            'chore'    => $chore,
+            'families' => $families,
+            'spenders' => $spenders,
+        ]);
+    }
+
+    public function update(StoreChoreRequest $request, Chore $chore)
+    {
+        $data = $request->validated();
+        $spenderIds = $data['spender_ids'];
+        unset($data['spender_ids']);
+
+        $chore->update($data);
+        $chore->spenders()->sync($spenderIds);
+
+        return redirect()->route('chores.index');
+    }
+
+    public function destroy(Chore $chore)
+    {
+        $chore->delete();
+        return redirect()->route('chores.index');
+    }
+}

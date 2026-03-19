@@ -36,4 +36,9 @@ class Family extends Model
     {
         return $this->hasMany(Spender::class);
     }
+
+    public function chores(): HasMany
+    {
+        return $this->hasMany(Chore::class);
+    }
 }

@@ -20,7 +20,8 @@ export default {
         },
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans:  ['"DM Sans"', 'Figtree', ...defaultTheme.fontFamily.sans],
+                serif: ['"Fraunces"', ...defaultTheme.fontFamily.serif],
             },
             colors: {
                 border: 'hsl(var(--border))',

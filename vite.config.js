@@ -16,4 +16,12 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        hmr: {
+            host: 'localhost',
+            port: 5173,
+        },
+    },
 });

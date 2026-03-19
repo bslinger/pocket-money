@@ -36,6 +36,8 @@ export interface Spender {
   family?: Family;
   accounts?: Account[];
   savings_goals?: SavingsGoal[];
+  chores?: Chore[];
+  chore_completions?: ChoreCompletion[];
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +77,39 @@ export interface RecurringTransaction {
   frequency_config: Record<string, unknown> | null;
   next_run_at: string;
   is_active: boolean;
+}
+
+export interface Chore {
+  id: string;
+  family_id: string;
+  name: string;
+  emoji: string | null;
+  reward_type: 'earns' | 'responsibility' | 'no_reward';
+  amount: string | null;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'one_off';
+  days_of_week: number[] | null;
+  requires_approval: boolean;
+  up_for_grabs: boolean;
+  is_active: boolean;
+  spenders?: Spender[];
+  completions?: ChoreCompletion[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChoreCompletion {
+  id: string;
+  chore_id: string;
+  spender_id: string;
+  status: 'pending' | 'approved' | 'declined';
+  completed_at: string;
+  reviewed_at: string | null;
+  note: string | null;
+  transaction_id: string | null;
+  chore?: Chore;
+  spender?: Spender;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SavingsGoal {

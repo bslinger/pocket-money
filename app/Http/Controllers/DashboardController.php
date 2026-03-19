@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ChoreCompletion;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -11,24 +13,70 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $isParent = $user->isParent();
+        $isParent  = $user->isParent();
         $hasSpenders = $user->spenderUsers()->exists();
-
-        // New users (no family and no spender links) are treated as parents for onboarding
         $showAsParent = $isParent || (!$isParent && !$hasSpenders);
 
         if ($showAsParent) {
-            $families = $user->families()->with(['spenders.accounts'])->get();
-            $spenders = [];
-        } else {
-            $families = [];
-            $spenders = $user->spenders()->with(['accounts', 'family'])->get();
+            $families = $user->families()
+                ->with(['spenders.accounts', 'spenders.savingsGoals'])
+                ->get();
+
+            $familyIds = $families->pluck('id');
+
+            $pendingCompletions = ChoreCompletion::where('status', 'pending')
+                ->whereHas('chore', fn($q) => $q->whereIn('family_id', $familyIds))
+                ->with(['chore', 'spender'])
+                ->latest('completed_at')
+                ->limit(20)
+                ->get();
+
+            $recentActivity = Transaction::whereHas('account.spender',
+                fn($q) => $q->whereIn('family_id', $familyIds))
+                ->with('account.spender')
+                ->latest('occurred_at')
+                ->limit(15)
+                ->get();
+
+            $totalBalance = $families->flatMap(fn($f) => $f->spenders)
+                ->flatMap(fn($s) => $s->accounts->where('is_savings_pot', false))
+                ->sum('balance');
+
+            $paidThisMonth = Transaction::whereHas('account.spender',
+                fn($q) => $q->whereIn('family_id', $familyIds))
+                ->where('type', 'credit')
+                ->where('occurred_at', '>=', now()->startOfMonth())
+                ->sum('amount');
+
+            return Inertia::render('Dashboard', [
+                'isParent'           => true,
+                'families'           => $families,
+                'spenders'           => [],
+                'pendingCompletions' => $pendingCompletions,
+                'recentActivity'     => $recentActivity,
+                'totalBalance'       => number_format((float) $totalBalance, 2, '.', ''),
+                'paidThisMonth'      => number_format((float) $paidThisMonth, 2, '.', ''),
+            ]);
         }
 
+        $spenders = $user->spenders()->with([
+            'accounts',
+            'savingsGoals',
+            'chores' => fn($q) => $q->where('is_active', true),
+            'choreCompletions' => fn($q) => $q->whereBetween('completed_at', [
+                now()->startOfWeek(),
+                now()->endOfWeek(),
+            ]),
+        ])->get();
+
         return Inertia::render('Dashboard', [
-            'isParent' => $showAsParent,
-            'families' => $families,
-            'spenders' => $spenders,
+            'isParent'           => false,
+            'families'           => [],
+            'spenders'           => $spenders,
+            'pendingCompletions' => [],
+            'recentActivity'     => [],
+            'totalBalance'       => '0.00',
+            'paidThisMonth'      => '0.00',
         ]);
     }
 }

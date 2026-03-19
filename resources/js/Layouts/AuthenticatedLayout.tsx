@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { LayoutDashboard, LogOut, Settings, User, Wallet } from 'lucide-react';
+import { CheckSquare, LayoutDashboard, LogOut, Settings, User, Wallet, Coins } from 'lucide-react';
 
 export default function AuthenticatedLayout({
     header,
@@ -18,6 +18,7 @@ export default function AuthenticatedLayout({
 }: PropsWithChildren<{ header?: ReactNode }>) {
     const { auth } = usePage().props as any;
     const user = auth.user;
+    const isParent: boolean = auth.isParent ?? false;
     const initials = (user.display_name ?? user.name)
         .split(' ')
         .map((w: string) => w[0])
@@ -44,6 +45,22 @@ export default function AuthenticatedLayout({
                                         Dashboard
                                     </Link>
                                 </Button>
+                                {isParent && (
+                                    <>
+                                        <Button variant="ghost" size="sm" asChild>
+                                            <Link href={route('chores.index')}>
+                                                <CheckSquare className="h-4 w-4 mr-1.5" />
+                                                Chores
+                                            </Link>
+                                        </Button>
+                                        <Button variant="ghost" size="sm" asChild>
+                                            <Link href={route('pocket-money.release')}>
+                                                <Coins className="h-4 w-4 mr-1.5" />
+                                                Pocket Money
+                                            </Link>
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </div>
 
