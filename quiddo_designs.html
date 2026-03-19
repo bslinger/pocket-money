@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiddo — MVP Design Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber:#BA7517;--amber-l:#FAEEDA;--amber-m:#FAC775;
+  --teal:#0F6E56;--teal-l:#E1F5EE;--teal-m:#1D9E75;
+  --dark:#1C1A18;--gray:#5F5E5A;--gray-l:#F1EFE8;--gray-ll:#FAFAF8;
+  --white:#FFFFFF;--border:#E8E4DC;
+  --ff:'Fraunces',serif;--fb:'DM Sans',sans-serif;
+}
+body{font-family:var(--fb);background:#EDEDEA;color:var(--dark);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--dark);color:#fff;display:flex;align-items:center;height:52px;flex-shrink:0;padding:0 20px;gap:16px}
+.topbar-logo{font-family:var(--ff);font-size:20px;font-weight:600;color:var(--amber-m);margin-right:8px}
+.mode-tabs{display:flex;background:rgba(255,255,255,0.08);border-radius:8px;padding:3px;gap:2px}
+.mode-tab{padding:5px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:rgba(255,255,255,0.6);transition:all 0.15s;border:none;background:none;font-family:var(--fb)}
+.mode-tab.active{background:var(--amber);color:var(--dark);font-weight:600}
+.hint{font-size:12px;color:rgba(255,255,255,0.35);margin-left:auto}
+.main{display:flex;flex:1;min-height:0}
+.sidebar{width:220px;background:#fff;border-right:1px solid var(--border);flex-shrink:0;overflow-y:auto}
+.sb-section{padding:12px 12px 4px;font-size:10px;font-weight:600;color:var(--gray);letter-spacing:0.8px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;border-radius:8px;margin:1px 6px;font-size:13px;color:var(--gray);transition:all 0.12s}
+.nav-item:hover{background:var(--gray-l);color:var(--dark)}
+.nav-item.active{background:var(--amber-l);color:var(--amber);font-weight:600}
+.nav-item .dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;opacity:0.6}
+.nav-item.active .dot{opacity:1}
+.canvas{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:24px;background:#EDEDEA;background-image:radial-gradient(circle at 1px 1px,rgba(0,0,0,0.06) 1px,transparent 0);background-size:20px 20px}
+/* Browser frame */
+.bf{width:100%;max-width:900px;background:#fff;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.18);overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 100px)}
+.bf-bar{background:#F5F3F0;border-bottom:1px solid var(--border);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.bf-dots{display:flex;gap:5px}
+.bd{width:11px;height:11px;border-radius:50%}
+.bd-r{background:#FF5F57}.bd-y{background:#FFBD2E}.bd-g{background:#28C840}
+.bf-url{flex:1;background:#fff;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--gray);text-align:center}
+.bf-content{overflow-y:auto;flex:1}
+/* Phone frame */
+.pw{display:flex;flex-direction:column;align-items:center;gap:12px}
+.pf{width:320px;background:#1C1A18;border-radius:44px;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.pi{background:#fff;border-radius:36px;overflow:hidden;height:630px;display:flex;flex-direction:column}
+.pn{background:#1C1A18;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.np{background:#333;width:90px;height:16px;border-radius:99px}
+.pc{flex:1;overflow-y:auto;overflow-x:hidden}
+.pc::-webkit-scrollbar{display:none}
+.pl{font-size:12px;color:var(--gray);text-align:center;font-weight:500}
+/* Shared UI atoms */
+.ms{display:flex;flex-direction:column;height:100%;font-family:var(--fb);background:#fff}
+.mh{background:#fff;padding:14px 16px 10px;border-bottom:1px solid var(--border)}
+.mh-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.mlogo{font-family:var(--ff);font-size:18px;font-weight:700;color:var(--amber)}
+.mav{width:30px;height:30px;border-radius:50%;background:var(--amber-l);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--amber)}
+.mgr{font-size:11px;color:var(--gray)}
+.mscroll{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.mscroll::-webkit-scrollbar{display:none}
+.msec{font-size:11px;font-weight:700;color:var(--gray);letter-spacing:0.4px;text-transform:uppercase;margin-top:4px}
+.mtab{background:#fff;border-top:1px solid var(--border);display:flex;padding:8px 0 4px;flex-shrink:0}
+.mt{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;font-weight:500;color:var(--gray);cursor:pointer}
+.mt.on{color:var(--amber)}
+.mti{font-size:18px}
+.mbr{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.mbb{font-size:13px;color:var(--amber);font-weight:600;cursor:pointer}
+.mbt{font-size:15px;font-weight:600;color:var(--dark)}
+.mbtn{padding:14px;border-radius:99px;font-size:15px;font-weight:600;border:none;cursor:pointer;font-family:var(--fb);text-align:center}
+.mbp{background:var(--amber);color:#fff}
+.mbg{background:rgba(255,255,255,0.1);color:#fff}
+.mfi{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--fb);color:var(--dark);background:#fff;margin-bottom:12px}
+.mfl{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px}
+.msub{width:100%;padding:14px;border-radius:99px;background:var(--teal-m);color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb);margin-top:8px}
+/* Txn row */
+.txr{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.txi{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.txd{flex:1;font-size:13px;color:var(--dark);font-weight:500}
+.txs{font-size:10px;color:var(--gray);margin-top:1px}
+.txa{font-size:14px;font-weight:700}
+.txp{color:var(--teal-m)}.txm{color:#A32D2D}
+/* Chore row */
+.chr{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.chi{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cha{font-size:12px;font-weight:700;color:var(--teal-m)}
+.chp{background:var(--amber-l);color:var(--amber)}
+.chd{background:var(--teal-l);color:var(--teal)}
+.chs{font-size:10px;padding:3px 8px;border-radius:99px;font-weight:600}
+/* W styles */
+.wn{display:flex;align-items:center;padding:16px 40px;border-bottom:1px solid var(--border);background:#fff;position:sticky;top:0;z-index:10}
+.wlogo{font-family:var(--ff);font-size:22px;font-weight:700;color:var(--amber);margin-right:auto}
+.wnl{display:flex;gap:24px;font-size:14px;color:var(--gray);margin-right:24px}
+.wnl span{cursor:pointer}
+.wb{display:inline-flex;align-items:center;padding:8px 18px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--fb)}
+.wbp{background:var(--amber);color:#fff}
+.wbo{background:transparent;color:var(--dark);border:1.5px solid var(--border);margin-right:8px}
+.wft{background:var(--dark);color:rgba(255,255,255,0.5);padding:24px 40px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.wflogo{font-family:var(--ff);color:var(--amber-m);font-size:16px;font-weight:600}
+.wtag{display:inline-flex;align-items:center;gap:6px;background:var(--amber-l);color:var(--amber);font-size:12px;font-weight:600;padding:4px 12px;border-radius:99px;margin-bottom:20px}
+.wsl{font-size:11px;font-weight:700;color:var(--amber);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.wst{font-family:var(--ff);font-size:34px;font-weight:600;color:var(--dark);margin-bottom:40px;line-height:1.2}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">Quiddo</div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('website')">Website</button>
+    <button class="mode-tab" onclick="setMode('app')">Mobile App</button>
+  </div>
+  <div class="hint">Click a screen in the sidebar to preview it</div>
+</div>
+<div class="main">
+  <nav class="sidebar" id="sidebar"></nav>
+  <div class="canvas" id="canvas"></div>
+</div>
+
+<!-- ═══ WEBSITE TEMPLATES ═══ -->
+<div id="tpl-web" style="display:none">
+
+<div id="w-landing">
+<div style="font-family:var(--fb)">
+  <nav class="wn"><div class="wlogo">Quiddo</div><div class="wnl"><span>How it works</span><span>Chores</span><span>Pricing</span></div><button class="wb wbo">Log in</button><button class="wb wbp">Start free trial</button></nav>
+  <div style="padding:64px 40px 48px;text-align:center;background:linear-gradient(180deg,#FFFDF8 0%,#fff 100%)">
+    <div class="wtag">🇦🇺 Made for Aussie families</div>
+    <h1 style="font-family:var(--ff);font-size:52px;font-weight:700;line-height:1.1;color:var(--dark);margin-bottom:16px;letter-spacing:-1px">The pocket money app<br>your family will actually <em style="color:var(--amber);font-style:italic">use</em></h1>
+    <p style="font-size:17px;color:var(--gray);max-width:480px;margin:0 auto 28px;line-height:1.6">Track what your kids earn, spend, and save — without the spreadsheets, forgotten IOUs, or 11pm panic.</p>
+    <div style="display:flex;gap:10px;justify-content:center;margin-bottom:40px">
+      <button class="wb wbp" style="padding:12px 28px;font-size:15px">Start free — 30 days</button>
+      <button class="wb wbo" style="padding:12px 28px;font-size:15px">See how it works</button>
+    </div>
+    <div style="background:var(--gray-l);border-radius:16px;padding:20px;max-width:700px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border)"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Family balance</div><div style="font-size:22px;font-weight:700;font-family:var(--ff)">$247</div><div style="font-size:10px;color:var(--gray)">4 kids</div></div>
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border)"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Paid out</div><div style="font-size:22px;font-weight:700;font-family:var(--ff)">$86</div><div style="font-size:10px;color:var(--gray)">this month</div></div>
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border)"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Active goals</div><div style="font-size:22px;font-weight:700;font-family:var(--ff);color:var(--amber)">5</div><div style="font-size:10px;color:var(--gray)">Olivia closest 84%</div></div>
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border);grid-column:1/3"><div style="font-size:9px;color:var(--gray);font-weight:600;margin-bottom:6px">Olivia — Switch game</div><div style="height:6px;background:var(--gray-l);border-radius:99px;overflow:hidden"><div style="width:84%;height:100%;background:var(--amber);border-radius:99px"></div></div><div style="font-size:10px;color:var(--gray);margin-top:4px">$58 of $69 — 84%</div></div>
+      <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid var(--border)"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Pending</div><div style="font-size:22px;font-weight:700;font-family:var(--ff);color:var(--amber)">2</div><div style="font-size:10px;color:var(--gray)">chores to approve</div></div>
+    </div>
+  </div>
+  <div style="padding:56px 40px;background:#fff">
+    <div class="wsl">Why Quiddo</div>
+    <div class="wst">Everything a family needs,<br>nothing you don't</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <div style="background:var(--gray-ll);border-radius:12px;padding:20px;border:1px solid var(--border)"><div style="width:36px;height:36px;border-radius:10px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px">💰</div><h3 style="font-size:15px;font-weight:600;margin-bottom:6px">Track any currency</h3><p style="font-size:13px;color:var(--gray);line-height:1.5">Real dollars or your own family currency — coins, stars, Smithy Bucks.</p></div>
+      <div style="background:var(--gray-ll);border-radius:12px;padding:20px;border:1px solid var(--border)"><div style="width:36px;height:36px;border-radius:10px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px">🧹</div><h3 style="font-size:15px;font-weight:600;margin-bottom:6px">Chore approval loop</h3><p style="font-size:13px;color:var(--gray);line-height:1.5">Kids claim chores, you approve with one tap. Balance updates instantly.</p></div>
+      <div style="background:var(--gray-ll);border-radius:12px;padding:20px;border:1px solid var(--border)"><div style="width:36px;height:36px;border-radius:10px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px">🎯</div><h3 style="font-size:15px;font-weight:600;margin-bottom:6px">Savings goals</h3><p style="font-size:13px;color:var(--gray);line-height:1.5">Kids set goals and watch progress bars fill up. More motivating than any piggy bank.</p></div>
+      <div style="background:var(--gray-ll);border-radius:12px;padding:20px;border:1px solid var(--border)"><div style="width:36px;height:36px;border-radius:10px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px">👨‍👩‍👧‍👦</div><h3 style="font-size:15px;font-weight:600;margin-bottom:6px">Up to 12 kids</h3><p style="font-size:13px;color:var(--gray);line-height:1.5">One family plan covers everyone. No per-child fees. Big families welcome.</p></div>
+      <div style="background:var(--gray-ll);border-radius:12px;padding:20px;border:1px solid var(--border)"><div style="width:36px;height:36px;border-radius:10px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px">🔒</div><h3 style="font-size:15px;font-weight:600;margin-bottom:6px">No real money required</h3><p style="font-size:13px;color:var(--gray);line-height:1.5">No bank links, no cards, no fintech. Just a simple ledger your family owns.</p></div>
+      <div style="background:var(--gray-ll);border-radius:12px;padding:20px;border:1px solid var(--border)"><div style="width:36px;height:36px;border-radius:10px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px">⚡</div><h3 style="font-size:15px;font-weight:600;margin-bottom:6px">Auto pocket money</h3><p style="font-size:13px;color:var(--gray);line-height:1.5">Set it once, Quiddo adds pocket money every Sunday. Never forget again.</p></div>
+    </div>
+  </div>
+  <div style="padding:48px 40px;background:var(--amber-l);text-align:center">
+    <h2 style="font-family:var(--ff);font-size:28px;color:var(--dark);margin-bottom:24px">Families across Australia love Quiddo</h2>
+    <div style="display:flex;justify-content:center;gap:48px">
+      <div><div style="font-family:var(--ff);font-size:36px;font-weight:700;color:var(--amber)">12</div><div style="font-size:13px;color:var(--gray);margin-top:2px">kids per family</div></div>
+      <div><div style="font-family:var(--ff);font-size:36px;font-weight:700;color:var(--amber)">$4.99</div><div style="font-size:13px;color:var(--gray);margin-top:2px">per month, whole family</div></div>
+      <div><div style="font-family:var(--ff);font-size:36px;font-weight:700;color:var(--amber)">30</div><div style="font-size:13px;color:var(--gray);margin-top:2px">day free trial</div></div>
+    </div>
+  </div>
+  <div class="wft"><div class="wflogo">Quiddo</div><div>© 2026 Quiddo · quiddo.com.au</div><div>Privacy · Terms</div></div>
+</div>
+</div>
+
+<div id="w-how">
+<div style="font-family:var(--fb)">
+  <nav class="wn"><div class="wlogo">Quiddo</div><div class="wnl"><span style="color:var(--amber);font-weight:600">How it works</span><span>Chores</span><span>Pricing</span></div><button class="wb wbo">Log in</button><button class="wb wbp">Start free trial</button></nav>
+  <div style="padding:56px 40px;background:#fff">
+    <div class="wsl">How it works</div>
+    <div class="wst">Up and running in 5 minutes</div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;gap:32px;padding:32px 0;border-bottom:1px solid var(--border);align-items:flex-start">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--amber);color:#fff;font-family:var(--ff);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+        <div style="flex:1"><h3 style="font-size:18px;font-weight:600;margin-bottom:6px">Create your family</h3><p style="font-size:14px;color:var(--gray);line-height:1.6">Sign up, name your family, choose your currency — real dollars or invent your own. Add up to 12 children with avatars in minutes.</p></div>
+        <div style="width:180px;flex-shrink:0;background:var(--gray-ll);border-radius:10px;padding:16px;border:1px solid var(--border);text-align:center"><div style="font-size:28px;margin-bottom:8px">👨‍👩‍👧‍👦</div><div style="font-size:13px;font-weight:700">The Johnson family</div><div style="font-size:11px;color:var(--gray);margin-top:2px">4 kids · Aussie Dollars</div></div>
+      </div>
+      <div style="display:flex;gap:32px;padding:32px 0;border-bottom:1px solid var(--border);align-items:flex-start">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--amber);color:#fff;font-family:var(--ff);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+        <div style="flex:1"><h3 style="font-size:18px;font-weight:600;margin-bottom:6px">Set up pocket money</h3><p style="font-size:14px;color:var(--gray);line-height:1.6">Choose a weekly amount for each child and the day it lands. Quiddo credits their balance automatically — no reminders, no forgetting.</p></div>
+        <div style="width:180px;flex-shrink:0;background:var(--gray-ll);border-radius:10px;padding:14px;border:1px solid var(--border)"><div style="font-size:11px;font-weight:700;color:var(--gray);margin-bottom:6px">EVERY SUNDAY</div><div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>Olivia</span><span style="color:var(--teal-m);font-weight:700">+$10</span></div><div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>Liam</span><span style="color:var(--teal-m);font-weight:700">+$10</span></div><div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0"><span>Noah</span><span style="color:var(--teal-m);font-weight:700">+$8</span></div></div>
+      </div>
+      <div style="display:flex;gap:32px;padding:32px 0;border-bottom:1px solid var(--border);align-items:flex-start">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--amber);color:#fff;font-family:var(--ff);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+        <div style="flex:1"><h3 style="font-size:18px;font-weight:600;margin-bottom:6px">Create chores and let kids claim them</h3><p style="font-size:14px;color:var(--gray);line-height:1.6">Set up recurring daily, weekly or monthly chores with values. Kids tap "Done" in their view. You get a notification and approve with one tap — balance updates instantly.</p></div>
+        <div style="width:180px;flex-shrink:0;background:var(--gray-ll);border-radius:10px;padding:14px;border:1px solid var(--border)"><div style="font-size:11px;font-weight:700;color:var(--gray);margin-bottom:8px">PENDING</div><div style="background:#EAF3DE;border-radius:8px;padding:8px;margin-bottom:6px"><div style="font-size:12px;font-weight:600">Olivia · Dishwasher</div><div style="font-size:13px;font-weight:700;color:var(--teal-m);margin-top:4px">+$2.00</div></div><div style="display:flex;gap:6px"><div style="flex:1;background:#3B6D11;color:#fff;border-radius:99px;padding:5px;font-size:11px;font-weight:700;text-align:center">Approve</div><div style="flex:1;background:var(--gray-l);color:var(--gray);border-radius:99px;padding:5px;font-size:11px;font-weight:700;text-align:center">Decline</div></div></div>
+      </div>
+      <div style="display:flex;gap:32px;padding:32px 0;align-items:flex-start">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--amber);color:#fff;font-family:var(--ff);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+        <div style="flex:1"><h3 style="font-size:18px;font-weight:600;margin-bottom:6px">Watch them save toward goals</h3><p style="font-size:14px;color:var(--gray);line-height:1.6">Kids set a goal, see a progress bar filling up. When they want to spend, you log it and it comes off their balance. Simple, visual, satisfying.</p></div>
+        <div style="width:180px;flex-shrink:0;background:var(--gray-ll);border-radius:10px;padding:14px;border:1px solid var(--border)"><div style="font-size:11px;font-weight:600;color:var(--gray);margin-bottom:4px">Nintendo Switch game</div><div style="height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:4px"><div style="width:84%;height:100%;background:var(--amber);border-radius:99px"></div></div><div style="font-size:10px;color:var(--gray);display:flex;justify-content:space-between"><span>$58 saved</span><span>$69 goal</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div style="background:var(--amber-l);padding:40px;text-align:center"><div style="font-family:var(--ff);font-size:28px;font-weight:600;margin-bottom:16px">Ready to try Quiddo?</div><button class="wb wbp" style="padding:14px 32px;font-size:16px">Start your free 30-day trial</button><div style="font-size:12px;color:var(--gray);margin-top:10px">No credit card required · Cancel anytime</div></div>
+  <div class="wft"><div class="wflogo">Quiddo</div><div>© 2026 Quiddo · quiddo.com.au</div><div>Privacy · Terms</div></div>
+</div>
+</div>
+
+<div id="w-chores">
+<div style="font-family:var(--fb)">
+  <nav class="wn"><div class="wlogo">Quiddo</div><div class="wnl"><span>How it works</span><span style="color:var(--amber);font-weight:600">Chores</span><span>Pricing</span></div><button class="wb wbo">Log in</button><button class="wb wbp">Start free trial</button></nav>
+  <div style="padding:56px 40px 48px;background:linear-gradient(180deg,#FFFDF8,#fff);text-align:center">
+    <div class="wtag">🧹 Chore system</div>
+    <h1 style="font-family:var(--ff);font-size:44px;font-weight:700;line-height:1.1;color:var(--dark);margin-bottom:16px">Set it once. <em style="color:var(--amber);font-style:italic">Run it forever.</em></h1>
+    <p style="font-size:16px;color:var(--gray);max-width:520px;margin:0 auto 32px;line-height:1.6">Create recurring chores for each kid, assign values, and let Quiddo handle the rest.</p>
+    <div style="background:var(--gray-l);border-radius:16px;padding:28px;max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:0">
+      <div style="text-align:center;flex:1"><div style="width:52px;height:52px;background:var(--amber-l);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">⚙️</div><div style="font-size:13px;font-weight:700">Parent creates</div><div style="font-size:11px;color:var(--gray);margin-top:2px">chore + value + schedule</div></div>
+      <div style="font-size:20px;color:#D3D1C7;flex-shrink:0">→</div>
+      <div style="text-align:center;flex:1"><div style="width:52px;height:52px;background:#EAF3DE;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">👶</div><div style="font-size:13px;font-weight:700">Kid does chore</div><div style="font-size:11px;color:var(--gray);margin-top:2px">taps "Done" in their view</div></div>
+      <div style="font-size:20px;color:#D3D1C7;flex-shrink:0">→</div>
+      <div style="text-align:center;flex:1"><div style="width:52px;height:52px;background:#E6F1FB;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">📱</div><div style="font-size:13px;font-weight:700">Parent approves</div><div style="font-size:11px;color:var(--gray);margin-top:2px">one tap notification</div></div>
+      <div style="font-size:20px;color:#D3D1C7;flex-shrink:0">→</div>
+      <div style="text-align:center;flex:1"><div style="width:52px;height:52px;background:var(--amber-l);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 8px">💰</div><div style="font-size:13px;font-weight:700">Balance updates</div><div style="font-size:11px;color:var(--gray);margin-top:2px">instantly, automatically</div></div>
+    </div>
+  </div>
+  <div style="padding:56px 40px;background:#fff">
+    <div class="wsl">Create a recurring chore</div>
+    <div class="wst" style="margin-bottom:32px">Everything in one simple form</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start">
+      <div style="background:#FAFAF8;border:1px solid var(--border);border-radius:16px;padding:24px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)">Create a chore</div>
+        <div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:flex;align-items:center;gap:6px">Chore name <span style="background:var(--amber-l);color:var(--amber);font-size:9px;padding:1px 6px;border-radius:99px">① Name it clearly</span></div><div style="background:#fff;border:1.5px solid var(--amber);border-radius:8px;padding:10px 12px;font-size:14px">Dishwasher duty</div></div>
+        <div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:flex;align-items:center;gap:6px">Value <span style="background:#EAF3DE;color:#3B6D11;font-size:9px;padding:1px 6px;border-radius:99px">② Set what it's worth</span></div><div style="display:flex;gap:8px"><div style="background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;flex:1">$2.00</div><div style="background:var(--amber-l);border:1.5px solid var(--amber);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--amber)">AUD</div></div></div>
+        <div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:flex;align-items:center;gap:6px">Schedule <span style="background:#E6F1FB;color:#185FA5;font-size:9px;padding:1px 6px;border-radius:99px">③ How often?</span></div><div style="display:flex;gap:6px;flex-wrap:wrap"><div style="padding:7px 14px;border-radius:99px;background:var(--dark);color:#fff;font-size:12px;font-weight:600">Daily</div><div style="padding:7px 14px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:12px">Weekly</div><div style="padding:7px 14px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:12px">Monthly</div><div style="padding:7px 14px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:12px">One-off</div></div></div>
+        <div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:flex;align-items:center;gap:6px">Which days <span style="background:#E6F1FB;color:#185FA5;font-size:9px;padding:1px 6px;border-radius:99px">④ For daily/weekly</span></div><div style="display:flex;gap:5px"><div style="width:32px;height:32px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">M</div><div style="width:32px;height:32px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">T</div><div style="width:32px;height:32px;border-radius:50%;background:var(--gray-l);color:#888;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">W</div><div style="width:32px;height:32px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">T</div><div style="width:32px;height:32px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">F</div><div style="width:32px;height:32px;border-radius:50%;background:var(--gray-l);color:#888;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">S</div><div style="width:32px;height:32px;border-radius:50%;background:var(--gray-l);color:#888;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">S</div></div></div>
+        <div style="margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:flex;align-items:center;gap:6px">Assign to <span style="background:#FBEAF0;color:#993556;font-size:9px;padding:1px 6px;border-radius:99px">⑤ Which kids?</span></div><div style="display:flex;gap:6px;flex-wrap:wrap"><div style="padding:6px 12px;border-radius:99px;background:var(--amber-l);border:1.5px solid var(--amber);color:var(--amber);font-size:12px;font-weight:600">Olivia ✓</div><div style="padding:6px 12px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:12px">Liam</div><div style="padding:6px 12px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:12px">Noah</div><div style="padding:6px 12px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:12px">Mia</div></div></div>
+        <div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Approval required?</div><div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 14px"><div><div style="font-size:13px;font-weight:600">Parent must approve</div><div style="font-size:11px;color:var(--gray)">Balance updates only after you approve</div></div><div style="width:40px;height:22px;background:var(--teal-m);border-radius:99px;display:flex;align-items:center;justify-content:flex-end;padding:2px"><div style="width:18px;height:18px;border-radius:50%;background:#fff"></div></div></div></div>
+        <div style="background:var(--dark);color:#fff;border-radius:10px;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer">Save chore</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;gap:14px"><div style="width:32px;height:32px;border-radius:50%;background:var(--amber-l);color:var(--amber);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">①</div><div><div style="font-size:15px;font-weight:600;margin-bottom:3px">Name it clearly</div><div style="font-size:13px;color:var(--gray);line-height:1.5">Use language your kids understand. Kids see the same name so clarity matters.</div></div></div>
+        <div style="display:flex;gap:14px"><div style="width:32px;height:32px;border-radius:50%;background:#EAF3DE;color:#3B6D11;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">②</div><div><div style="font-size:15px;font-weight:600;margin-bottom:3px">Set what it's worth</div><div style="font-size:13px;color:var(--gray);line-height:1.5">Works with any currency. You can use different amounts for different kids on the same chore.</div></div></div>
+        <div style="display:flex;gap:14px"><div style="width:32px;height:32px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">③④</div><div><div style="font-size:15px;font-weight:600;margin-bottom:3px">Choose how often and which days</div><div style="font-size:13px;color:var(--gray);line-height:1.5">Daily, weekly, monthly, or one-off. For daily/weekly chores pick specific days. Quiddo resets it automatically each cycle.</div></div></div>
+        <div style="display:flex;gap:14px"><div style="width:32px;height:32px;border-radius:50%;background:#FBEAF0;color:#993556;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0">⑤</div><div><div style="font-size:15px;font-weight:600;margin-bottom:3px">Assign to one or more kids</div><div style="font-size:13px;color:var(--gray);line-height:1.5">A chore can belong to one child, rotate between kids, or be "up for grabs" — first to claim it gets the credit.</div></div></div>
+        <div style="background:var(--gray-l);border-radius:12px;padding:16px;border-left:3px solid var(--amber)"><div style="font-size:13px;font-weight:700;margin-bottom:4px">Pro tip: approval toggle</div><div style="font-size:13px;color:var(--gray);line-height:1.5">Turn off approval for obvious chores ("made my bed") to reduce workload. Keep it on for bigger tasks where you want to check before paying out.</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:48px 40px;background:#FAFAF8">
+    <div class="wsl">Chore types</div>
+    <div class="wst" style="margin-bottom:28px">Three ways to structure chores</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <div style="background:#fff;border-radius:14px;padding:24px;border:1px solid var(--border)"><div style="font-size:28px;margin-bottom:12px">🔁</div><div style="font-size:16px;font-weight:700;margin-bottom:6px">Recurring</div><div style="font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:14px">Assigned to a specific child, repeating on your schedule. Appears automatically each cycle.</div><div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Examples</div><div style="font-size:12px;color:var(--gray)">• Dishwasher — Olivia — Daily<br>• Take out bins — Noah — Weekly<br>• Clean bedroom — Mia — Sat</div></div>
+      <div style="background:var(--dark);border-radius:14px;padding:24px"><div style="font-size:28px;margin-bottom:12px">🎯</div><div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">Up for grabs</div><div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:14px">Posted for any assigned kid to claim. First to tap "Done" earns it. Great for sibling competition.</div><div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Examples</div><div style="font-size:12px;color:rgba(255,255,255,0.5)">• Walk the dog — Olivia or Liam<br>• Water the garden — Any kid<br>• Fold laundry — Liam or Noah</div></div>
+      <div style="background:#fff;border-radius:14px;padding:24px;border:1px solid var(--border)"><div style="font-size:28px;margin-bottom:12px">⚡</div><div style="font-size:16px;font-weight:700;margin-bottom:6px">One-off bonus</div><div style="font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:14px">A spontaneous task posted on the spot. Doesn't repeat. Great for extra jobs or unexpected situations.</div><div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Examples</div><div style="font-size:12px;color:var(--gray)">• Help unpack shopping<br>• Wash the car (school hols)<br>• Help set up for a party</div></div>
+    </div>
+  </div>
+  <div style="background:var(--amber-l);padding:40px;text-align:center"><div style="font-family:var(--ff);font-size:28px;font-weight:600;margin-bottom:8px">Ready to set up your first chore?</div><div style="font-size:14px;color:var(--gray);margin-bottom:20px">Takes about 2 minutes. No manual tracking ever again.</div><button class="wb wbp" style="padding:14px 32px;font-size:16px">Start your free 30-day trial</button></div>
+  <div class="wft"><div class="wflogo">Quiddo</div><div>© 2026 Quiddo · quiddo.com.au</div><div>Privacy · Terms</div></div>
+</div>
+</div>
+
+<div id="w-pricing">
+<div style="font-family:var(--fb)">
+  <nav class="wn"><div class="wlogo">Quiddo</div><div class="wnl"><span>How it works</span><span>Chores</span><span style="color:var(--amber);font-weight:600">Pricing</span></div><button class="wb wbo">Log in</button><button class="wb wbp">Start free trial</button></nav>
+  <div style="padding:56px 40px;background:#fff">
+    <div style="text-align:center;margin-bottom:8px"><div class="wsl" style="display:inline-block">Pricing</div></div>
+    <div class="wst" style="text-align:center;margin-bottom:4px">Simple. Per family, not per kid.</div>
+    <div style="text-align:center;font-size:14px;color:var(--gray);margin-bottom:32px">Up to 12 children on every plan. No per-child fees.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:24px">
+      <div style="background:var(--gray-ll);border-radius:16px;padding:28px;border:1.5px solid var(--border)"><div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Free</div><div style="font-family:var(--ff);font-size:38px;font-weight:700">$0<span style="font-size:14px;font-weight:400;color:var(--gray)">/month</span></div><div style="font-size:13px;color:var(--gray);margin:8px 0 20px;line-height:1.5">Get started with 1 child and the essentials.</div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>1 child profile</div><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Balance tracking</div><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Earn &amp; spend log</div><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Parent dashboard</div></div><button style="width:100%;padding:10px;border-radius:99px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--dark);font-family:var(--fb)">Get started free</button></div>
+      <div style="background:var(--dark);border-radius:16px;padding:28px;border:1.5px solid var(--dark);position:relative"><div style="background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;position:absolute;top:-10px;left:50%;transform:translateX(-50%);white-space:nowrap">Most popular</div><div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Annual</div><div style="font-family:var(--ff);font-size:38px;font-weight:700;color:var(--amber-m)">$39.99<span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.4)">/year</span></div><div style="font-size:13px;color:rgba(255,255,255,0.6);margin:8px 0 20px;line-height:1.5">Best value — save 33% vs monthly.</div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"><div style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;gap:8px"><span style="color:var(--amber-m);font-weight:700">✓</span>Up to 12 children</div><div style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;gap:8px"><span style="color:var(--amber-m);font-weight:700">✓</span>Recurring chores + approval</div><div style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;gap:8px"><span style="color:var(--amber-m);font-weight:700">✓</span>Savings goals</div><div style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;gap:8px"><span style="color:var(--amber-m);font-weight:700">✓</span>Auto pocket money</div><div style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;gap:8px"><span style="color:var(--amber-m);font-weight:700">✓</span>Kid-facing view</div><div style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;gap:8px"><span style="color:var(--amber-m);font-weight:700">✓</span>Multi-parent access</div></div><button style="width:100%;padding:10px;border-radius:99px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:var(--amber);color:#fff;font-family:var(--fb)">Start 30-day free trial</button></div>
+      <div style="background:var(--gray-ll);border-radius:16px;padding:28px;border:1.5px solid var(--border)"><div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Monthly</div><div style="font-family:var(--ff);font-size:38px;font-weight:700">$4.99<span style="font-size:14px;font-weight:400;color:var(--gray)">/month</span></div><div style="font-size:13px;color:var(--gray);margin:8px 0 20px;line-height:1.5">All features, month to month.</div><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Up to 12 children</div><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Recurring chores + approval</div><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Savings goals</div><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Auto pocket money</div><div style="font-size:13px;color:var(--gray);display:flex;gap:8px"><span style="color:var(--teal-m);font-weight:700">✓</span>Kid-facing view</div></div><button style="width:100%;padding:10px;border-radius:99px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--dark);font-family:var(--fb)">Start 30-day free trial</button></div>
+    </div>
+    <div style="text-align:center;font-size:13px;color:var(--gray)">All plans include a 30-day free trial · No credit card required · Cancel any time</div>
+  </div>
+  <div class="wft"><div class="wflogo">Quiddo</div><div>© 2026 Quiddo · quiddo.com.au</div><div>Privacy · Terms</div></div>
+</div>
+</div>
+
+<div id="w-signup">
+<div style="font-family:var(--fb)">
+  <nav class="wn"><div class="wlogo">Quiddo</div><div class="wnl"><span>How it works</span><span>Pricing</span></div><button class="wb wbo">Log in</button></nav>
+  <div style="display:flex;min-height:500px">
+    <div style="flex:1;background:var(--amber-l);padding:48px 40px;display:flex;flex-direction:column;justify-content:center">
+      <div class="wtag" style="margin-bottom:16px">🎉 30 days free — no card needed</div>
+      <h2 style="font-family:var(--ff);font-size:32px;font-weight:600;margin-bottom:8px;line-height:1.2">Start your family's Quiddo in minutes</h2>
+      <p style="font-size:14px;color:var(--gray);line-height:1.6">Join families across Australia who've ditched the cash drawer and the forgotten IOUs.</p>
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:10px;font-size:13px;color:var(--gray)">✓ <span><strong style="color:var(--dark)">Up to 12 children</strong> on one family plan</span></div>
+        <div style="display:flex;gap:10px;font-size:13px;color:var(--gray)">✓ <span><strong style="color:var(--dark)">Works for cash or points</strong> — you choose</span></div>
+        <div style="display:flex;gap:10px;font-size:13px;color:var(--gray)">✓ <span><strong style="color:var(--dark)">Both parents</strong> can log in and manage</span></div>
+        <div style="display:flex;gap:10px;font-size:13px;color:var(--gray)">✓ <span><strong style="color:var(--dark)">Cancel anytime</strong> — no lock-in</span></div>
+      </div>
+    </div>
+    <div style="flex:1;padding:48px 40px;display:flex;flex-direction:column;justify-content:center">
+      <h3 style="font-family:var(--ff);font-size:22px;font-weight:600;margin-bottom:6px">Create your family account</h3>
+      <div style="font-size:13px;color:var(--gray);margin-bottom:28px">Already have an account? <a href="#" style="color:var(--amber);font-weight:600">Log in</a></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">First name</label><input type="text" value="Sarah" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--fb)"></div>
+        <div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">Last name</label><input type="text" value="Johnson" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--fb)"></div>
+      </div>
+      <div style="margin-bottom:16px"><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">Email address</label><input type="email" value="sarah@johnson.com.au" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--fb)"></div>
+      <div style="margin-bottom:16px"><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">Password</label><input type="password" value="••••••••••" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--fb)"></div>
+      <div style="margin-bottom:16px"><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">Family name</label><input type="text" value="The Johnson family" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--fb)"></div>
+      <button style="width:100%;padding:12px;background:var(--amber);color:#fff;border:none;border-radius:99px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Create account &amp; start free trial →</button>
+      <div style="font-size:13px;color:var(--gray);text-align:center;margin-top:16px">By signing up you agree to our <a href="#" style="color:var(--amber)">Terms</a> and <a href="#" style="color:var(--amber)">Privacy Policy</a></div>
+    </div>
+  </div>
+  <div class="wft"><div class="wflogo">Quiddo</div><div>© 2026 Quiddo · quiddo.com.au</div><div>Privacy · Terms</div></div>
+</div>
+</div>
+
+<div id="w-login">
+<div style="font-family:var(--fb)">
+  <nav class="wn"><div class="wlogo">Quiddo</div><div class="wnl"><span>How it works</span><span>Pricing</span></div><button class="wb wbp">Start free trial</button></nav>
+  <div style="display:flex;min-height:500px">
+    <div style="flex:1;background:var(--dark);padding:48px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div style="font-family:var(--ff);font-size:48px;font-weight:700;color:var(--amber-m);margin-bottom:8px">Quiddo</div>
+      <div style="font-size:15px;color:rgba(255,255,255,0.5)">Pocket money, sorted.</div>
+    </div>
+    <div style="flex:1;padding:48px 40px;display:flex;flex-direction:column;justify-content:center">
+      <h3 style="font-family:var(--ff);font-size:22px;font-weight:600;margin-bottom:6px">Welcome back</h3>
+      <div style="font-size:13px;color:var(--gray);margin-bottom:28px">Not a member? <a href="#" style="color:var(--amber);font-weight:600">Start your free trial</a></div>
+      <div style="margin-bottom:16px"><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">Email address</label><input type="email" value="sarah@johnson.com.au" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--fb)"></div>
+      <div style="margin-bottom:16px"><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">Password</label><input type="password" value="••••••••••" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--fb)"></div>
+      <button style="width:100%;padding:12px;background:var(--amber);color:#fff;border:none;border-radius:99px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--fb)">Log in to Quiddo</button>
+      <div style="font-size:13px;color:var(--gray);text-align:center;margin-top:12px"><a href="#" style="color:var(--amber)">Forgot your password?</a></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- end tpl-web -->
+
+<!-- ═══ APP TEMPLATES ═══ -->
+<div id="tpl-app" style="display:none">
+
+<div id="a-splash">
+<div class="ms" style="background:var(--dark)">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;gap:12px">
+    <div style="width:80px;height:80px;border-radius:50%;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:36px">💰</div>
+    <div style="font-family:var(--ff);font-size:52px;font-weight:700;color:var(--amber-m);letter-spacing:-1px">Quiddo</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.5)">Pocket money, sorted.</div>
+    <p style="font-size:15px;color:rgba(255,255,255,0.7);line-height:1.5;max-width:240px">Track what your kids earn, spend, and save — without the fuss.</p>
+    <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin-top:20px">
+      <button class="mbtn mbp">Get started free</button>
+      <button class="mbtn mbg">I already have an account</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="a-onboard1">
+<div class="ms" style="background:#FAFAF8">
+  <div style="padding:32px 24px 24px;flex:1;display:flex;flex-direction:column">
+    <div style="width:100%;height:160px;border-radius:16px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;margin-bottom:24px"><div style="text-align:center"><div style="font-size:48px;margin-bottom:8px">🧹💰</div><div style="font-size:13px;font-weight:600;color:var(--amber)">Chores → Quiddo</div></div></div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:20px"><div style="width:20px;height:6px;border-radius:99px;background:var(--amber)"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--border)"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--border)"></div></div>
+    <h2 style="font-family:var(--ff);font-size:24px;font-weight:600;margin-bottom:8px;line-height:1.2">Kids earn, parents approve</h2>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:24px">Set up chores with a value. Kids claim them when done. You approve with one tap and their balance updates instantly.</p>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+      <button class="mbtn mbp">Next</button>
+      <div style="text-align:center;font-size:13px;color:var(--gray);cursor:pointer">Skip</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="a-onboard2">
+<div class="ms" style="background:#FAFAF8">
+  <div style="padding:32px 24px 24px;flex:1;display:flex;flex-direction:column">
+    <div style="width:100%;height:160px;border-radius:16px;background:#EAF3DE;display:flex;align-items:center;justify-content:center;margin-bottom:24px"><div style="text-align:center"><div style="font-size:48px;margin-bottom:8px">🎯</div><div style="height:12px;background:var(--border);border-radius:99px;width:160px;overflow:hidden;margin:0 auto"><div style="width:72%;height:100%;background:var(--amber);border-radius:99px"></div></div><div style="font-size:12px;color:var(--gray);margin-top:6px">Saving for: Nintendo game</div></div></div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:20px"><div style="width:6px;height:6px;border-radius:50%;background:var(--border)"></div><div style="width:20px;height:6px;border-radius:99px;background:var(--amber)"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--border)"></div></div>
+    <h2 style="font-family:var(--ff);font-size:24px;font-weight:600;margin-bottom:8px;line-height:1.2">Goals that actually motivate</h2>
+    <p style="font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:24px">Kids set a savings goal and watch the progress bar fill up. More powerful than any piggy bank.</p>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+      <button class="mbtn mbp">Next</button>
+      <div style="text-align:center;font-size:13px;color:var(--gray);cursor:pointer">Skip</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="a-setup">
+<div class="ms">
+  <div class="mbr"><div class="mbb">← Back</div><div class="mbt">Set up your family</div></div>
+  <div style="padding:20px 16px;flex:1;overflow-y:auto">
+    <h2 style="font-family:var(--ff);font-size:22px;font-weight:600;margin-bottom:4px">What's your family called?</h2>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:20px">This shows up in the app. Families often use their surname.</p>
+    <input value="The Johnson family" type="text" style="width:100%;padding:14px;border:2px solid var(--amber);border-radius:10px;font-size:18px;font-weight:600;font-family:var(--ff);color:var(--dark);text-align:center;margin-bottom:16px">
+    <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Choose your currency type</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="padding:10px;border-radius:10px;border:1.5px solid var(--amber);background:var(--amber-l);text-align:center;cursor:pointer"><div style="font-size:22px;margin-bottom:4px">💵</div><div style="font-size:12px;font-weight:600">Real dollars</div><div style="font-size:10px;color:var(--gray)">Pocket money in AUD</div></div>
+      <div style="padding:10px;border-radius:10px;border:1.5px solid var(--border);text-align:center;cursor:pointer"><div style="font-size:22px;margin-bottom:4px">⭐</div><div style="font-size:12px;font-weight:600">Stars / Points</div><div style="font-size:10px;color:var(--gray)">For younger kids</div></div>
+      <div style="padding:10px;border-radius:10px;border:1.5px solid var(--border);text-align:center;cursor:pointer"><div style="font-size:22px;margin-bottom:4px">🪙</div><div style="font-size:12px;font-weight:600">Custom coins</div><div style="font-size:10px;color:var(--gray)">Name your own</div></div>
+      <div style="padding:10px;border-radius:10px;border:1.5px solid var(--border);text-align:center;cursor:pointer"><div style="font-size:22px;margin-bottom:4px">✨</div><div style="font-size:12px;font-weight:600">Mixed</div><div style="font-size:10px;color:var(--gray)">Different per kid</div></div>
+    </div>
+    <button class="mbtn mbp" style="width:100%;margin-top:8px">Continue — add your kids →</button>
+  </div>
+</div>
+</div>
+
+<div id="a-dashboard">
+<div class="ms">
+  <div class="mh"><div class="mh-top"><div class="mlogo">Quiddo</div><div class="mav">SJ</div></div><div class="mgr">Good morning, Sarah · Thursday</div></div>
+  <div class="mscroll">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:var(--gray-ll);border-radius:10px;padding:10px 12px;border:1px solid var(--border)"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Family balance</div><div style="font-size:20px;font-weight:700;font-family:var(--ff)">$247</div><div style="font-size:9px;color:var(--gray)">4 kids</div></div>
+      <div style="background:var(--gray-ll);border-radius:10px;padding:10px 12px;border:1px solid var(--border)"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px">Paid this month</div><div style="font-size:20px;font-weight:700;font-family:var(--ff)">$86</div><div style="font-size:9px;color:var(--gray)">pocket money + bonuses</div></div>
+    </div>
+    <div class="msec">Your kids</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;min-width:140px;flex-shrink:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:28px;height:28px;border-radius:50%;background:#FAEEDA;color:#854F0B;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">OJ</div><div><div style="font-size:13px;font-weight:600">Olivia</div><div style="font-size:10px;color:var(--gray)">Age 12</div></div></div><div style="font-size:22px;font-weight:700;font-family:var(--ff)">$58.00</div><div style="height:4px;background:var(--gray-l);border-radius:99px;margin-top:6px;overflow:hidden"><div style="width:84%;height:100%;background:var(--amber);border-radius:99px"></div></div><div style="font-size:9px;color:var(--gray);margin-top:3px">Switch game — 84%</div></div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;min-width:140px;flex-shrink:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:28px;height:28px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">LJ</div><div><div style="font-size:13px;font-weight:600">Liam</div><div style="font-size:10px;color:var(--gray)">Age 10</div></div></div><div style="font-size:22px;font-weight:700;font-family:var(--ff)">$43.50</div><div style="height:4px;background:var(--gray-l);border-radius:99px;margin-top:6px;overflow:hidden"><div style="width:54%;height:100%;background:#185FA5;border-radius:99px"></div></div><div style="font-size:9px;color:var(--gray);margin-top:3px">Headphones — 54%</div></div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;min-width:140px;flex-shrink:0"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:28px;height:28px;border-radius:50%;background:#EAF3DE;color:#3B6D11;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">NJ</div><div><div style="font-size:13px;font-weight:600">Noah</div><div style="font-size:10px;color:var(--gray)">Age 8</div></div></div><div style="font-size:22px;font-weight:700;font-family:var(--ff)">$92.00</div><div style="font-size:10px;color:var(--gray);margin-top:6px">No active goal</div></div>
+    </div>
+    <div class="msec">Needs your approval</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div style="background:var(--amber-l);padding:8px 12px;font-size:11px;font-weight:700;color:var(--amber)">2 chores waiting</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border)"><div style="width:26px;height:26px;border-radius:50%;background:#FAEEDA;color:#854F0B;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">OJ</div><div style="flex:1"><div style="font-size:12px;font-weight:600">Olivia</div><div style="font-size:10px;color:var(--gray)">Cleaned the bathroom</div></div><div style="font-size:12px;font-weight:700;color:var(--teal-m)">+$4.00</div><div style="width:26px;height:26px;border-radius:50%;background:var(--teal-l);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--teal-m);cursor:pointer">✓</div><div style="width:26px;height:26px;border-radius:50%;background:var(--gray-l);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gray);cursor:pointer">✕</div></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 12px"><div style="width:26px;height:26px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">LJ</div><div style="flex:1"><div style="font-size:12px;font-weight:600">Liam</div><div style="font-size:10px;color:var(--gray)">Mowed the lawn</div></div><div style="font-size:12px;font-weight:700;color:var(--teal-m)">+$8.00</div><div style="width:26px;height:26px;border-radius:50%;background:var(--teal-l);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--teal-m);cursor:pointer">✓</div><div style="width:26px;height:26px;border-radius:50%;background:var(--gray-l);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gray);cursor:pointer">✕</div></div>
+    </div>
+    <div class="msec">Recent activity</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div class="txr"><div class="txi" style="background:#EAF3DE">🧹</div><div style="flex:1"><div class="txd">Olivia — Dishwasher duty</div><div class="txs">Today, 7:42 am</div></div><div class="txa txp">+$2</div></div>
+      <div class="txr"><div class="txi" style="background:#FAEEDA">💰</div><div style="flex:1"><div class="txd">Weekly pocket money</div><div class="txs">Sunday, 16 Mar</div></div><div class="txa txp">+$40</div></div>
+      <div class="txr"><div class="txi" style="background:#FCEBEB">🛍️</div><div style="flex:1"><div class="txd">Liam — Roblox credits</div><div class="txs">Saturday, 15 Mar</div></div><div class="txa txm">-$15</div></div>
+    </div>
+  </div>
+  <div class="mtab"><div class="mt on"><div class="mti">🏠</div>Home</div><div class="mt"><div class="mti">🧹</div>Chores</div><div class="mt"><div class="mti">➕</div>Add</div><div class="mt"><div class="mti">👶</div>Kids</div><div class="mt"><div class="mti">⚙️</div>Settings</div></div>
+</div>
+</div>
+
+<div id="a-kidprofile">
+<div class="ms">
+  <div class="mbr"><div class="mbb">← All kids</div><div class="mbt">Olivia</div></div>
+  <div style="background:var(--amber-l);padding:20px 16px 16px;text-align:center">
+    <div style="width:56px;height:56px;border-radius:50%;background:#FAEEDA;color:#854F0B;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">OJ</div>
+    <div style="font-family:var(--ff);font-size:18px;font-weight:600">Olivia Johnson</div>
+    <div style="font-size:11px;color:var(--gray);margin-bottom:4px">Age 12 · Joined Jan 2025</div>
+    <div style="font-family:var(--ff);font-size:36px;font-weight:700;color:var(--amber)">$58.00</div>
+    <div style="font-size:11px;color:var(--gray);margin-top:-2px">current balance</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <button style="padding:6px 14px;border-radius:99px;background:var(--amber);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)">+ Add funds</button>
+      <button style="padding:6px 14px;border-radius:99px;background:transparent;border:1.5px solid var(--amber);color:var(--amber);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)">Record spend</button>
+    </div>
+  </div>
+  <div class="mscroll">
+    <div class="msec" style="margin-bottom:8px">Savings goal</div>
+    <div style="background:var(--gray-ll);border-radius:10px;padding:12px;border:1px solid var(--border)"><div style="font-size:12px;font-weight:600;margin-bottom:4px">🎮 Nintendo Switch game</div><div style="height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:4px"><div style="width:84%;height:100%;background:var(--amber);border-radius:99px"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray)"><span>$58.00 saved</span><span>$69.00 goal · 84%</span></div></div>
+    <div class="msec" style="margin-bottom:4px">Transaction history</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div class="txr"><div class="txi" style="background:#EAF3DE">🧹</div><div style="flex:1"><div class="txd">Dishwasher duty</div><div class="txs">Today · Chore</div></div><div class="txa txp">+$2.00</div></div>
+      <div class="txr"><div class="txi" style="background:#FAEEDA">💰</div><div style="flex:1"><div class="txd">Weekly pocket money</div><div class="txs">Sun 16 Mar · Auto</div></div><div class="txa txp">+$10.00</div></div>
+      <div class="txr"><div class="txi" style="background:#FCEBEB">🛒</div><div style="flex:1"><div class="txd">Kmart spend</div><div class="txs">Sat 15 Mar</div></div><div class="txa txm">-$8.00</div></div>
+      <div class="txr"><div class="txi" style="background:#EAF3DE">🧹</div><div style="flex:1"><div class="txd">Cleaned bathroom</div><div class="txs">Fri 7 Mar · Chore</div></div><div class="txa txp">+$4.00</div></div>
+    </div>
+  </div>
+  <div class="mtab"><div class="mt"><div class="mti">🏠</div>Home</div><div class="mt"><div class="mti">🧹</div>Chores</div><div class="mt"><div class="mti">➕</div>Add</div><div class="mt on"><div class="mti">👶</div>Kids</div><div class="mt"><div class="mti">⚙️</div>Settings</div></div>
+</div>
+</div>
+
+<div id="a-addtxn">
+<div class="ms">
+  <div class="mbr"><div class="mbb">✕ Cancel</div><div class="mbt">Add transaction</div></div>
+  <div class="mscroll">
+    <div style="display:flex;background:var(--gray-ll);border-radius:99px;padding:3px;margin-bottom:16px">
+      <button style="flex:1;padding:8px;border-radius:99px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;border:none;background:var(--teal-l);color:var(--teal);font-family:var(--fb)">💰 Earn</button>
+      <button style="flex:1;padding:8px;border-radius:99px;font-size:13px;text-align:center;cursor:pointer;border:none;background:transparent;color:var(--gray);font-family:var(--fb)">🛍️ Spend</button>
+    </div>
+    <div class="mfl">Amount</div>
+    <input class="mfi" value="$4.00" type="text" style="font-size:28px;font-family:var(--ff);text-align:center;border:none;border-bottom:2px solid var(--amber);border-radius:0;padding:8px 0;background:transparent;margin-bottom:16px">
+    <div class="mfl">Which kid?</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+      <div style="padding:7px 13px;border-radius:99px;background:var(--amber-l);border:1.5px solid var(--amber);color:var(--amber);font-size:13px;font-weight:600">Olivia ✓</div>
+      <div style="padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px">Liam</div>
+      <div style="padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px">Noah</div>
+      <div style="padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px">Mia</div>
+    </div>
+    <div class="mfl">Description</div>
+    <input class="mfi" value="Cleaned the bathroom" type="text">
+    <div class="mfl">Category</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="padding:8px;border-radius:10px;border:1.5px solid var(--amber);background:var(--amber-l);text-align:center;font-size:12px;font-weight:600;color:var(--amber)">🧹 Chore</div>
+      <div style="padding:8px;border-radius:10px;border:1.5px solid var(--border);text-align:center;font-size:12px;color:var(--gray)">💰 Pocket money</div>
+      <div style="padding:8px;border-radius:10px;border:1.5px solid var(--border);text-align:center;font-size:12px;color:var(--gray)">🎁 Gift</div>
+    </div>
+    <button class="msub">Add $4.00 to Olivia's Quiddo ✓</button>
+  </div>
+</div>
+</div>
+
+<div id="a-chores">
+<div class="ms">
+  <div class="mh"><div class="mh-top"><div class="mbt">Chores</div><div style="font-size:13px;color:var(--amber);font-weight:600;cursor:pointer">+ Add chore</div></div><div class="mgr">2 pending · 3 earning chores · 2 responsibilities</div></div>
+  <div class="mscroll" style="padding:0">
+    <div style="padding:10px 14px 4px;font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.6px;background:var(--amber-l)">Pending approval</div>
+    <div class="chr"><div class="chi" style="background:#EAF3DE">🛁</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Cleaned the bathroom</div><div style="font-size:10px;color:var(--gray)">Olivia · Today 9:14am</div></div><div><div class="cha">+$4.00</div><div class="chs chp">Pending</div></div></div>
+    <div class="chr"><div class="chi" style="background:#EAF3DE">🌿</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Mowed the lawn</div><div style="font-size:10px;color:var(--gray)">Liam · Today 8:30am</div></div><div><div class="cha">+$8.00</div><div class="chs chp">Pending</div></div></div>
+    <div style="padding:10px 14px 4px;font-size:10px;font-weight:700;color:#3B6D11;text-transform:uppercase;letter-spacing:0.6px;background:#EAF3DE">Earning chores</div>
+    <div class="chr"><div class="chi" style="background:#FAEEDA">🍽️</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Dishwasher duty</div><div style="font-size:10px;color:var(--gray)">All kids · Daily · earns $2.00</div></div><div><div class="cha">$2.00</div><div class="chs chd">Active</div></div></div>
+    <div class="chr"><div class="chi" style="background:#E6F1FB">🐕</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Walk the dog</div><div style="font-size:10px;color:var(--gray)">Liam, Olivia · Daily · earns $3.00</div></div><div><div class="cha">$3.00</div><div class="chs chd">Active</div></div></div>
+    <div class="chr"><div class="chi" style="background:#FBEAF0">🗑️</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Take out bins</div><div style="font-size:10px;color:var(--gray)">Noah · Weekly Mon · earns $5.00</div></div><div><div class="cha">$5.00</div><div class="chs chd">Active</div></div></div>
+    <div style="padding:10px 14px 4px;font-size:10px;font-weight:700;color:#185FA5;text-transform:uppercase;letter-spacing:0.6px;background:#E6F1FB">Required for pocket money</div>
+    <div style="padding:6px 14px 4px;font-size:11px;color:#5F5E5A;background:#E6F1FB">Must be done to unlock weekly allowance</div>
+    <div class="chr"><div class="chi" style="background:#E6F1FB">🛏️</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Make bed</div><div style="font-size:10px;color:var(--gray)">All kids · Daily · required</div></div><div><div style="font-size:9px;padding:3px 8px;border-radius:99px;font-weight:600;background:#E6F1FB;color:#185FA5">Required</div></div></div>
+    <div class="chr"><div class="chi" style="background:#E6F1FB">🎒</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Pack school bag</div><div style="font-size:10px;color:var(--gray)">All kids · Mon–Fri · required</div></div><div><div style="font-size:9px;padding:3px 8px;border-radius:99px;font-weight:600;background:#E6F1FB;color:#185FA5">Required</div></div></div>
+  </div>
+  <div class="mtab"><div class="mt"><div class="mti">🏠</div>Home</div><div class="mt on"><div class="mti">🧹</div>Chores</div><div class="mt"><div class="mti">➕</div>Add</div><div class="mt"><div class="mti">👶</div>Kids</div><div class="mt"><div class="mti">⚙️</div>Settings</div></div>
+</div>
+</div>
+
+<div id="a-createchore">
+<div class="ms">
+  <div class="mbr"><div class="mbb">✕ Cancel</div><div class="mbt">New chore</div><div style="font-size:13px;color:var(--amber);font-weight:600">Save</div></div>
+  <div class="mscroll">
+    <div class="mfl">Chore name</div>
+    <input class="mfi" value="Dishwasher duty" type="text">
+    <div class="mfl">Reward type</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:10px;border:2px solid var(--amber);background:var(--amber-l);cursor:pointer">
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--amber);background:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><div style="width:6px;height:6px;border-radius:50%;background:#fff"></div></div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--dark)">Earns directly 💰</div><div style="font-size:11px;color:var(--gray);margin-top:1px">Balance goes up as soon as approved</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer">
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px"></div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--dark)">Required for pocket money 📋</div><div style="font-size:11px;color:var(--gray);margin-top:1px">Must be done to unlock the week's allowance</div></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer">
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px"></div>
+        <div><div style="font-size:13px;font-weight:600;color:var(--dark)">No reward 🗒️</div><div style="font-size:11px;color:var(--gray);margin-top:1px">Tracked only, no financial consequence</div></div>
+      </div>
+    </div>
+    <div class="mfl">Value</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input class="mfi" value="$2.00" type="text" style="margin-bottom:0;flex:1;font-size:20px;font-family:var(--ff);font-weight:600;text-align:center">
+      <div style="padding:12px 14px;background:var(--amber-l);border-radius:10px;border:1.5px solid var(--amber);font-size:13px;font-weight:700;color:var(--amber);flex-shrink:0">AUD</div>
+    </div>
+    <div class="mfl">Repeats</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">
+      <div style="padding:10px;border-radius:10px;background:var(--dark);color:#fff;font-size:13px;font-weight:600;text-align:center;cursor:pointer">🔁 Daily</div>
+      <div style="padding:10px;border-radius:10px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px;text-align:center;cursor:pointer">📅 Weekly</div>
+      <div style="padding:10px;border-radius:10px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px;text-align:center;cursor:pointer">🗓️ Monthly</div>
+      <div style="padding:10px;border-radius:10px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px;text-align:center;cursor:pointer">⚡ One-off</div>
+    </div>
+    <div class="mfl">Active on</div>
+    <div style="display:flex;gap:6px;justify-content:space-between;margin-bottom:14px">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">M</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">T</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--gray-l);color:#B4B2A9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">W</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">T</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">F</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--gray-l);color:#B4B2A9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">S</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--gray-l);color:#B4B2A9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">S</div>
+    </div>
+    <div class="mfl">Assign to</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="padding:7px 13px;border-radius:99px;background:var(--amber-l);border:1.5px solid var(--amber);color:var(--amber);font-size:13px;font-weight:600">Olivia ✓</div>
+      <div style="padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px">Liam</div>
+      <div style="padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px">Noah</div>
+      <div style="padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px">Mia</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-ll);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+      <div><div style="font-size:13px;font-weight:600">Approval required</div><div style="font-size:11px;color:var(--gray);margin-top:1px">You approve before balance updates</div></div>
+      <div style="width:40px;height:22px;background:var(--teal-m);border-radius:99px;display:flex;align-items:center;justify-content:flex-end;padding:2px;flex-shrink:0"><div style="width:18px;height:18px;border-radius:50%;background:#fff"></div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--gray-ll);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      <div><div style="font-size:13px;font-weight:600">Up for grabs</div><div style="font-size:11px;color:var(--gray);margin-top:1px">Any assigned kid can claim it first</div></div>
+      <div style="width:40px;height:22px;background:#D3D1C7;border-radius:99px;display:flex;align-items:center;justify-content:flex-start;padding:2px;flex-shrink:0"><div style="width:18px;height:18px;border-radius:50%;background:#fff"></div></div>
+    </div>
+    <button class="msub" style="background:var(--dark)">Save chore for Olivia ✓</button>
+  </div>
+</div>
+</div>
+
+<div id="a-choredetail">
+<div class="ms">
+  <div class="mbr"><div class="mbb">← Chores</div><div class="mbt">Chore detail</div><div style="font-size:13px;color:var(--gray);font-weight:500">Edit</div></div>
+  <div class="mscroll">
+    <div style="background:var(--amber-l);border-radius:14px;padding:18px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:44px;height:44px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🍽️</div>
+        <div><div style="font-family:var(--ff);font-size:17px;font-weight:700">Dishwasher duty</div><div style="font-size:12px;color:var(--amber);font-weight:600;margin-top:1px">$2.00 · Daily Mon–Fri · Approval on</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="flex:1;background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;font-family:var(--ff)">23</div><div style="font-size:10px;color:var(--gray)">times done</div></div>
+        <div style="flex:1;background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;color:var(--teal-m);font-family:var(--ff)">$46</div><div style="font-size:10px;color:var(--gray)">total earned</div></div>
+        <div style="flex:1;background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:700;font-family:var(--ff)">87%</div><div style="font-size:10px;color:var(--gray)">completion</div></div>
+      </div>
+    </div>
+    <div class="msec" style="margin-bottom:8px">Assigned kids</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border)"><div style="width:30px;height:30px;border-radius:50%;background:#FAEEDA;color:#854F0B;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">OJ</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Olivia</div><div style="font-size:10px;color:var(--gray)">Done today · 18/21 days this month</div></div><div style="text-align:right"><div style="font-size:12px;font-weight:700;color:var(--teal-m)">$2.00</div><div style="font-size:9px;padding:2px 7px;border-radius:99px;background:#EAF3DE;color:#3B6D11;font-weight:600;margin-top:2px">Active</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;opacity:0.5"><div style="width:30px;height:30px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">LJ</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Liam</div><div style="font-size:10px;color:var(--gray)">Not assigned to this chore</div></div><div style="font-size:12px;color:var(--gray)">+ Add</div></div>
+      <div style="padding:11px 14px"><div style="font-size:13px;color:var(--amber);font-weight:600;cursor:pointer">+ Assign another kid</div></div>
+    </div>
+    <div class="msec" style="margin-bottom:8px">Recent history</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px">
+      <div class="txr"><div class="txi" style="background:#EAF3DE">✓</div><div style="flex:1"><div class="txd">Olivia completed</div><div class="txs">Today · Approved by Sarah</div></div><div class="txa txp">+$2.00</div></div>
+      <div class="txr"><div class="txi" style="background:#EAF3DE">✓</div><div style="flex:1"><div class="txd">Olivia completed</div><div class="txs">Yesterday · Approved by Sarah</div></div><div class="txa txp">+$2.00</div></div>
+      <div class="txr" style="opacity:0.4"><div class="txi" style="background:var(--gray-l)">–</div><div style="flex:1"><div class="txd">Not completed</div><div class="txs">Wed 18 Mar</div></div><div class="txa" style="color:#888">$0</div></div>
+      <div class="txr"><div class="txi" style="background:#EAF3DE">✓</div><div style="flex:1"><div class="txd">Olivia completed</div><div class="txs">Tue 17 Mar · Approved by Dad</div></div><div class="txa txp">+$2.00</div></div>
+    </div>
+    <div style="display:flex;gap:8px;padding-bottom:16px">
+      <div style="flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-weight:600;color:var(--gray);text-align:center;cursor:pointer">Pause chore</div>
+      <div style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #FCEBEB;font-size:13px;font-weight:600;color:#A32D2D;text-align:center;cursor:pointer">Delete chore</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="a-kidchores">
+<div class="ms">
+  <div class="mbr"><div class="mbb">← All kids</div><div class="mbt">Olivia's chores</div><div style="font-size:13px;color:var(--amber);font-weight:600;cursor:pointer">+ Add</div></div>
+  <div class="mscroll" style="padding:0">
+    <div style="background:var(--amber-l);padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+      <div style="width:40px;height:40px;border-radius:50%;background:#fff;color:#854F0B;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">OJ</div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:700">Olivia · Age 12</div><div style="font-size:11px;color:var(--amber);font-weight:500">3 chores · $9.00/day potential</div></div>
+      <div style="text-align:right"><div style="font-size:20px;font-weight:700;font-family:var(--ff)">$58</div><div style="font-size:10px;color:var(--gray)">balance</div></div>
+    </div>
+    <div style="padding:12px 14px;background:#fff;border-bottom:1px solid var(--border)">
+      <div style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">This week</div>
+      <div style="display:flex;gap:4px">
+        <div style="flex:1;text-align:center"><div style="height:40px;background:#EAF3DE;border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;font-weight:600;color:#3B6D11">M ✓</div></div>
+        <div style="flex:1;text-align:center"><div style="height:40px;background:#EAF3DE;border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;font-weight:600;color:#3B6D11">T ✓</div></div>
+        <div style="flex:1;text-align:center"><div style="height:40px;background:#FCEBEB;border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;font-weight:600;color:#A32D2D">W –</div></div>
+        <div style="flex:1;text-align:center"><div style="height:40px;background:#EAF3DE;border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;font-weight:600;color:#3B6D11">T ✓</div></div>
+        <div style="flex:1;text-align:center"><div style="height:40px;background:#EAF3DE;border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;font-weight:600;color:#3B6D11">F ✓</div></div>
+        <div style="flex:1;text-align:center"><div style="height:40px;background:var(--gray-l);border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;color:#B4B2A9">S</div></div>
+        <div style="flex:1;text-align:center"><div style="height:40px;background:var(--gray-l);border-radius:6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;color:#B4B2A9">S</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--gray);margin-top:6px;text-align:center">4 of 5 weekdays · $8.00 earned this week</div>
+    </div>
+    <div style="padding:10px 14px 4px;font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.6px">Olivia's chores</div>
+    <div class="chr" style="cursor:pointer"><div class="chi" style="background:#FAEEDA">🍽️</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Dishwasher duty</div><div style="font-size:10px;color:var(--gray)">Daily · Mon–Fri · Approval on</div></div><div style="text-align:right"><div class="cha">$2.00</div><div class="chs chd">Active</div></div></div>
+    <div class="chr" style="cursor:pointer"><div class="chi" style="background:#EAF3DE">🛁</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Clean bathroom</div><div style="font-size:10px;color:var(--gray)">Weekly · Saturday · Approval on</div></div><div style="text-align:right"><div class="cha">$4.00</div><div class="chs chd">Active</div></div></div>
+    <div class="chr" style="cursor:pointer"><div class="chi" style="background:#E6F1FB">🐕</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Walk the dog</div><div style="font-size:10px;color:var(--gray)">Daily · Mon–Fri · Up for grabs</div></div><div style="text-align:right"><div class="cha">$3.00</div><div class="chs" style="background:#E6F1FB;color:#185FA5">Shared</div></div></div>
+    <div style="padding:10px 14px 4px;font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.6px;margin-top:4px">Pending approval</div>
+    <div class="chr"><div class="chi" style="background:#FAEEDA">🛁</div><div style="flex:1"><div style="font-size:13px;font-weight:600">Clean bathroom</div><div style="font-size:10px;color:var(--gray)">Claimed today · 9:14am</div></div><div style="display:flex;gap:6px"><div style="width:30px;height:30px;border-radius:50%;background:var(--teal-l);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--teal-m);cursor:pointer">✓</div><div style="width:30px;height:30px;border-radius:50%;background:var(--gray-l);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gray);cursor:pointer">✕</div></div></div>
+    <div style="padding:14px 14px 16px"><button style="width:100%;padding:12px;border-radius:99px;background:var(--amber-l);color:var(--amber);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--fb)">+ Add a chore for Olivia</button></div>
+  </div>
+  <div class="mtab"><div class="mt"><div class="mti">🏠</div>Home</div><div class="mt on"><div class="mti">🧹</div>Chores</div><div class="mt"><div class="mti">➕</div>Add</div><div class="mt"><div class="mti">👶</div>Kids</div><div class="mt"><div class="mti">⚙️</div>Settings</div></div>
+</div>
+</div>
+
+<div id="a-kidview">
+<div class="ms">
+  <div style="background:var(--dark);flex:1;display:flex;flex-direction:column">
+    <div style="padding:20px 16px 16px;text-align:center"><div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px">Olivia's Quiddo</div><div style="font-family:var(--ff);font-size:48px;font-weight:700;color:var(--amber-m)">$58.00</div><div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:-4px">your balance</div></div>
+    <div style="background:rgba(255,255,255,0.07);border-radius:12px;margin:0 14px 14px;padding:14px"><div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px">Saving for</div><div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:8px">🎮 Nintendo Switch game</div><div style="height:8px;background:rgba(255,255,255,0.1);border-radius:99px;overflow:hidden"><div style="width:84%;height:100%;background:var(--amber-m);border-radius:99px"></div></div><div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px"><span>$58 of $69</span><span>84% there!</span></div></div>
+    <div style="padding:0 14px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.6px">Your chores</div>
+    <div style="padding:0 14px;display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto">
+      <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px"><div style="font-size:22px">🍽️</div><div style="font-size:13px;font-weight:600;color:#fff;flex:1">Dishwasher duty</div><div style="font-size:13px;font-weight:700;color:var(--amber-m)">$2.00</div><button style="padding:5px 12px;border-radius:99px;background:var(--amber);color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:var(--fb)">Done!</button></div>
+      <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px"><div style="font-size:22px">🐕</div><div style="font-size:13px;font-weight:600;color:#fff;flex:1">Walk the dog</div><div style="font-size:13px;font-weight:700;color:var(--amber-m)">$3.00</div><button style="padding:5px 12px;border-radius:99px;background:var(--amber);color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:var(--fb)">Done!</button></div>
+      <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;opacity:0.5"><div style="font-size:22px">🛁</div><div style="font-size:13px;font-weight:600;color:#fff;flex:1">Clean bathroom</div><div style="font-size:13px;font-weight:700;color:var(--amber-m)">$4.00</div><div style="font-size:11px;color:rgba(255,255,255,0.5)">Waiting ⏳</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="a-settings">
+<div class="ms">
+  <div style="padding:20px 16px;background:var(--gray-ll);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+    <div style="width:48px;height:48px;border-radius:50%;background:var(--amber-l);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--amber)">SJ</div>
+    <div><div style="font-size:16px;font-weight:600">Sarah Johnson</div><div style="font-size:12px;color:var(--gray)">The Johnson family · 4 kids</div></div>
+  </div>
+  <div class="mscroll" style="padding:0">
+    <div style="padding:8px 16px 4px;font-size:10px;font-weight:700;color:var(--gray);letter-spacing:0.6px;text-transform:uppercase">Family</div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">👨‍👩‍👧‍👦</div><div style="flex:1;font-size:14px">Manage kids</div><div style="font-size:13px;color:var(--gray)">4 kids</div><div style="color:var(--gray);font-size:12px;margin-left:6px">›</div></div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">👤</div><div style="flex:1;font-size:14px">Add parent / carer</div><div style="color:var(--gray);font-size:12px">›</div></div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">💰</div><div style="flex:1;font-size:14px">Currency</div><div style="font-size:13px;color:var(--gray)">AUD ($)</div><div style="color:var(--gray);font-size:12px;margin-left:6px">›</div></div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">📅</div><div style="flex:1;font-size:14px">Pocket money day</div><div style="font-size:13px;color:var(--gray)">Sunday</div><div style="color:var(--gray);font-size:12px;margin-left:6px">›</div></div>
+    <div style="padding:8px 16px 4px;font-size:10px;font-weight:700;color:var(--gray);letter-spacing:0.6px;text-transform:uppercase;margin-top:4px">Account</div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:var(--gray-l);display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">📧</div><div style="flex:1;font-size:14px">Email</div><div style="font-size:13px;color:var(--gray)">sarah@johnson...</div><div style="color:var(--gray);font-size:12px;margin-left:6px">›</div></div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:var(--gray-l);display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">🔒</div><div style="flex:1;font-size:14px">Password</div><div style="color:var(--gray);font-size:12px">›</div></div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">⭐</div><div style="flex:1;font-size:14px">Plan</div><div style="font-size:13px;color:var(--amber)">Annual · $39.99/yr</div><div style="color:var(--gray);font-size:12px;margin-left:6px">›</div></div>
+    <div style="padding:8px 16px 4px;font-size:10px;font-weight:700;color:var(--gray);letter-spacing:0.6px;text-transform:uppercase;margin-top:4px">Notifications</div>
+    <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)"><div style="width:32px;height:32px;border-radius:8px;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">🔔</div><div style="flex:1;font-size:14px">Chore approvals</div><div style="width:36px;height:20px;background:var(--teal-m);border-radius:99px;display:flex;align-items:center;justify-content:flex-end;padding:2px"><div style="width:16px;height:16px;border-radius:50%;background:#fff"></div></div></div>
+    <div style="display:flex;align-items:center;padding:12px 16px"><div style="width:32px;height:32px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:16px;margin-right:12px">📊</div><div style="flex:1;font-size:14px">Weekly summary</div><div style="width:36px;height:20px;background:var(--teal-m);border-radius:99px;display:flex;align-items:center;justify-content:flex-end;padding:2px"><div style="width:16px;height:16px;border-radius:50%;background:#fff"></div></div></div>
+    <div style="padding:16px"><div style="color:#A32D2D;font-size:14px;font-weight:500;text-align:center;cursor:pointer">Log out</div></div>
+  </div>
+  <div class="mtab"><div class="mt"><div class="mti">🏠</div>Home</div><div class="mt"><div class="mti">🧹</div>Chores</div><div class="mt"><div class="mti">➕</div>Add</div><div class="mt"><div class="mti">👶</div>Kids</div><div class="mt on"><div class="mti">⚙️</div>Settings</div></div>
+</div>
+</div>
+
+
+<div id="a-responsibilities">
+<div class="ms">
+  <div class="mbr"><div class="mbb">← Chores</div><div class="mbt">Responsibilities</div><div style="font-size:13px;color:var(--amber);font-weight:600;cursor:pointer">+ Add</div></div>
+  <div class="mscroll" style="padding:0">
+
+    <!-- Explainer banner -->
+    <div style="background:#E6F1FB;padding:14px 16px;border-bottom:1px solid #B5D4F4">
+      <div style="font-size:13px;font-weight:700;color:#0C447C;margin-bottom:4px">📋 How responsibilities work</div>
+      <div style="font-size:12px;color:#185FA5;line-height:1.5">These chores don't earn money directly. Instead, kids must complete a set percentage of them each week before their pocket money is released.</div>
+    </div>
+
+    <!-- Threshold setting -->
+    <div style="padding:14px 16px;background:#fff;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Threshold to unlock pocket money</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <div style="padding:7px 14px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px;cursor:pointer">50%</div>
+        <div style="padding:7px 14px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px;cursor:pointer">75%</div>
+        <div style="padding:7px 14px;border-radius:99px;background:var(--dark);color:#fff;font-size:13px;font-weight:600;cursor:pointer">100%</div>
+        <div style="padding:7px 14px;border-radius:99px;background:#fff;border:1.5px solid var(--border);color:var(--gray);font-size:13px;cursor:pointer">Custom</div>
+      </div>
+      <div style="font-size:11px;color:var(--gray);margin-top:8px">All responsibilities must be ticked off before Sunday's pocket money releases</div>
+    </div>
+
+    <!-- Per-kid status this week -->
+    <div style="padding:10px 14px 4px;font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.6px">This week's status</div>
+
+    <!-- Olivia - all done -->
+    <div style="background:#fff;margin:6px 14px;border-radius:12px;border:1px solid var(--border);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#EAF3DE;border-bottom:1px solid #C0DD97">
+        <div style="width:28px;height:28px;border-radius:50%;background:#FAEEDA;color:#854F0B;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">OJ</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--dark)">Olivia</div></div>
+        <div style="font-size:12px;font-weight:700;color:#3B6D11">2/2 ✓ Unlocked</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)">
+        <div style="width:20px;height:20px;border-radius:50%;background:#EAF3DE;border:2px solid #3B6D11;display:flex;align-items:center;justify-content:center;font-size:11px;color:#3B6D11;flex-shrink:0">✓</div>
+        <div style="font-size:13px;color:var(--dark)">🛏️ Make bed</div>
+        <div style="margin-left:auto;font-size:10px;color:#3B6D11;font-weight:600">Done</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px">
+        <div style="width:20px;height:20px;border-radius:50%;background:#EAF3DE;border:2px solid #3B6D11;display:flex;align-items:center;justify-content:center;font-size:11px;color:#3B6D11;flex-shrink:0">✓</div>
+        <div style="font-size:13px;color:var(--dark)">🎒 Pack school bag</div>
+        <div style="margin-left:auto;font-size:10px;color:#3B6D11;font-weight:600">Done</div>
+      </div>
+    </div>
+
+    <!-- Liam - not done -->
+    <div style="background:#fff;margin:6px 14px;border-radius:12px;border:1.5px solid #F7C1C1;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FCEBEB;border-bottom:1px solid #F7C1C1">
+        <div style="width:28px;height:28px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">LJ</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--dark)">Liam</div></div>
+        <div style="font-size:12px;font-weight:700;color:#A32D2D">1/2 — Blocked</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)">
+        <div style="width:20px;height:20px;border-radius:50%;background:#EAF3DE;border:2px solid #3B6D11;display:flex;align-items:center;justify-content:center;font-size:11px;color:#3B6D11;flex-shrink:0">✓</div>
+        <div style="font-size:13px;color:var(--dark)">🛏️ Make bed</div>
+        <div style="margin-left:auto;font-size:10px;color:#3B6D11;font-weight:600">Done</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px">
+        <div style="width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid #D3D1C7;display:flex;align-items:center;justify-content:center;font-size:11px;color:#D3D1C7;flex-shrink:0">○</div>
+        <div style="font-size:13px;color:var(--gray)">🎒 Pack school bag</div>
+        <div style="margin-left:auto;font-size:10px;color:#A32D2D;font-weight:600">Not done</div>
+      </div>
+    </div>
+
+    <!-- Noah - all done -->
+    <div style="background:#fff;margin:6px 14px 14px;border-radius:12px;border:1px solid var(--border);overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#EAF3DE;border-bottom:1px solid #C0DD97">
+        <div style="width:28px;height:28px;border-radius:50%;background:#EAF3DE;color:#3B6D11;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">NJ</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--dark)">Noah</div></div>
+        <div style="font-size:12px;font-weight:700;color:#3B6D11">2/2 ✓ Unlocked</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)">
+        <div style="width:20px;height:20px;border-radius:50%;background:#EAF3DE;border:2px solid #3B6D11;display:flex;align-items:center;justify-content:center;font-size:11px;color:#3B6D11;flex-shrink:0">✓</div>
+        <div style="font-size:13px;color:var(--dark)">🛏️ Make bed</div>
+        <div style="margin-left:auto;font-size:10px;color:#3B6D11;font-weight:600">Done</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 14px">
+        <div style="width:20px;height:20px;border-radius:50%;background:#EAF3DE;border:2px solid #3B6D11;display:flex;align-items:center;justify-content:center;font-size:11px;color:#3B6D11;flex-shrink:0">✓</div>
+        <div style="font-size:13px;color:var(--dark)">🎒 Pack school bag</div>
+        <div style="margin-left:auto;font-size:10px;color:#3B6D11;font-weight:600">Done</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="mtab"><div class="mt"><div class="mti">🏠</div>Home</div><div class="mt on"><div class="mti">🧹</div>Chores</div><div class="mt"><div class="mti">➕</div>Add</div><div class="mt"><div class="mti">👶</div>Kids</div><div class="mt"><div class="mti">⚙️</div>Settings</div></div>
+</div>
+</div>
+
+<div id="a-pmrelease">
+<div class="ms">
+  <div class="mh"><div class="mh-top"><div class="mbt">Pocket money — Sun 23 Mar</div></div><div class="mgr">Review before releasing this week's payments</div></div>
+  <div class="mscroll" style="padding:0">
+
+    <!-- Summary banner -->
+    <div style="padding:12px 14px;background:var(--amber-l);border-bottom:1px solid var(--amber-m)">
+      <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:2px">Weekly pocket money ready</div>
+      <div style="font-size:11px;color:#854F0B">3 of 4 kids have completed all responsibilities. Review before releasing.</div>
+    </div>
+
+    <!-- Kid rows -->
+
+    <!-- Olivia - unlocked -->
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);background:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:#FAEEDA;color:#854F0B;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">OJ</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--dark)">Olivia</div><div style="font-size:11px;color:#3B6D11;font-weight:600">✓ All responsibilities done</div></div>
+        <div style="text-align:right"><div style="font-size:18px;font-weight:700;color:var(--dark);font-family:var(--ff)">$10.00</div><div style="font-size:10px;color:var(--gray)">to release</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <div style="flex:1;padding:9px;border-radius:10px;background:#EAF3DE;font-size:13px;font-weight:600;color:#3B6D11;text-align:center;cursor:pointer">Release $10 ✓</div>
+        <div style="padding:9px 14px;border-radius:10px;background:var(--gray-l);font-size:13px;color:var(--gray);text-align:center;cursor:pointer">Skip</div>
+      </div>
+    </div>
+
+    <!-- Liam - blocked -->
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);background:#FAFAF8">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:#E6F1FB;color:#185FA5;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">LJ</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--dark)">Liam</div><div style="font-size:11px;color:#A32D2D;font-weight:600">✕ Pack school bag not done</div></div>
+        <div style="text-align:right"><div style="font-size:18px;font-weight:700;color:#D3D1C7;font-family:var(--ff)">$10.00</div><div style="font-size:10px;color:#A32D2D">blocked</div></div>
+      </div>
+      <div style="background:#FCEBEB;border-radius:10px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:12px;color:#A32D2D;line-height:1.4">Liam hasn't completed all required responsibilities. You can hold the payment, release it anyway, or release a partial amount.</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <div style="flex:1;padding:9px;border-radius:10px;background:#FCEBEB;font-size:12px;font-weight:600;color:#A32D2D;text-align:center;cursor:pointer">Hold payment</div>
+        <div style="flex:1;padding:9px;border-radius:10px;background:var(--gray-l);font-size:12px;font-weight:600;color:var(--gray);text-align:center;cursor:pointer">Release anyway</div>
+      </div>
+      <div style="margin-top:6px;padding:9px;border-radius:10px;border:1.5px solid var(--border);font-size:12px;font-weight:600;color:var(--dark);text-align:center;cursor:pointer">Release partial amount…</div>
+    </div>
+
+    <!-- Noah - unlocked -->
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);background:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:#EAF3DE;color:#3B6D11;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">NJ</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--dark)">Noah</div><div style="font-size:11px;color:#3B6D11;font-weight:600">✓ All responsibilities done</div></div>
+        <div style="text-align:right"><div style="font-size:18px;font-weight:700;color:var(--dark);font-family:var(--ff)">$8.00</div><div style="font-size:10px;color:var(--gray)">to release</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <div style="flex:1;padding:9px;border-radius:10px;background:#EAF3DE;font-size:13px;font-weight:600;color:#3B6D11;text-align:center;cursor:pointer">Release $8 ✓</div>
+        <div style="padding:9px 14px;border-radius:10px;background:var(--gray-l);font-size:13px;color:var(--gray);text-align:center;cursor:pointer">Skip</div>
+      </div>
+    </div>
+
+    <!-- Mia - unlocked -->
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);background:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:#FBEAF0;color:#993556;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">MJ</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--dark)">Mia</div><div style="font-size:11px;color:#3B6D11;font-weight:600">✓ All responsibilities done</div></div>
+        <div style="text-align:right"><div style="font-size:18px;font-weight:700;color:var(--dark);font-family:var(--ff)">$6.00</div><div style="font-size:10px;color:var(--gray)">to release</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <div style="flex:1;padding:9px;border-radius:10px;background:#EAF3DE;font-size:13px;font-weight:600;color:#3B6D11;text-align:center;cursor:pointer">Release $6 ✓</div>
+        <div style="padding:9px 14px;border-radius:10px;background:var(--gray-l);font-size:13px;color:var(--gray);text-align:center;cursor:pointer">Skip</div>
+      </div>
+    </div>
+
+    <!-- Release all button -->
+    <div style="padding:14px 14px 16px">
+      <button class="msub" style="background:var(--dark)">Release all 3 unlocked payments ($24.00)</button>
+    </div>
+
+  </div>
+  <div class="mtab"><div class="mt on"><div class="mti">🏠</div>Home</div><div class="mt"><div class="mti">🧹</div>Chores</div><div class="mt"><div class="mti">➕</div>Add</div><div class="mt"><div class="mti">👶</div>Kids</div><div class="mt"><div class="mti">⚙️</div>Settings</div></div>
+</div>
+</div>
+
+</div><!-- end tpl-app -->
+
+<script>
+const WEB=[
+  {id:'w-landing',label:'Home / Landing',url:'quiddo.com.au'},
+  {id:'w-how',label:'How It Works',url:'quiddo.com.au/how-it-works'},
+  {id:'w-chores',label:'Chores Feature',url:'quiddo.com.au/features/chores'},
+  {id:'w-pricing',label:'Pricing',url:'quiddo.com.au/pricing'},
+  {id:'w-signup',label:'Sign Up',url:'quiddo.com.au/signup'},
+  {id:'w-login',label:'Log In',url:'quiddo.com.au/login'},
+];
+const APP=[
+  {id:'a-splash',label:'Welcome / Splash'},
+  {id:'a-onboard1',label:'Onboarding — Chores'},
+  {id:'a-onboard2',label:'Onboarding — Goals'},
+  {id:'a-setup',label:'Create Family'},
+  {id:'a-dashboard',label:'Parent Dashboard'},
+  {id:'a-kidprofile',label:'Kid Profile'},
+  {id:'a-addtxn',label:'Add Transaction'},
+  {id:'a-chores',label:'Chore Management'},
+  {id:'a-createchore',label:'Create Recurring Chore'},
+  {id:'a-responsibilities',label:'Responsibilities View'},
+  {id:'a-pmrelease',label:'Pocket Money Release'},
+  {id:'a-choredetail',label:'Chore Detail & History'},
+  {id:'a-kidchores',label:'Per-Kid Chore View'},
+  {id:'a-kidview',label:'Kid View (child-facing)'},
+  {id:'a-settings',label:'Settings'},
+];
+let mode='website', active='w-landing';
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.mode-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&m==='website')||(i===1&&m==='app')));
+  active=m==='website'?'w-landing':'a-splash';
+  render();
+}
+function go(id){active=id;render();}
+function render(){
+  const items=mode==='website'?WEB:APP;
+  const label=mode==='website'?'Website Pages':'App Screens';
+  document.getElementById('sidebar').innerHTML=
+    '<div class="sb-section">'+label+'</div>'+
+    items.map(x=>'<div class="nav-item'+(x.id===active?' active':'')+'" onclick="go(\''+x.id+'\')"><div class="dot"></div>'+x.label+'</div>').join('');
+  const tpl=document.getElementById(active);
+  const canvas=document.getElementById('canvas');
+  if(mode==='website'){
+    const pg=WEB.find(p=>p.id===active);
+    canvas.innerHTML='<div class="bf"><div class="bf-bar"><div class="bf-dots"><div class="bd bd-r"></div><div class="bd bd-y"></div><div class="bd bd-g"></div></div><div class="bf-url">https://'+pg.url+'</div></div><div class="bf-content">'+tpl.innerHTML+'</div></div>';
+  } else {
+    const sc=APP.find(s=>s.id===active);
+    canvas.innerHTML='<div class="pw"><div class="pf"><div class="pi"><div class="pn"><div class="np"></div></div><div class="pc">'+tpl.innerHTML+'</div></div></div><div class="pl">'+sc.label+'</div></div>';
+  }
+}
+render();
+</script>
+</body>
+</html>
