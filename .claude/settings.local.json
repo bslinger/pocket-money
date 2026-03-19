@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /e/WebProjects/pocket-money/resources/js/types -type f -name *.ts*)",
+      "Bash(lando logs:*)",
+      "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" artisan:*)",
+      "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" ssh:*)",
+      "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" logs:*)",
+      "Bash(curl -s --max-time 3 http://localhost:5173)",
+      "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" restart:*)"
+    ]
+  }
+}

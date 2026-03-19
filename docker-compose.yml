@@ -1,0 +1,59 @@
+name: quiddo
+
+services:
+  # ── PHP-FPM + Nginx ────────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      target: dev
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    environment:
+      APP_NAME: Quiddo
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      APP_KEY: ${APP_KEY:-}
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/www/html/database/database.sqlite
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: database
+      CACHE_STORE: file
+      VITE_APP_NAME: Quiddo
+      # Optional — fill in your .env or export before running
+      STRIPE_KEY: ${STRIPE_KEY:-}
+      STRIPE_SECRET: ${STRIPE_SECRET:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      AWS_BUCKET: ${AWS_BUCKET:-}
+    volumes:
+      # Mount the whole project so PHP changes are live
+      - .:/var/www/html
+      # Persist the SQLite database
+      - quiddo-db:/var/www/html/database
+      # Persist storage (logs, cache, sessions)
+      - quiddo-storage:/var/www/html/storage
+      # Don't overwrite these with the (empty) host dirs
+      - app-vendor:/var/www/html/vendor
+    depends_on:
+      - vite
+
+  # ── Vite HMR dev server ────────────────────────────────────────────────────────
+  vite:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - vite-node-modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+volumes:
+  quiddo-db:
+  quiddo-storage:
+  app-vendor:
+  vite-node-modules:
