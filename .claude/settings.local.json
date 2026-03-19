@@ -7,7 +7,25 @@
       "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" ssh:*)",
       "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" logs:*)",
       "Bash(curl -s --max-time 3 http://localhost:5173)",
-      "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" restart:*)"
+      "Bash(\"/c/Users/web/AppData/Local/Lando/v3.26.2/lando.exe\" restart:*)",
+      "Bash(ls /home/ben/Dev/pocket-money/docker*)",
+      "Bash(php --version)",
+      "Bash(composer require:*)",
+      "Bash(sudo apt-get:*)",
+      "Bash(sed -i 's/# DB_HOST=127.0.0.1/DB_HOST=pgsql/' /home/ben/Dev/pocket-money/.env.example)",
+      "Bash(sed -i 's/# DB_PORT=3306/DB_PORT=5432/' /home/ben/Dev/pocket-money/.env.example)",
+      "Bash(sed -i 's/# DB_DATABASE=laravel/DB_DATABASE=pocket_money/' /home/ben/Dev/pocket-money/.env.example)",
+      "Bash(sed -i 's/# DB_USERNAME=root/DB_USERNAME=sail/' /home/ben/Dev/pocket-money/.env.example)",
+      "Bash(sed -i 's/# DB_PASSWORD=/DB_PASSWORD=password/' /home/ben/Dev/pocket-money/.env.example)",
+      "Bash(php:*)",
+      "Bash(./vendor/bin/sail up:*)",
+      "Bash(docker compose:*)",
+      "Bash(./vendor/bin/sail ps:*)",
+      "Bash(docker build:*)",
+      "Bash(./vendor/bin/sail npm:*)",
+      "Bash(find /home/ben/Dev/pocket-money -name playwright.config.* -o -name playwright.json)",
+      "Bash(find /home/ben/Dev/pocket-money/resources/js/Pages -name *.tsx)",
+      "Bash(/dev/null cat:*)"
     ]
   }
 }

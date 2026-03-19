@@ -1,59 +1,50 @@
-name: quiddo
-
+# For more information: https://laravel.com/docs/sail
 services:
-  # ── PHP-FPM + Nginx ────────────────────────────────────────────────────────────
-  app:
-    build:
-      context: .
-      target: dev
-      dockerfile: Dockerfile
-    ports:
-      - "8000:80"
-    environment:
-      APP_NAME: Quiddo
-      APP_ENV: local
-      APP_DEBUG: "true"
-      APP_URL: http://localhost:8000
-      APP_KEY: ${APP_KEY:-}
-      DB_CONNECTION: sqlite
-      DB_DATABASE: /var/www/html/database/database.sqlite
-      SESSION_DRIVER: file
-      QUEUE_CONNECTION: database
-      CACHE_STORE: file
-      VITE_APP_NAME: Quiddo
-      # Optional — fill in your .env or export before running
-      STRIPE_KEY: ${STRIPE_KEY:-}
-      STRIPE_SECRET: ${STRIPE_SECRET:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
-      AWS_BUCKET: ${AWS_BUCKET:-}
-    volumes:
-      # Mount the whole project so PHP changes are live
-      - .:/var/www/html
-      # Persist the SQLite database
-      - quiddo-db:/var/www/html/database
-      # Persist storage (logs, cache, sessions)
-      - quiddo-storage:/var/www/html/storage
-      # Don't overwrite these with the (empty) host dirs
-      - app-vendor:/var/www/html/vendor
-    depends_on:
-      - vite
-
-  # ── Vite HMR dev server ────────────────────────────────────────────────────────
-  vite:
-    image: node:20-alpine
-    working_dir: /app
-    ports:
-      - "5173:5173"
-    volumes:
-      - .:/app
-      - vite-node-modules:/app/node_modules
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-
+    laravel.test:
+        build:
+            context: ./vendor/laravel/sail/runtimes/8.3
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+        image: sail-8.3/app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        ports:
+            - '${APP_PORT:-80}:80'
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+        environment:
+            WWWUSER: '${WWWUSER}'
+            LARAVEL_SAIL: 1
+            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
+            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+        volumes:
+            - '.:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - pgsql
+    pgsql:
+        image: 'postgres:17-alpine'
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            PGPASSWORD: '${DB_PASSWORD:-secret}'
+            POSTGRES_DB: '${DB_DATABASE}'
+            POSTGRES_USER: '${DB_USERNAME}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+        volumes:
+            - 'sail-pgsql:/var/lib/postgresql/data'
+            - './vendor/laravel/sail/database/pgsql/create-testing-database.sql:/docker-entrypoint-initdb.d/10-create-testing-database.sql'
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}"]
+            retries: 3
+            timeout: 5s
+networks:
+    sail:
+        driver: bridge
 volumes:
-  quiddo-db:
-  quiddo-storage:
-  app-vendor:
-  vite-node-modules:
+    sail-pgsql:
+        driver: local
