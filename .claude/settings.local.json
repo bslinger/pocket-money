@@ -46,7 +46,12 @@
       "Bash(./vendor/bin/sail build:*)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost/login)",
       "Bash(curl -s http://localhost/login)",
-      "Bash(ls /home/ben/Dev/pocket-money/vite*)"
+      "Bash(ls /home/ben/Dev/pocket-money/vite*)",
+      "Bash(head:*)",
+      "Bash(npm run:*)",
+      "Bash(time npx:*)",
+      "Bash(sudo chown:*)",
+      "Bash(chmod 777 /home/ben/Dev/pocket-money/test-results/)"
     ]
   }
 }

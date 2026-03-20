@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\FamilyRole;
+use App\Models\Account;
 use App\Models\Family;
 use App\Models\FamilyUser;
 use App\Models\Spender;
@@ -30,14 +31,24 @@ class DatabaseSeeder extends Seeder
             ['role' => FamilyRole::Admin]
         );
 
-        Spender::firstOrCreate(
+        $emma = Spender::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Emma'],
             ['color' => '#8b5cf6']
         );
 
-        Spender::firstOrCreate(
+        $jack = Spender::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Jack'],
             ['color' => '#0ea5e9']
+        );
+
+        Account::firstOrCreate(
+            ['spender_id' => $emma->id, 'name' => 'Savings'],
+            ['balance' => '0.00', 'is_savings_pot' => false]
+        );
+
+        Account::firstOrCreate(
+            ['spender_id' => $jack->id, 'name' => 'Savings'],
+            ['balance' => '0.00', 'is_savings_pot' => false]
         );
     }
 }

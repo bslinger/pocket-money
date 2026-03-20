@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from './fixtures';
 
 async function createAccountAndNavigate(page: Page, accountName: string) {
     await page.goto('/dashboard');
@@ -14,8 +14,11 @@ async function createAccountAndNavigate(page: Page, accountName: string) {
 test.describe('Transactions', () => {
     let accountUrl: string;
 
-    test.beforeAll(async ({ browser }) => {
-        const context = await browser.newContext({ storageState: 'tests/e2e/.auth/user.json' });
+    test.beforeAll(async ({ browser, workerStorageState, workerIndex } : any) => {
+        const context = await browser.newContext({
+            storageState: workerStorageState,
+            extraHTTPHeaders: { 'X-Test-DB': String(workerIndex) },
+        });
         const page = await context.newPage();
         accountUrl = await createAccountAndNavigate(page, 'Tx Test Account');
         await context.close();

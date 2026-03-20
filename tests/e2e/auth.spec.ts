@@ -1,7 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // Auth tests run without saved auth state
-test.use({ storageState: { cookies: [], origins: [] } });
+test.use({ storageStatePath: null });
 
 test.describe('Login', () => {
     test('shows the login page', async ({ page }) => {
