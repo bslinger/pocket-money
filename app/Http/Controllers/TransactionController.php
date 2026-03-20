@@ -22,7 +22,7 @@ class TransactionController extends Controller
     public function create(Account $account)
     {
         return Inertia::render('Transactions/Create', [
-            'account' => $account,
+            'account' => $account->load('spender.family'),
         ]);
     }
 
