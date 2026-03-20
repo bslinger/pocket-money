@@ -38,7 +38,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Goal cover image** — upload an inspirational photo (e.g. photo of the bike the kid wants)
 - [x] **Savings pot link** — when linked to an account, offer to pull/sync current_amount from pot balance
 - [x] **Goal matching** — parents can optionally pledge to match kid contributions (e.g. "I'll match 50%")
-- [ ] **Kid-facing goal view** — kids see their own goals with progress and can celebrate when reached
+- [x] **Kid-facing goal view** — kids see all their goals with progress bars and cover images on the child dashboard
 
 ---
 

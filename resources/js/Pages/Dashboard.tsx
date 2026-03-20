@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { Family, Spender, ChoreCompletion, Transaction, Chore } from '@/types/models';
+import { Family, Spender, ChoreCompletion, Transaction, Chore, SavingsGoal } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
@@ -333,17 +333,48 @@ function ChildDashboard({ spenders }: { spenders: Spender[] }) {
   );
 }
 
+function GoalProgressCard({ goal, currencySymbol }: { goal: SavingsGoal; currencySymbol: string }) {
+  const current = parseFloat(String(goal.current_amount));
+  const target  = parseFloat(String(goal.target_amount));
+  const pct     = Math.min(100, target > 0 ? (current / target) * 100 : 0);
+
+  return (
+    <div className="bg-gray-900 rounded-2xl overflow-hidden">
+      {goal.image_url && (
+        <img src={goal.image_url} alt={goal.name} className="w-full h-28 object-cover" />
+      )}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-amber-400" />
+            <span className="text-sm font-medium">{goal.name}</span>
+          </div>
+          <span className="text-sm text-gray-400">
+            {goal.is_completed ? '🎉 Done!' : `${pct.toFixed(0)}%`}
+          </span>
+        </div>
+        <div className="bg-gray-800 rounded-full h-2.5">
+          <div
+            className={`h-2.5 rounded-full transition-all ${goal.is_completed ? 'bg-green-400' : 'bg-amber-400'}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <div className="flex justify-between mt-1.5 text-xs text-gray-500">
+          <span>{formatAmount(current, currencySymbol)}</span>
+          <span>{formatAmount(target, currencySymbol)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ChildSpenderView({ spender }: { spender: Spender }) {
   const currencySymbol = spenderCurrencySymbol(spender);
   const mainBalance = spender.accounts
     ?.filter(a => !a.is_savings_pot)
     .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
 
-  const goal = spender.savings_goals?.[0];
-  const goalProgress = goal
-    ? Math.min(100, (parseFloat(String(goal.current_amount)) / parseFloat(String(goal.target_amount))) * 100)
-    : null;
-
+  const goals = spender.savings_goals ?? [];
   const weekCompletions = spender.chore_completions ?? [];
 
   return (
@@ -360,23 +391,13 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
         </p>
       </div>
 
-      {/* Savings goal */}
-      {goal && (
-        <div className="bg-gray-900 rounded-2xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-400" />
-              <span className="text-sm font-medium">{goal.name}</span>
-            </div>
-            <span className="text-sm text-gray-400">{goalProgress?.toFixed(0)}%</span>
-          </div>
-          <div className="bg-gray-800 rounded-full h-2.5">
-            <div className="bg-amber-400 h-2.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
-          </div>
-          <div className="flex justify-between mt-1.5 text-xs text-gray-500">
-            <span>{formatAmount(goal.current_amount, currencySymbol)}</span>
-            <span>{formatAmount(goal.target_amount, currencySymbol)}</span>
-          </div>
+      {/* Savings goals */}
+      {goals.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Goals</h3>
+          {goals.map(goal => (
+            <GoalProgressCard key={goal.id} goal={goal} currencySymbol={currencySymbol} />
+          ))}
         </div>
       )}
 
