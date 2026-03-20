@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import pluralize from 'pluralize';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -38,7 +39,7 @@ export function spenderCurrencyNamePlural(
     const plural = spender.currency_name_plural ?? spender.family?.currency_name_plural ?? null;
     if (plural) return plural;
     const singular = spender.currency_name ?? spender.family?.currency_name ?? 'Dollar';
-    return singular + 's';
+    return pluralize(singular);
 }
 
 export function spenderUsesIntegers(

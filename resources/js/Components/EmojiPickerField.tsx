@@ -1,6 +1,20 @@
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { useState, useRef, useEffect } from 'react';
 
+function usePageDarkMode(): boolean {
+    const [dark, setDark] = useState(
+        () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+    );
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setDark(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
+    return dark;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function useIsMobile(): boolean {
@@ -60,6 +74,7 @@ export default function EmojiPickerField({
     pickerAlign = 'right',
 }: Props) {
     const isMobile = useIsMobile();
+    const isDark = usePageDarkMode();
     const [showPicker, setShowPicker] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
 
@@ -119,7 +134,7 @@ export default function EmojiPickerField({
                             onPickerChange?.(data);
                             setShowPicker(false);
                         }}
-                        theme={Theme.AUTO}
+                        theme={isDark ? Theme.DARK : Theme.LIGHT}
                         lazyLoadEmojis
                         searchPlaceholder="Search emoji…"
                     />
