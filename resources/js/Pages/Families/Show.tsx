@@ -43,9 +43,11 @@ export default function FamilyShow({ family, authUserId }: Props) {
 
 function FamilyDetailsSection({ family }: { family: Family }) {
     const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
-        name:            family.name,
-        currency_name:   family.currency_name,
-        currency_symbol: family.currency_symbol,
+        name:                  family.name,
+        currency_name:         family.currency_name,
+        currency_name_plural:  family.currency_name_plural ?? '',
+        currency_symbol:       family.currency_symbol,
+        use_integer_amounts:   family.use_integer_amounts,
     });
 
     function submit(e: React.FormEvent) {
@@ -121,18 +123,40 @@ function FamilyDetailsSection({ family }: { family: Family }) {
                         </div>
 
                         {/* Currency name */}
-                        <div className="space-y-1.5">
-                            <Label htmlFor="currency-name">Currency name (singular)</Label>
-                            <Input
-                                id="currency-name"
-                                value={data.currency_name}
-                                onChange={e => setData('currency_name', e.target.value)}
-                                placeholder="e.g. Star, Coin, Smithy Buck"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Preview: {data.currency_symbol}25 {data.currency_name}s
-                            </p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="currency-name">Currency name (singular)</Label>
+                                <Input
+                                    id="currency-name"
+                                    value={data.currency_name}
+                                    onChange={e => setData('currency_name', e.target.value)}
+                                    placeholder="e.g. Star, Coin"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="currency-name-plural">Plural (optional)</Label>
+                                <Input
+                                    id="currency-name-plural"
+                                    value={data.currency_name_plural}
+                                    onChange={e => setData('currency_name_plural', e.target.value)}
+                                    placeholder={data.currency_name ? data.currency_name + 's' : 'Stars'}
+                                />
+                            </div>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                            Preview: {data.currency_symbol}1 {data.currency_name} · {data.currency_symbol}25 {data.currency_name_plural || (data.currency_name + 's')}
+                        </p>
+
+                        {/* Integer amounts */}
+                        <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={data.use_integer_amounts}
+                                onChange={e => setData('use_integer_amounts', e.target.checked)}
+                                className="h-4 w-4 rounded border-input accent-primary"
+                            />
+                            <span className="text-sm">Whole numbers only (e.g. 5 Stars, not 5.50)</span>
+                        </label>
                     </div>
 
                     <div className="flex items-center gap-3">

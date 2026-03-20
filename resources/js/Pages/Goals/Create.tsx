@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { Spender, Account } from '@/types/models';
 import ImageUpload from '@/Components/ImageUpload';
+import { spenderUsesIntegers } from '@/lib/utils';
 
 interface Props {
   spenders: Spender[];
@@ -24,6 +25,8 @@ export default function GoalCreate({ spenders, accounts }: Props) {
   }
 
   const spenderAccounts = accounts.filter(a => a.spender_id === data.spender_id);
+  const selectedSpender = spenders.find(s => s.id === data.spender_id);
+  const useIntegers = spenderUsesIntegers(selectedSpender ?? { use_integer_amounts: null });
 
   return (
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">New Savings Goal</h2>}>
@@ -80,11 +83,11 @@ export default function GoalCreate({ spenders, accounts }: Props) {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Amount</label>
             <input
               type="number"
-              step="0.01"
-              min="0.01"
+              step={useIntegers ? '1' : '0.01'}
+              min={useIntegers ? '1' : '0.01'}
               value={data.target_amount}
               onChange={e => setData('target_amount', e.target.value)}
-              placeholder="0.00"
+              placeholder={useIntegers ? '0' : '0.00'}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
             />
             {errors.target_amount && <p className="text-red-500 text-xs mt-1">{errors.target_amount}</p>}

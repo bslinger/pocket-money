@@ -25,7 +25,13 @@ class Spender extends Model
         'avatar_key',
         'color',
         'currency_name',
+        'currency_name_plural',
         'currency_symbol',
+        'use_integer_amounts',
+    ];
+
+    protected $casts = [
+        'use_integer_amounts' => 'boolean',
     ];
 
     protected function avatarUrl(): Attribute

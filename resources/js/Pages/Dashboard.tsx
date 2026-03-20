@@ -10,7 +10,7 @@ import { Label } from '@/Components/ui/label';
 import { PlusCircle, Check, CheckCheck, X, LogOut, TrendingUp, Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
+import { formatAmount, spenderCurrencySymbol, spenderUsesIntegers } from '@/lib/utils';
 
 interface Props {
   isParent: boolean;
@@ -266,7 +266,7 @@ function KidCard({
           aria-label={`Subtract from ${spender.name}`}
         >
           <Minus className="h-3.5 w-3.5" />
-          <span className="text-xs font-medium">Take</span>
+          <span className="text-xs font-medium">Spend</span>
         </button>
         <div className="w-px bg-border" />
         <button
@@ -296,6 +296,7 @@ function QuickTransactionModal({
   onClose: () => void;
 }) {
   const currencySymbol = spenderCurrencySymbol(spender);
+  const useIntegers = spenderUsesIntegers(spender);
   const [type, setType] = useState<'credit' | 'debit'>(initialType);
   const { data, setData, post, processing, errors, reset } = useForm({
     type,
@@ -356,7 +357,7 @@ function QuickTransactionModal({
             }`}
           >
             <Minus className="h-3.5 w-3.5" />
-            Take away
+            Spend
           </button>
           <div className="w-px bg-border" />
           <button
@@ -379,9 +380,9 @@ function QuickTransactionModal({
             <Input
               id="quick-amount"
               type="number"
-              min="0.01"
-              step="0.01"
-              placeholder="0.00"
+              min={useIntegers ? '1' : '0.01'}
+              step={useIntegers ? '1' : '0.01'}
+              placeholder={useIntegers ? '0' : '0.00'}
               value={data.amount}
               onChange={e => setData('amount', e.target.value)}
               autoFocus

@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Account } from '@/types/models';
-import { spenderCurrencySymbol } from '@/lib/utils';
+import { spenderCurrencySymbol, spenderUsesIntegers } from '@/lib/utils';
 
 const DOLLAR_SYMBOL = '$';
 
@@ -66,6 +66,7 @@ export default function TransactionCreate({ account }: { account: Account }) {
     });
 
     const symbol = spenderCurrencySymbol(account.spender ?? { currency_symbol: null });
+    const useIntegers = spenderUsesIntegers(account.spender ?? { use_integer_amounts: null });
     const currencyName = account.spender?.currency_name
         ?? account.spender?.family?.currency_name
         ?? 'Dollar';
@@ -108,8 +109,8 @@ export default function TransactionCreate({ account }: { account: Account }) {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
                         <input
                             type="number"
-                            step="0.01"
-                            min="0.01"
+                            step={useIntegers ? '1' : '0.01'}
+                            min={useIntegers ? '1' : '0.01'}
                             value={data.amount}
                             onChange={e => setData('amount', e.target.value)}
                             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"

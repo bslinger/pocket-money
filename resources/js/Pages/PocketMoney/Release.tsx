@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Spender } from '@/types/models';
+import { spenderCurrencySymbol, spenderUsesIntegers } from '@/lib/utils';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -36,6 +37,8 @@ export default function Release({ spenders }: Props) {
 
 function SpenderReleaseCard({ item }: { item: SpenderRelease }) {
   const { spender, weekly_amount, responsibility_chores_total, responsibility_chores_done } = item;
+  const currencySymbol = spenderCurrencySymbol(spender);
+  const useIntegers = spenderUsesIntegers(spender);
   const { data, setData, post, processing, recentlySuccessful } = useForm({
     spender_id: spender.id,
     amount: weekly_amount,
@@ -85,11 +88,11 @@ function SpenderReleaseCard({ item }: { item: SpenderRelease }) {
             {/* Amount input + pay button */}
             <form onSubmit={submit} className="mt-3 flex items-center gap-3">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{currencySymbol}</span>
                 <Input
                   type="number"
-                  min="0.01"
-                  step="0.01"
+                  min={useIntegers ? '1' : '0.01'}
+                  step={useIntegers ? '1' : '0.01'}
                   value={data.amount}
                   onChange={e => setData('amount', e.target.value)}
                   className="pl-6 w-28 tabular-nums"

@@ -20,7 +20,13 @@ class Family extends Model
         'name',
         'avatar_url',
         'currency_name',
+        'currency_name_plural',
         'currency_symbol',
+        'use_integer_amounts',
+    ];
+
+    protected $casts = [
+        'use_integer_amounts' => 'boolean',
     ];
 
     public function users(): BelongsToMany

@@ -13,7 +13,9 @@ export interface Family {
   name: string;
   avatar_url: string | null;
   currency_name: string;
+  currency_name_plural: string | null;
   currency_symbol: string;
+  use_integer_amounts: boolean;
   users?: User[];
   /** Parents/carers linked to this family, with their role on the pivot */
   family_users?: (FamilyUser & { user: User })[];
@@ -38,7 +40,9 @@ export interface Spender {
   avatar_url: string | null;
   color: string | null;
   currency_name: string | null;
+  currency_name_plural: string | null;
   currency_symbol: string | null;
+  use_integer_amounts: boolean | null;
   deleted_at: string | null;
   family?: Family;
   accounts?: Account[];

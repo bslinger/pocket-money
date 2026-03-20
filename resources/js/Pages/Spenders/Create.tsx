@@ -32,13 +32,14 @@ export default function SpenderCreate({ families }: { families: Family[] }) {
         name:            '',
         avatar_key:      '',
         color:           COLOURS[0],
-        currency_name:   '',
-        currency_symbol: '',
+        currency_name:        '',
+        currency_name_plural: '',
+        currency_symbol:      '',
     });
 
     function toggleOverride(checked: boolean) {
         setOverrideCurrency(checked);
-        if (!checked) setData(d => ({ ...d, currency_name: '', currency_symbol: '' }));
+        if (!checked) setData(d => ({ ...d, currency_name: '', currency_name_plural: '', currency_symbol: '' }));
     }
 
     function submit(e: React.FormEvent) {
@@ -151,7 +152,7 @@ export default function SpenderCreate({ families }: { families: Family[] }) {
                                             />
                                         </div>
                                         <div className="flex-1 space-y-1">
-                                            <Label htmlFor="currency_name" className="text-xs">Currency name</Label>
+                                            <Label htmlFor="currency_name" className="text-xs">Singular name</Label>
                                             <Input
                                                 id="currency_name"
                                                 value={data.currency_name}
@@ -159,10 +160,19 @@ export default function SpenderCreate({ families }: { families: Family[] }) {
                                                 placeholder="e.g. Star, Gem"
                                             />
                                         </div>
+                                        <div className="flex-1 space-y-1">
+                                            <Label htmlFor="currency_name_plural" className="text-xs">Plural (optional)</Label>
+                                            <Input
+                                                id="currency_name_plural"
+                                                value={data.currency_name_plural}
+                                                onChange={e => setData('currency_name_plural', e.target.value)}
+                                                placeholder={data.currency_name ? data.currency_name + 's' : 'Stars'}
+                                            />
+                                        </div>
                                     </div>
                                     {data.currency_symbol && (
                                         <p className="text-xs text-muted-foreground">
-                                            Preview: {data.currency_symbol}25 {data.currency_name || 'unit'}s
+                                            Preview: {data.currency_symbol}1 {data.currency_name || 'unit'} · {data.currency_symbol}25 {data.currency_name_plural || (data.currency_name ? data.currency_name + 's' : 'units')}
                                         </p>
                                     )}
                                 </div>

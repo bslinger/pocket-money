@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import { spenderUsesIntegers } from '@/lib/utils';
 import { Chore, Family, Spender } from '@/types/models';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -73,6 +74,8 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
   }
 
   const showDays = data.frequency === 'daily' || data.frequency === 'weekly';
+  const selectedFamily = families.find(f => f.id === data.family_id);
+  const useIntegers = spenderUsesIntegers({ use_integer_amounts: selectedFamily?.use_integer_amounts ?? false });
 
   return (
     <form onSubmit={submit} className="max-w-2xl space-y-6">
@@ -147,11 +150,11 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
               <Input
                 id="amount"
                 type="number"
-                min="0.01"
-                step="0.01"
+                min={useIntegers ? '1' : '0.01'}
+                step={useIntegers ? '1' : '0.01'}
                 value={data.amount}
                 onChange={e => setData('amount', e.target.value)}
-                placeholder="0.50"
+                placeholder={useIntegers ? '1' : '0.50'}
                 className="max-w-xs"
               />
               {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}

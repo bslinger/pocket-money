@@ -31,3 +31,18 @@ export function spenderCurrencySymbol(
 ): string {
     return spender.currency_symbol ?? spender.family?.currency_symbol ?? '$';
 }
+
+export function spenderCurrencyNamePlural(
+    spender: { currency_name?: string | null; currency_name_plural?: string | null; family?: { currency_name?: string; currency_name_plural?: string | null } | null },
+): string {
+    const plural = spender.currency_name_plural ?? spender.family?.currency_name_plural ?? null;
+    if (plural) return plural;
+    const singular = spender.currency_name ?? spender.family?.currency_name ?? 'Dollar';
+    return singular + 's';
+}
+
+export function spenderUsesIntegers(
+    spender: { use_integer_amounts?: boolean | null; family?: { use_integer_amounts?: boolean } | null },
+): boolean {
+    return spender.use_integer_amounts ?? spender.family?.use_integer_amounts ?? false;
+}

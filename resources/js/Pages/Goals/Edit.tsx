@@ -6,6 +6,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import ImageUpload from '@/Components/ImageUpload';
+import { spenderUsesIntegers } from '@/lib/utils';
 
 interface Props {
     goal: SavingsGoal & { spender: Spender; image_url: string | null };
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function GoalEdit({ goal, accounts }: Props) {
+    const useIntegers = spenderUsesIntegers(goal.spender);
     const { data, setData, put, processing, errors } = useForm({
         name:          goal.name,
         target_amount: goal.target_amount,
@@ -51,8 +53,8 @@ export default function GoalEdit({ goal, accounts }: Props) {
                             <Input
                                 id="target_amount"
                                 type="number"
-                                step="0.01"
-                                min="0.01"
+                                step={useIntegers ? '1' : '0.01'}
+                                min={useIntegers ? '1' : '0.01'}
                                 value={data.target_amount}
                                 onChange={e => setData('target_amount', e.target.value)}
                             />
