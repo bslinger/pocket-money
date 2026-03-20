@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History } from 'lucide-react';
 import { formatAmount } from '@/lib/utils';
+import { CHORE_TYPE_INFO } from '@/lib/choreTypes';
 import { useState } from 'react';
 
 interface Props {
@@ -19,11 +21,19 @@ interface Props {
 type SortField = 'name' | 'created_at';
 type SortDir = 'asc' | 'desc';
 
-const rewardBadge = (type: Chore['reward_type']) => {
-  if (type === 'earns') return <Badge className="bg-amber-100 text-amber-800 border-amber-200">Earns</Badge>;
-  if (type === 'responsibility') return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Responsibility</Badge>;
-  return <Badge variant="secondary">No reward</Badge>;
-};
+function RewardBadge({ type }: { type: Chore['reward_type'] }) {
+  const info = CHORE_TYPE_INFO[type];
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge className={`${info.badgeClasses} cursor-default select-none`}>
+          {info.label}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>{info.description}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 const frequencyLabel = (f: Chore['frequency']) => {
   const map = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', one_off: 'One-off' };
@@ -81,6 +91,7 @@ export default function ChoresIndex({ families }: Props) {
   }
 
   return (
+    <TooltipProvider>
     <AuthenticatedLayout header={
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Chores</h1>
@@ -158,7 +169,7 @@ export default function ChoresIndex({ families }: Props) {
                           <div className="min-w-0">
                             <p className="font-medium truncate">{chore.name}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              {rewardBadge(chore.reward_type)}
+                              <RewardBadge type={chore.reward_type} />
                               {chore.reward_type === 'earns' && chore.amount && (
                                 <span className="text-xs text-muted-foreground">{formatAmount(chore.amount, family.currency_symbol)}</span>
                               )}
@@ -221,5 +232,6 @@ export default function ChoresIndex({ families }: Props) {
         )}
       </div>
     </AuthenticatedLayout>
+    </TooltipProvider>
   );
 }

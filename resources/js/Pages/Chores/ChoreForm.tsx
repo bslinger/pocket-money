@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { spenderUsesIntegers } from '@/lib/utils';
+import { CHORE_TYPE_INFO } from '@/lib/choreTypes';
 import { Chore, Family, Spender } from '@/types/models';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -11,21 +12,9 @@ import EmojiPickerField from '@/Components/EmojiPickerField';
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 const REWARD_TYPES = [
-  {
-    value: 'earns' as const,
-    label: 'Earns',
-    description: 'Pay a cash reward each time it\'s completed',
-  },
-  {
-    value: 'responsibility' as const,
-    label: 'Responsibility',
-    description: 'Track completion — counts toward their weekly allowance',
-  },
-  {
-    value: 'no_reward' as const,
-    label: 'No reward',
-    description: 'A reminder chore with no payment or tracking',
-  },
+  { value: 'earns' as const,          ...CHORE_TYPE_INFO.earns },
+  { value: 'responsibility' as const, ...CHORE_TYPE_INFO.responsibility },
+  { value: 'no_reward' as const,      ...CHORE_TYPE_INFO.no_reward },
 ];
 
 interface Props {
