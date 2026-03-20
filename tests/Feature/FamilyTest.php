@@ -95,6 +95,98 @@ describe('families', function () {
         });
     });
 
+    describe('update currency', function () {
+        it('updates currency name and symbol', function () {
+            [$user, $family] = parentWithFamily();
+
+            $this->actingAs($user)
+                ->patch(route('families.update', $family), [
+                    'name'            => $family->name,
+                    'currency_name'   => 'Star',
+                    'currency_symbol' => '⭐',
+                ])
+                ->assertRedirect();
+
+            $family->refresh();
+            expect($family->currency_name)->toBe('Star');
+            expect($family->currency_symbol)->toBe('⭐');
+        });
+    });
+
+    describe('remove member', function () {
+        it('removes a member from the family', function () {
+            [$admin, $family] = parentWithFamily();
+            $member = User::factory()->create();
+            FamilyUser::create(['family_id' => $family->id, 'user_id' => $member->id, 'role' => FamilyRole::Member]);
+
+            $this->actingAs($admin)
+                ->delete(route('families.members.destroy', [$family, $member]))
+                ->assertRedirect();
+
+            expect(FamilyUser::where('family_id', $family->id)->where('user_id', $member->id)->exists())->toBeFalse();
+        });
+
+        it('prevents removing the last admin', function () {
+            [$admin, $family] = parentWithFamily();
+
+            $this->actingAs($admin)
+                ->delete(route('families.members.destroy', [$family, $admin]))
+                ->assertSessionHasErrors('member');
+
+            expect(FamilyUser::where('family_id', $family->id)->where('user_id', $admin->id)->exists())->toBeTrue();
+        });
+
+        it('allows removing an admin when another admin exists', function () {
+            [$admin1, $family] = parentWithFamily();
+            $admin2 = User::factory()->create();
+            FamilyUser::create(['family_id' => $family->id, 'user_id' => $admin2->id, 'role' => FamilyRole::Admin]);
+
+            $this->actingAs($admin1)
+                ->delete(route('families.members.destroy', [$family, $admin2]))
+                ->assertRedirect();
+
+            expect(FamilyUser::where('family_id', $family->id)->where('user_id', $admin2->id)->exists())->toBeFalse();
+        });
+    });
+
+    describe('update member role', function () {
+        it('promotes a member to admin', function () {
+            [$admin, $family] = parentWithFamily();
+            $member = User::factory()->create();
+            FamilyUser::create(['family_id' => $family->id, 'user_id' => $member->id, 'role' => FamilyRole::Member]);
+
+            $this->actingAs($admin)
+                ->patch(route('families.members.role', [$family, $member]), ['role' => 'admin'])
+                ->assertRedirect();
+
+            expect(FamilyUser::where('family_id', $family->id)->where('user_id', $member->id)->first()->role)
+                ->toBe(FamilyRole::Admin);
+        });
+
+        it('demotes an admin to member', function () {
+            [$admin, $family] = parentWithFamily();
+            $admin2 = User::factory()->create();
+            FamilyUser::create(['family_id' => $family->id, 'user_id' => $admin2->id, 'role' => FamilyRole::Admin]);
+
+            $this->actingAs($admin)
+                ->patch(route('families.members.role', [$family, $admin2]), ['role' => 'member'])
+                ->assertRedirect();
+
+            expect(FamilyUser::where('family_id', $family->id)->where('user_id', $admin2->id)->first()->role)
+                ->toBe(FamilyRole::Member);
+        });
+
+        it('validates that role must be admin or member', function () {
+            [$admin, $family] = parentWithFamily();
+            $member = User::factory()->create();
+            FamilyUser::create(['family_id' => $family->id, 'user_id' => $member->id, 'role' => FamilyRole::Member]);
+
+            $this->actingAs($admin)
+                ->patch(route('families.members.role', [$family, $member]), ['role' => 'superuser'])
+                ->assertSessionHasErrors('role');
+        });
+    });
+
     describe('invite', function () {
         it('adds an existing user to the family', function () {
             [$user, $family] = parentWithFamily();
