@@ -109,6 +109,22 @@ test.describe('Chores', () => {
         await expect(page.getByText('No completions yet.')).toBeVisible();
     });
 
+    test('can view the schedule tab with daily chores', async ({ page }) => {
+        // Create a daily chore for Emma
+        await page.goto('/chores/create');
+        await page.fill('#name', 'Daily Schedule Chore');
+        await page.click('button:has-text("Responsibility")');
+        await page.selectOption('select', 'daily');
+        await page.click('button:has-text("Emma")');
+        await page.click('button:has-text("Create Chore")');
+
+        // Switch to Schedule tab
+        await page.goto('/chores');
+        await page.click('button:has-text("Schedule")');
+        await expect(page.getByText('Today')).toBeVisible();
+        await expect(page.getByText('Daily Schedule Chore')).toBeVisible();
+    });
+
     test('can filter chores by kid', async ({ page }) => {
         // Create a chore assigned only to Emma
         await page.goto('/chores/create');
