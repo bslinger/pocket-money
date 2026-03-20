@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSpenderRequest;
+use App\Models\PocketMoneySchedule;
 use App\Models\Spender;
 use App\Models\SpenderUser;
 use App\Models\User;
@@ -124,9 +125,14 @@ class SpenderController extends Controller
 
     public function edit(Spender $spender)
     {
+        $schedule = PocketMoneySchedule::where('spender_id', $spender->id)
+            ->where('is_active', true)
+            ->first();
+
         return Inertia::render('Spenders/Edit', [
-            'spender' => $spender,
-            'family'  => $spender->family,
+            'spender'          => $spender,
+            'family'           => $spender->family,
+            'pocketMoneySchedule' => $schedule,
         ]);
     }
 

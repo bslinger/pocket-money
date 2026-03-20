@@ -123,6 +123,19 @@ export interface ChoreCompletion {
   updated_at: string;
 }
 
+export interface PocketMoneySchedule {
+  id: string;
+  spender_id: string;
+  amount: string;
+  frequency: 'weekly' | 'monthly';
+  day_of_week: number | null;
+  day_of_month: number | null;
+  is_active: boolean;
+  next_run_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SavingsGoal {
   id: string;
   spender_id: string;

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
-import { Spender, Family } from '@/types/models';
+import { Head, useForm, router } from '@inertiajs/react';
+import { Spender, Family, PocketMoneySchedule } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -15,7 +15,15 @@ const COLOURS = [
     '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#64748b',
 ];
 
-export default function SpenderEdit({ spender, family }: { spender: Spender; family: Family }) {
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+interface Props {
+    spender: Spender;
+    family: Family;
+    pocketMoneySchedule: PocketMoneySchedule | null;
+}
+
+export default function SpenderEdit({ spender, family, pocketMoneySchedule }: Props) {
     const hasOverride = !!(spender.currency_symbol || spender.currency_name);
     const [overrideCurrency, setOverrideCurrency] = useState(hasOverride);
 
@@ -155,6 +163,131 @@ export default function SpenderEdit({ spender, family }: { spender: Spender; fam
                     <Button variant="outline" type="button" onClick={() => window.history.back()}>Cancel</Button>
                 </div>
             </form>
+
+            <PocketMoneyScheduleCard spender={spender} schedule={pocketMoneySchedule} />
         </AuthenticatedLayout>
+    );
+}
+
+// ── Pocket Money Schedule ──────────────────────────────────────────────────────
+
+function PocketMoneyScheduleCard({ spender, schedule }: { spender: Spender; schedule: PocketMoneySchedule | null }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        amount:       schedule?.amount ?? '',
+        frequency:    (schedule?.frequency ?? 'weekly') as 'weekly' | 'monthly',
+        day_of_week:  schedule?.day_of_week ?? 0,
+        day_of_month: schedule?.day_of_month ?? 1,
+    });
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        post(route('pocket-money-schedule.store', spender.id), { preserveScroll: true });
+    }
+
+    function cancel() {
+        if (!schedule) return;
+        router.delete(route('pocket-money-schedule.destroy', schedule.id), { preserveScroll: true });
+    }
+
+    return (
+        <Card className="max-w-lg mt-6">
+            <CardHeader>
+                <CardTitle className="text-base">Pocket money schedule</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {schedule && (
+                    <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm">
+                        <p className="font-medium text-green-800 dark:text-green-300">
+                            Active: {schedule.frequency === 'weekly'
+                                ? `${schedule.amount} every ${DAY_LABELS[schedule.day_of_week ?? 0]}`
+                                : `${schedule.amount} on day ${schedule.day_of_month ?? 1} of each month`}
+                        </p>
+                        {schedule.next_run_at && (
+                            <p className="text-green-700 dark:text-green-400 text-xs mt-0.5">
+                                Next payment: {new Date(schedule.next_run_at).toLocaleDateString()}
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                <form onSubmit={submit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="pm-amount">Amount</Label>
+                            <Input
+                                id="pm-amount"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                value={data.amount}
+                                onChange={e => setData('amount', e.target.value)}
+                                placeholder="5.00"
+                            />
+                            {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label>Frequency</Label>
+                            <select
+                                value={data.frequency}
+                                onChange={e => setData('frequency', e.target.value as 'weekly' | 'monthly')}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {data.frequency === 'weekly' && (
+                        <div className="space-y-1.5">
+                            <Label>Pay day</Label>
+                            <div className="flex gap-2 flex-wrap">
+                                {DAY_LABELS.map((label, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => setData('day_of_week', i)}
+                                        className={`w-10 h-10 rounded-full text-sm font-medium border transition-colors ${
+                                            data.day_of_week === i
+                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                : 'bg-background border-border text-muted-foreground hover:border-primary/50'
+                                        }`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {data.frequency === 'monthly' && (
+                        <div className="space-y-1.5">
+                            <Label htmlFor="pm-day">Day of month (1–28)</Label>
+                            <Input
+                                id="pm-day"
+                                type="number"
+                                min="1"
+                                max="28"
+                                value={data.day_of_month}
+                                onChange={e => setData('day_of_month', parseInt(e.target.value) || 1)}
+                                className="max-w-[100px]"
+                            />
+                            {errors.day_of_month && <p className="text-xs text-destructive">{errors.day_of_month}</p>}
+                        </div>
+                    )}
+
+                    <div className="flex gap-2">
+                        <Button type="submit" size="sm" disabled={processing}>
+                            {schedule ? 'Update schedule' : 'Set schedule'}
+                        </Button>
+                        {schedule && (
+                            <Button type="button" variant="outline" size="sm" onClick={cancel}>
+                                Cancel schedule
+                            </Button>
+                        )}
+                    </div>
+                </form>
+            </CardContent>
+        </Card>
     );
 }

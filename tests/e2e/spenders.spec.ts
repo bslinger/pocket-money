@@ -80,6 +80,30 @@ test.describe('Spenders', () => {
         await expect(page.getByPlaceholder("Child's email address")).toBeVisible();
     });
 
+    test('can set a weekly pocket money schedule', async ({ page }) => {
+        await page.goto('/spenders');
+        await page.getByRole('link', { name: 'Emma' }).first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        const spenderUrl = page.url();
+        await page.goto(spenderUrl + '/edit');
+        await expect(page.getByRole('heading', { name: 'Edit Spender' })).toBeVisible();
+
+        await page.fill('#pm-amount', '5.00');
+        await page.getByRole('button', { name: 'Fri' }).click();
+        await page.getByRole('button', { name: 'Set schedule' }).click();
+        await page.waitForTimeout(3000);
+
+        // Navigate away and back to confirm schedule was saved
+        await page.goto('/spenders');
+        await page.getByRole('link', { name: 'Emma' }).first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+        await page.goto(page.url() + '/edit');
+
+        // Should show the active schedule
+        await expect(page.getByText(/Active:/i)).toBeVisible({ timeout: 10000 });
+    });
+
     test('can switch to child view and see the exit banner', async ({ page }) => {
         await page.goto('/dashboard');
         await page.getByText('Emma').first().click();
