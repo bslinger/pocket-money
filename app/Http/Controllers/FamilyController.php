@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFamilyRequest;
+use App\Models\Account;
 use App\Models\Family;
 use App\Models\FamilyUser;
+use App\Models\Spender;
 use App\Models\User;
 use App\Enums\FamilyRole;
 use Illuminate\Http\RedirectResponse;
@@ -27,12 +29,30 @@ class FamilyController extends Controller
 
     public function store(StoreFamilyRequest $request)
     {
-        $family = Family::create($request->validated());
+        $validated = $request->validated();
+        $spendersData = $validated['spenders'] ?? [];
+        unset($validated['spenders']);
+
+        $family = Family::create($validated);
         FamilyUser::create([
             'family_id' => $family->id,
             'user_id'   => auth()->id(),
             'role'      => FamilyRole::Admin,
         ]);
+
+        foreach ($spendersData as $spenderInput) {
+            /** @var array{name: string, color?: string|null} $spenderInput */
+            $spender = Spender::create([
+                'family_id' => $family->id,
+                'name'      => $spenderInput['name'],
+                'color'     => $spenderInput['color'] ?? '#6366f1',
+            ]);
+            Account::create([
+                'spender_id' => $spender->id,
+                'name'       => 'Savings',
+                'balance'    => 0,
+            ]);
+        }
 
         return redirect()->route('families.show', $family);
     }

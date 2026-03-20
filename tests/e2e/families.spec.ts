@@ -20,6 +20,21 @@ test.describe('Families', () => {
         await expect(page.getByText('The Wilsons')).toBeVisible();
     });
 
+    test('can create a family with kids', async ({ page }) => {
+        await page.goto('/families/create');
+        await page.fill('#name', 'The Johnsons');
+        // Add two kids
+        await page.click('button:has-text("Add Kid")');
+        await page.locator('input[placeholder="Kid 1 name"]').fill('Sophie');
+        await page.click('button:has-text("Add Kid")');
+        await page.locator('input[placeholder="Kid 2 name"]').fill('Oliver');
+        await page.click('button:has-text("Create Family")');
+        // Should show the family settings page with both kids
+        await expect(page.getByText('The Johnsons')).toBeVisible();
+        await expect(page.getByText('Sophie')).toBeVisible();
+        await expect(page.getByText('Oliver')).toBeVisible();
+    });
+
     test('shows validation error for empty family name', async ({ page }) => {
         await page.goto('/families/create');
         await page.click('button:has-text("Create Family")');
