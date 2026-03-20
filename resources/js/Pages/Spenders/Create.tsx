@@ -6,6 +6,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { cn } from '@/lib/utils';
+import ImageUpload from '@/Components/ImageUpload';
 
 const COLOURS = [
     '#6366f1', // indigo
@@ -24,6 +25,7 @@ export default function SpenderCreate({ families }: { families: Family[] }) {
     const { data, setData, post, processing, errors } = useForm({
         family_id: families[0]?.id ?? '',
         name: '',
+        avatar_key: '',
         color: COLOURS[0],
     });
 
@@ -58,6 +60,16 @@ export default function SpenderCreate({ families }: { families: Family[] }) {
                                 {errors.family_id && <p className="text-xs text-destructive">{errors.family_id}</p>}
                             </div>
                         )}
+
+                        {/* Photo */}
+                        <div className="space-y-1.5">
+                            <Label>Photo <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                            <ImageUpload
+                                onUpload={key => setData('avatar_key', key)}
+                                onClear={() => setData('avatar_key', '')}
+                                label="Upload a photo"
+                            />
+                        </div>
 
                         {/* Name */}
                         <div className="space-y-1.5">

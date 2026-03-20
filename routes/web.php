@@ -50,8 +50,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('accounts.transactions', TransactionController::class);
         Route::resource('accounts.recurring', RecurringTransactionController::class);
         Route::resource('goals', SavingsGoalController::class);
-        Route::post('/goals/{goal}/contribute', [SavingsGoalController::class, 'contribute'])->name('goals.contribute');
-        Route::post('/goals/{goal}/sync', [SavingsGoalController::class, 'syncFromAccount'])->name('goals.sync');
         Route::get('/billing', [BillingController::class, 'index'])->name('billing');
         Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
         Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');

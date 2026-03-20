@@ -164,7 +164,7 @@ export default function SpenderShow({ spender }: { spender: Spender }) {
                         <Card>
                             <CardContent className="pt-4 space-y-4">
                                 {spender.savings_goals?.map(goal => {
-                                    const current = goal.account ? parseFloat(goal.account.balance) : parseFloat(goal.current_amount);
+                                    const current = goal.account ? parseFloat(goal.account.balance) : 0;
                                     const pct = Math.min(100, (current / parseFloat(goal.target_amount)) * 100);
                                     return (
                                         <div key={goal.id}>

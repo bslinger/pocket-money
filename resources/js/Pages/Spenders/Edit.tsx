@@ -7,6 +7,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { cn, guessNameFromEmoji } from '@/lib/utils';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import ImageUpload from '@/Components/ImageUpload';
 import { useState, useRef, useEffect } from 'react';
 
 const COLOURS = [
@@ -21,6 +22,7 @@ export default function SpenderEdit({ spender, family }: { spender: Spender; fam
     const { data, setData, put, processing, errors } = useForm({
         family_id:        spender.family_id,
         name:             spender.name,
+        avatar_key:       '',
         color:            spender.color ?? COLOURS[0],
         currency_name:    spender.currency_name ?? '',
         currency_symbol:  spender.currency_symbol ?? '',
@@ -65,6 +67,16 @@ export default function SpenderEdit({ spender, family }: { spender: Spender; fam
                         <CardTitle className="text-base">Spender details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-5">
+                        <div className="space-y-1.5">
+                            <Label>Photo <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                            <ImageUpload
+                                currentUrl={spender.avatar_url}
+                                onUpload={key => setData('avatar_key', key)}
+                                onClear={() => setData('avatar_key', '')}
+                                label="Upload a photo"
+                            />
+                        </div>
+
                         <div className="space-y-1.5">
                             <Label htmlFor="name">Name</Label>
                             <Input

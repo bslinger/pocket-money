@@ -34,7 +34,7 @@ export default function GoalCreate({ spenders, accounts }: Props) {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spender</label>
             <select
               value={data.spender_id}
-              onChange={e => setData('spender_id', e.target.value)}
+              onChange={e => { setData(d => ({ ...d, spender_id: e.target.value, account_id: '' })); }}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
             >
               {spenders.map(s => (
@@ -44,23 +44,24 @@ export default function GoalCreate({ spenders, accounts }: Props) {
             {errors.spender_id && <p className="text-red-500 text-xs mt-1">{errors.spender_id}</p>}
           </div>
 
-          {spenderAccounts.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Linked Account <span className="text-gray-400">(optional)</span>
-              </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account</label>
+            {spenderAccounts.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">This spender has no accounts yet. <a href={route('accounts.create', { spender_id: data.spender_id })} className="underline">Add one first.</a></p>
+            ) : (
               <select
                 value={data.account_id}
                 onChange={e => setData('account_id', e.target.value)}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
               >
-                <option value="">None</option>
+                <option value="">Select an account…</option>
                 {spenderAccounts.map(a => (
                   <option key={a.id} value={a.id}>{a.name}</option>
                 ))}
               </select>
-            </div>
-          )}
+            )}
+            {errors.account_id && <p className="text-red-500 text-xs mt-1">{errors.account_id}</p>}
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Goal Name</label>

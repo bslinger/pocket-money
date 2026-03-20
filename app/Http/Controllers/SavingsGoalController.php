@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSavingsGoalRequest;
 use App\Models\SavingsGoal;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SavingsGoalController extends Controller
@@ -71,47 +70,6 @@ class SavingsGoalController extends Controller
             'goal'     => $goal,
             'accounts' => $accounts,
         ]);
-    }
-
-    public function syncFromAccount(SavingsGoal $goal)
-    {
-        abort_unless($goal->account_id !== null, 422, 'No account linked to this goal.');
-
-        /** @var \App\Models\Account $account */
-        $account = $goal->account;
-        $balance = $account->balance;
-        $goal->update(['current_amount' => $balance]);
-
-        if (!$goal->is_completed && $goal->current_amount >= $goal->target_amount) {
-            $goal->update(['is_completed' => true]);
-        }
-
-        return back()->with('success', 'Goal synced from account balance.');
-    }
-
-    public function contribute(Request $request, SavingsGoal $goal)
-    {
-        abort_if($goal->account_id !== null, 422, 'Contributions are tracked automatically via the linked account balance.');
-
-        $request->validate(['amount' => 'required|numeric|min:0.01']);
-
-        $contribution = (float) $request->amount;
-        $matched      = $goal->match_percentage
-            ? round($contribution * $goal->match_percentage / 100, 2)
-            : 0;
-
-        $goal->increment('current_amount', $contribution + $matched);
-        $goal->refresh();
-
-        if (!$goal->is_completed && $goal->current_amount >= $goal->target_amount) {
-            $goal->update(['is_completed' => true]);
-        }
-
-        $message = $matched > 0
-            ? "Contribution added! (including {$goal->match_percentage}% match of {$matched})"
-            : 'Contribution added!';
-
-        return back()->with('success', $message);
     }
 
     public function update(StoreSavingsGoalRequest $request, SavingsGoal $goal)

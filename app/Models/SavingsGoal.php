@@ -23,21 +23,17 @@ class SavingsGoal extends Model
         'account_id',
         'name',
         'target_amount',
-        'current_amount',
         'image_key',
         'target_date',
         'is_completed',
-        'match_percentage',
     ];
 
     protected function casts(): array
     {
         return [
             'target_amount' => 'decimal:2',
-            'current_amount' => 'decimal:2',
-            'target_date' => 'date',
-            'is_completed'     => 'boolean',
-            'match_percentage' => 'integer',
+            'target_date'   => 'date',
+            'is_completed'  => 'boolean',
         ];
     }
 

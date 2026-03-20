@@ -1,13 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { SavingsGoal, Spender, Family, Account } from '@/types/models';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
-import { CheckCircle2, Pencil, Target, CalendarDays, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Pencil, CalendarDays, TrendingUp } from 'lucide-react';
 
 interface Props {
     goal: SavingsGoal & {
@@ -19,8 +17,7 @@ interface Props {
 
 export default function GoalShow({ goal }: Props) {
     const symbol = spenderCurrencySymbol(goal.spender);
-    // If linked to an account, account balance IS the current amount
-    const current = goal.account ? parseFloat(goal.account.balance) : parseFloat(goal.current_amount);
+    const current = goal.account ? parseFloat(goal.account.balance) : 0;
     const target  = parseFloat(goal.target_amount);
     const pct     = target > 0 ? Math.min(100, (current / target) * 100) : 0;
     const remaining = target - current;
@@ -29,13 +26,6 @@ export default function GoalShow({ goal }: Props) {
     const daysLeft = goal.target_date
         ? Math.ceil((new Date(goal.target_date).getTime() - Date.now()) / 86_400_000)
         : null;
-
-    const { data, setData, post, processing, errors, reset } = useForm({ amount: '' });
-
-    function contribute(e: React.FormEvent) {
-        e.preventDefault();
-        post(route('goals.contribute', goal.id), { onSuccess: () => reset() });
-    }
 
     return (
         <AuthenticatedLayout header={
@@ -132,7 +122,7 @@ export default function GoalShow({ goal }: Props) {
                     </CardContent>
                 </Card>
 
-                {/* Linked account info */}
+                {/* Linked account */}
                 {goal.account && (
                     <Card>
                         <CardContent className="py-4">
@@ -140,41 +130,6 @@ export default function GoalShow({ goal }: Props) {
                             <p className="text-xs text-muted-foreground mt-0.5">
                                 Progress updates automatically as the account balance changes.
                             </p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Contribute (only for goals without a linked account) */}
-                {!isCompleted && !goal.account && (
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Target className="h-4 w-4" />
-                                Add a contribution
-                                {goal.match_percentage && (
-                                    <Badge variant="secondary" className="text-xs ml-auto font-normal">
-                                        {goal.match_percentage}% parent match
-                                    </Badge>
-                                )}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <form onSubmit={contribute} className="flex gap-2 items-end">
-                                <div className="flex-1 space-y-1.5">
-                                    <Label htmlFor="amount">Amount ({symbol})</Label>
-                                    <Input
-                                        id="amount"
-                                        type="number"
-                                        step="0.01"
-                                        min="0.01"
-                                        value={data.amount}
-                                        onChange={e => setData('amount', e.target.value)}
-                                        placeholder="0.00"
-                                    />
-                                    {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
-                                </div>
-                                <Button type="submit" disabled={processing}>Add</Button>
-                            </form>
                         </CardContent>
                     </Card>
                 )}

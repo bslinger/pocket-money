@@ -125,12 +125,10 @@ export interface SavingsGoal {
   account_id: string | null;
   name: string;
   target_amount: string;
-  current_amount: string;
   image_key: string | null;
   image_url: string | null;
   target_date: string | null;
   is_completed: boolean;
-  match_percentage: number | null;
   spender?: Spender;
   account?: Account | null;
 }
