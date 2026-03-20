@@ -36,7 +36,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [ ] **Goal detail page** — large progress bar, current vs target, days remaining, contribute button
 - [ ] **Manual contributions** — parent logs an amount added to the goal; auto-marks complete when target reached
 - [x] **Goal cover image** — upload an inspirational photo (e.g. photo of the bike the kid wants)
-- [ ] **Savings pot link** — when linked to an account, offer to pull/sync current_amount from pot balance
+- [x] **Savings pot link** — when linked to an account, offer to pull/sync current_amount from pot balance
 - [ ] **Goal matching** — parents can optionally pledge to match kid contributions (e.g. "I'll match 50%")
 - [ ] **Kid-facing goal view** — kids see their own goals with progress and can celebrate when reached
 

@@ -73,6 +73,22 @@ class SavingsGoalController extends Controller
         ]);
     }
 
+    public function syncFromAccount(SavingsGoal $goal)
+    {
+        abort_unless($goal->account_id !== null, 422, 'No account linked to this goal.');
+
+        /** @var \App\Models\Account $account */
+        $account = $goal->account;
+        $balance = $account->balance;
+        $goal->update(['current_amount' => $balance]);
+
+        if (!$goal->is_completed && $goal->current_amount >= $goal->target_amount) {
+            $goal->update(['is_completed' => true]);
+        }
+
+        return back()->with('success', 'Goal synced from account balance.');
+    }
+
     public function contribute(Request $request, SavingsGoal $goal)
     {
         $request->validate(['amount' => 'required|numeric|min:0.01']);

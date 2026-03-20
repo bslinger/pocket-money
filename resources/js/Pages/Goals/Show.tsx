@@ -7,7 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
-import { CheckCircle2, Pencil, Target, CalendarDays, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Pencil, RefreshCw, Target, CalendarDays, TrendingUp } from 'lucide-react';
 
 interface Props {
     goal: SavingsGoal & {
@@ -29,6 +29,7 @@ export default function GoalShow({ goal }: Props) {
         : null;
 
     const { data, setData, post, processing, errors, reset } = useForm({ amount: '' });
+    const { post: syncPost, processing: syncing } = useForm({});
 
     function contribute(e: React.FormEvent) {
         e.preventDefault();
@@ -129,6 +130,30 @@ export default function GoalShow({ goal }: Props) {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Sync from linked account */}
+                {!goal.is_completed && goal.account && (
+                    <Card>
+                        <CardContent className="py-4 flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-medium">Linked account: {goal.account.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Current balance: {formatAmount(goal.account.balance, symbol)}
+                                </p>
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={syncing}
+                                onClick={() => syncPost(route('goals.sync', goal.id))}
+                                className="gap-1.5 shrink-0"
+                            >
+                                <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
+                                Sync balance
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Contribute */}
                 {!goal.is_completed && (

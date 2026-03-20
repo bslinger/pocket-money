@@ -72,6 +72,41 @@ describe('savings goals', function () {
         });
     });
 
+    describe('sync from account', function () {
+        it('sets current_amount to the linked account balance', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id, 'balance' => '75.00']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'     => $spenders->first()->id,
+                'account_id'     => $account->id,
+                'target_amount'  => '100.00',
+                'current_amount' => '0.00',
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('goals.sync', $goal))
+                ->assertRedirect();
+
+            expect((float) $goal->fresh()->current_amount)->toBe(75.0);
+        });
+
+        it('marks complete when account balance meets target', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id, 'balance' => '100.00']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'     => $spenders->first()->id,
+                'account_id'     => $account->id,
+                'target_amount'  => '100.00',
+                'current_amount' => '0.00',
+                'is_completed'   => false,
+            ]);
+
+            $this->actingAs($user)->post(route('goals.sync', $goal));
+
+            expect($goal->fresh()->is_completed)->toBeTrue();
+        });
+    });
+
     describe('contribute', function () {
         it('adds to the current amount', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
