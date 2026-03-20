@@ -35,7 +35,7 @@ class DashboardController extends Controller
 
             $recentActivity = Transaction::whereHas('account.spender',
                 fn($q) => $q->whereIn('family_id', $familyIds))
-                ->with('account.spender')
+                ->with('account.spender.family')
                 ->latest('occurred_at')
                 ->limit(15)
                 ->get();
@@ -64,6 +64,7 @@ class DashboardController extends Controller
         $spenders = $user->spenders()->with([
             'accounts',
             'savingsGoals',
+            'family',
             'chores' => fn($q) => $q->where('is_active', true),
             'choreCompletions' => fn($q) => $q->whereBetween('completed_at', [
                 now()->startOfWeek(),

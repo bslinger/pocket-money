@@ -19,6 +19,8 @@ class Family extends Model
     protected $fillable = [
         'name',
         'avatar_url',
+        'currency_name',
+        'currency_symbol',
     ];
 
     public function users(): BelongsToMany

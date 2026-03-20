@@ -12,7 +12,7 @@ class SavingsGoalController extends Controller
     {
         $user     = auth()->user();
         $spenders = \App\Models\Spender::whereIn('family_id', $user->families()->pluck('families.id'))
-            ->with('savingsGoals')
+            ->with(['savingsGoals', 'family'])
             ->get();
 
         return Inertia::render('Goals/Index', [

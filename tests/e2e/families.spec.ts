@@ -30,14 +30,14 @@ test.describe('Families', () => {
         await page.goto('/families');
         // Click "Edit" link directly from the families list
         await page.getByRole('link', { name: 'Edit' }).first().click();
-        await page.fill('input[type=text]', "Ben's Updated Family");
-        await page.click('button[type=submit]');
+        await page.fill('#name', "Ben's Updated Family");
+        await page.click('button:has-text("Save Changes")');
         await expect(page.getByText("Ben's Updated Family")).toBeVisible();
 
         // Restore original name
         await page.goto('/families');
         await page.getByRole('link', { name: 'Edit' }).first().click();
-        await page.fill('input[type=text]', "Ben's Family");
-        await page.click('button[type=submit]');
+        await page.fill('#name', "Ben's Family");
+        await page.click('button:has-text("Save Changes")');
     });
 });

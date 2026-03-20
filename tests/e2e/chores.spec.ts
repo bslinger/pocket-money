@@ -9,12 +9,10 @@ test.describe('Chores', () => {
     test('can create an earns chore', async ({ page }) => {
         await page.goto('/chores/create');
         await page.fill('#name', 'Wash the dishes');
-        // Select "earns" reward type (should be default)
-        await page.locator('input[type=radio][value=earns]').check();
+        // "Earns" is the default — click it to be explicit
+        await page.click('button:has-text("Earns")');
         await page.fill('#amount', '1.50');
-        // Select weekly frequency
         await page.selectOption('select', 'weekly');
-        // Assign to Emma
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
         await expect(page.getByText('Wash the dishes')).toBeVisible();
@@ -23,7 +21,7 @@ test.describe('Chores', () => {
     test('can create a responsibility chore', async ({ page }) => {
         await page.goto('/chores/create');
         await page.fill('#name', 'Make bed');
-        await page.locator('input[type=radio][value=responsibility]').check();
+        await page.click('button:has-text("Responsibility")');
         await page.selectOption('select', 'daily');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
@@ -33,10 +31,9 @@ test.describe('Chores', () => {
     test('can create a one-off chore', async ({ page }) => {
         await page.goto('/chores/create');
         await page.fill('#name', 'Clean garage');
-        await page.locator('input[type=radio][value=earns]').check();
+        await page.click('button:has-text("Earns")');
         await page.fill('#amount', '5.00');
         await page.selectOption('select', 'one_off');
-        // Assign to Emma to satisfy spender_ids validation
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
         await expect(page.getByText('Clean garage')).toBeVisible();
@@ -51,9 +48,9 @@ test.describe('Chores', () => {
     test('shows amount field only for earns reward type', async ({ page }) => {
         await page.goto('/chores/create');
         await expect(page.locator('#amount')).toBeVisible();
-        await page.locator('input[type=radio][value=responsibility]').check();
+        await page.click('button:has-text("Responsibility")');
         await expect(page.locator('#amount')).not.toBeVisible();
-        await page.locator('input[type=radio][value=no_reward]').check();
+        await page.click('button:has-text("No reward")');
         await expect(page.locator('#amount')).not.toBeVisible();
     });
 
@@ -61,7 +58,7 @@ test.describe('Chores', () => {
         // First create one
         await page.goto('/chores/create');
         await page.fill('#name', 'Editable Chore');
-        await page.locator('input[type=radio][value=earns]').check();
+        await page.click('button:has-text("Earns")');
         await page.fill('#amount', '1.00');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
@@ -80,7 +77,7 @@ test.describe('Chores', () => {
         // Create a chore to delete
         await page.goto('/chores/create');
         await page.fill('#name', 'Delete Me Chore');
-        await page.locator('input[type=radio][value=earns]').check();
+        await page.click('button:has-text("Earns")');
         await page.fill('#amount', '1.00');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');

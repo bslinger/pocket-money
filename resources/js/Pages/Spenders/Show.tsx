@@ -6,8 +6,10 @@ import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
 import { PlusCircle, ArrowRight } from 'lucide-react';
+import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 
 export default function SpenderShow({ spender }: { spender: Spender }) {
+    const currencySymbol = spenderCurrencySymbol(spender);
     const totalBalance = spender.accounts?.reduce((sum, a) => sum + parseFloat(a.balance), 0) ?? 0;
 
     return (
@@ -21,7 +23,7 @@ export default function SpenderShow({ spender }: { spender: Spender }) {
                 </Avatar>
                 <div>
                     <h1 className="text-xl font-semibold leading-tight">{spender.name}</h1>
-                    <p className="text-sm text-muted-foreground">Total: ${totalBalance.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">Total: {formatAmount(totalBalance, currencySymbol)}</p>
                 </div>
             </div>
         }>
@@ -58,7 +60,7 @@ export default function SpenderShow({ spender }: { spender: Spender }) {
                                                 )}
                                             </div>
                                             <p className="text-2xl font-bold tabular-nums">
-                                                ${parseFloat(account.balance).toFixed(2)}
+                                                {formatAmount(account.balance, currencySymbol)}
                                             </p>
                                             {(account.transactions?.length ?? 0) > 0 && (
                                                 <p className="text-xs text-muted-foreground mt-1">
@@ -86,7 +88,7 @@ export default function SpenderShow({ spender }: { spender: Spender }) {
                                             <div className="flex justify-between text-sm mb-1.5">
                                                 <span className="font-medium">{goal.name}</span>
                                                 <span className="text-muted-foreground tabular-nums">
-                                                    ${parseFloat(goal.current_amount).toFixed(2)} / ${parseFloat(goal.target_amount).toFixed(2)}
+                                                    {formatAmount(goal.current_amount, currencySymbol)} / {formatAmount(goal.target_amount, currencySymbol)}
                                                 </span>
                                             </div>
                                             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">

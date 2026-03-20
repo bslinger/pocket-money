@@ -10,6 +10,7 @@ import { Label } from '@/Components/ui/label';
 import { PlusCircle, ArrowRight, Users, Check, X, LogOut, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 
 interface Props {
   isParent: boolean;
@@ -57,6 +58,7 @@ function ParentDashboard({
   totalBalance: string;
   paidThisMonth: string;
 }) {
+  const familyCurrencySymbol = families[0]?.currency_symbol ?? '$';
   // Onboarding: no family yet
   if (families.length === 0) {
     return <CreateFamilyWizard />;
@@ -94,13 +96,13 @@ function ParentDashboard({
         <Card>
           <CardContent className="pt-5 pb-5">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Family Balance</p>
-            <p className="text-3xl font-bold tabular-nums mt-1">${totalBalance}</p>
+            <p className="text-3xl font-bold tabular-nums mt-1">{formatAmount(totalBalance, familyCurrencySymbol)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5 pb-5">
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Paid This Month</p>
-            <p className="text-3xl font-bold tabular-nums mt-1">${paidThisMonth}</p>
+            <p className="text-3xl font-bold tabular-nums mt-1">{formatAmount(paidThisMonth, familyCurrencySymbol)}</p>
           </CardContent>
         </Card>
       </div>
@@ -109,8 +111,8 @@ function ParentDashboard({
       <div>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Kids</h2>
         <div className="flex gap-4 overflow-x-auto pb-2">
-          {families.flatMap(f => f.spenders ?? []).map(spender => (
-            <KidCard key={spender.id} spender={spender} />
+          {families.flatMap(f => (f.spenders ?? []).map(s => ({ spender: s, family: f }))).map(({ spender, family }) => (
+            <KidCard key={spender.id} spender={spender} currencySymbol={spender.currency_symbol ?? family.currency_symbol} />
           ))}
           <Link
             href={route('spenders.create')}
@@ -152,7 +154,7 @@ function ParentDashboard({
                   </div>
                   <div className="text-right shrink-0">
                     <p className={`text-sm font-medium tabular-nums ${tx.type === 'credit' ? 'text-green-600' : 'text-red-500'}`}>
-                      {tx.type === 'credit' ? '+' : '-'}${tx.amount}
+                      {tx.type === 'credit' ? '+' : '-'}{formatAmount(tx.amount, spenderCurrencySymbol(tx.account?.spender ?? { currency_symbol: null }))}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(tx.occurred_at), { addSuffix: true })}
@@ -168,7 +170,7 @@ function ParentDashboard({
   );
 }
 
-function KidCard({ spender }: { spender: Spender }) {
+function KidCard({ spender, currencySymbol = '$' }: { spender: Spender; currencySymbol?: string }) {
   const mainBalance = spender.accounts
     ?.filter(a => !a.is_savings_pot)
     .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
@@ -188,7 +190,7 @@ function KidCard({ spender }: { spender: Spender }) {
           </AvatarFallback>
         </Avatar>
         <p className="text-sm font-medium truncate w-full text-center">{spender.name}</p>
-        <p className="text-base font-bold tabular-nums">${mainBalance.toFixed(2)}</p>
+        <p className="text-base font-bold tabular-nums">{formatAmount(mainBalance, currencySymbol)}</p>
         {goalProgress !== null && (
           <div className="w-full bg-muted rounded-full h-1.5">
             <div className="bg-amber-400 h-1.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
@@ -332,6 +334,7 @@ function ChildDashboard({ spenders }: { spenders: Spender[] }) {
 }
 
 function ChildSpenderView({ spender }: { spender: Spender }) {
+  const currencySymbol = spenderCurrencySymbol(spender);
   const mainBalance = spender.accounts
     ?.filter(a => !a.is_savings_pot)
     .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
@@ -353,7 +356,7 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
         </div>
         <p className="text-gray-400 text-sm">{spender.name}</p>
         <p className="text-5xl font-bold tabular-nums mt-2" style={{ color: spender.color ?? '#6366f1' }}>
-          ${mainBalance.toFixed(2)}
+          {formatAmount(mainBalance, currencySymbol)}
         </p>
       </div>
 
@@ -371,8 +374,8 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
             <div className="bg-amber-400 h-2.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
           </div>
           <div className="flex justify-between mt-1.5 text-xs text-gray-500">
-            <span>${goal.current_amount}</span>
-            <span>${goal.target_amount}</span>
+            <span>{formatAmount(goal.current_amount, currencySymbol)}</span>
+            <span>{formatAmount(goal.target_amount, currencySymbol)}</span>
           </div>
         </div>
       )}
@@ -382,7 +385,7 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
         <div className="space-y-3">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Chores</h3>
           {spender.chores?.map(chore => (
-            <ChoreItem key={chore.id} chore={chore} spenderId={spender.id} weekCompletions={weekCompletions} />
+            <ChoreItem key={chore.id} chore={chore} spenderId={spender.id} weekCompletions={weekCompletions} currencySymbol={currencySymbol} />
           ))}
         </div>
       )}
@@ -390,10 +393,11 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
   );
 }
 
-function ChoreItem({ chore, spenderId, weekCompletions }: {
+function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: {
   chore: Chore;
   spenderId: string;
   weekCompletions: { chore_id: string; status: string }[];
+  currencySymbol?: string;
 }) {
   const thisCompletion = weekCompletions.find(c => c.chore_id === chore.id);
   const [localStatus, setLocalStatus] = useState<string | null>(thisCompletion?.status ?? null);
@@ -415,7 +419,7 @@ function ChoreItem({ chore, spenderId, weekCompletions }: {
         <div>
           <p className="font-medium text-sm">{chore.name}</p>
           {chore.reward_type === 'earns' && chore.amount && (
-            <p className="text-xs text-amber-400">${chore.amount}</p>
+            <p className="text-xs text-amber-400">{formatAmount(chore.amount, currencySymbol)}</p>
           )}
         </div>
       </div>

@@ -51,7 +51,11 @@
       "Bash(npm run:*)",
       "Bash(time npx:*)",
       "Bash(sudo chown:*)",
-      "Bash(chmod 777 /home/ben/Dev/pocket-money/test-results/)"
+      "Bash(chmod 777 /home/ben/Dev/pocket-money/test-results/)",
+      "Bash(npx playwright:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

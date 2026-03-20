@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Spender, SavingsGoal } from '@/types/models';
+import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 
 interface SpenderWithGoals extends Spender {
   savings_goals: SavingsGoal[];
@@ -60,8 +61,8 @@ export default function GoalsIndex({ spenders }: { spenders: SpenderWithGoals[] 
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                              ${current.toFixed(2)}
-                              <span className="text-gray-400 font-normal"> / ${target.toFixed(2)}</span>
+                              {formatAmount(current, spenderCurrencySymbol(spender))}
+                              <span className="text-gray-400 font-normal"> / {formatAmount(target, spenderCurrencySymbol(spender))}</span>
                             </p>
                             <p className="text-xs text-gray-400">{pct.toFixed(0)}%</p>
                           </div>

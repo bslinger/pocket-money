@@ -13,7 +13,7 @@ class AccountController extends Controller
         return Inertia::render('Accounts/Show', [
             'account' => $account->load([
                 'transactions' => fn($q) => $q->latest('occurred_at')->limit(50),
-                'spender',
+                'spender.family',
             ]),
         ]);
     }

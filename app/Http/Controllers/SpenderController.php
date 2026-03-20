@@ -26,6 +26,7 @@ class SpenderController extends Controller
             'spender' => $spender->load([
                 'accounts.transactions' => fn($q) => $q->latest('occurred_at')->limit(20),
                 'savingsGoals',
+                'family',
             ]),
         ]);
     }
@@ -48,6 +49,7 @@ class SpenderController extends Controller
     {
         return Inertia::render('Spenders/Edit', [
             'spender' => $spender,
+            'family'  => $spender->family,
         ]);
     }
 

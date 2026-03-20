@@ -21,6 +21,8 @@ class Spender extends Model
         'name',
         'avatar_url',
         'color',
+        'currency_name',
+        'currency_symbol',
     ];
 
     public function family(): BelongsTo

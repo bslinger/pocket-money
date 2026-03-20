@@ -5,8 +5,28 @@ import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
+import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import { useState, useRef, useEffect } from 'react';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const REWARD_TYPES = [
+  {
+    value: 'earns' as const,
+    label: 'Earns',
+    description: 'Pay a cash reward each time it\'s completed',
+  },
+  {
+    value: 'responsibility' as const,
+    label: 'Responsibility',
+    description: 'Track completion — counts toward their weekly allowance',
+  },
+  {
+    value: 'no_reward' as const,
+    label: 'No reward',
+    description: 'A reminder chore with no payment or tracking',
+  },
+];
 
 interface Props {
   families: Family[];
@@ -29,6 +49,24 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
     is_active:         chore?.is_active ?? true,
     spender_ids:       chore?.spenders?.map(s => s.id) ?? [] as string[],
   });
+
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowPicker(false);
+      }
+    }
+    if (showPicker) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPicker]);
+
+  function onEmojiClick(emojiData: EmojiClickData) {
+    setData('emoji', emojiData.emoji);
+    setShowPicker(false);
+  }
 
   function toggleDay(dayIndex: number) {
     const current = data.days_of_week as number[];
@@ -77,35 +115,61 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
           )}
 
           {/* Name + Emoji */}
-          <div className="grid grid-cols-[1fr_auto] gap-3">
+          <div className="grid grid-cols-[1fr_auto] gap-3 items-start">
             <div className="space-y-1.5">
               <Label htmlFor="name">Chore name</Label>
               <Input id="name" value={data.name} onChange={e => setData('name', e.target.value)} placeholder="Tidy bedroom" />
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="emoji">Emoji</Label>
-              <Input id="emoji" value={data.emoji} onChange={e => setData('emoji', e.target.value)} placeholder="🧹" className="w-16 text-center text-lg" />
+              <Label>Emoji</Label>
+              <div className="relative" ref={pickerRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowPicker(v => !v)}
+                  className="w-14 h-10 rounded-md border border-input bg-background text-xl flex items-center justify-center hover:bg-accent transition-colors"
+                  aria-label="Pick emoji"
+                >
+                  {data.emoji || <span className="text-muted-foreground text-sm">😀</span>}
+                </button>
+                {showPicker && (
+                  <div className="absolute right-0 top-11 z-50">
+                    <EmojiPicker
+                      onEmojiClick={onEmojiClick}
+                      theme={Theme.AUTO}
+                      lazyLoadEmojis
+                      searchPlaceholder="Search emoji…"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Reward type */}
           <div className="space-y-1.5">
             <Label>Reward type</Label>
-            <div className="flex gap-3 flex-wrap">
-              {(['earns', 'responsibility', 'no_reward'] as const).map(rt => (
-                <label key={rt} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="reward_type"
-                    value={rt}
-                    checked={data.reward_type === rt}
-                    onChange={() => setData('reward_type', rt)}
-                    className="accent-primary"
-                  />
-                  <span className="text-sm capitalize">{rt === 'no_reward' ? 'No reward' : rt.charAt(0).toUpperCase() + rt.slice(1)}</span>
-                </label>
-              ))}
+            <div className="flex flex-col gap-2">
+              {REWARD_TYPES.map(({ value, label, description }) => {
+                const selected = data.reward_type === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setData('reward_type', value)}
+                    className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                      selected
+                        ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                        : 'border-border hover:border-primary/40 bg-background'
+                    }`}
+                  >
+                    <p className={`text-sm font-medium ${selected ? 'text-primary' : 'text-foreground'}`}>
+                      {label}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                  </button>
+                );
+              })}
             </div>
             {errors.reward_type && <p className="text-xs text-destructive">{errors.reward_type}</p>}
           </div>
@@ -113,7 +177,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
           {/* Amount (earns only) */}
           {data.reward_type === 'earns' && (
             <div className="space-y-1.5">
-              <Label htmlFor="amount">Reward amount ($)</Label>
+              <Label htmlFor="amount">Reward amount ({families[0]?.currency_symbol ?? '$'})</Label>
               <Input
                 id="amount"
                 type="number"
@@ -129,7 +193,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
           )}
 
           {/* Frequency */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Frequency</Label>
             <select
               value={data.frequency}

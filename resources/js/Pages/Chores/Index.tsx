@@ -6,6 +6,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { formatAmount } from '@/lib/utils';
 
 interface Props {
   families: (Family & { chores: (Chore & { spenders: Spender[] })[] })[];
@@ -61,7 +62,7 @@ export default function ChoresIndex({ families }: Props) {
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             {rewardBadge(chore.reward_type)}
                             {chore.reward_type === 'earns' && chore.amount && (
-                              <span className="text-xs text-muted-foreground">${chore.amount}</span>
+                              <span className="text-xs text-muted-foreground">{formatAmount(chore.amount, family.currency_symbol)}</span>
                             )}
                             <Badge variant="outline" className="text-xs font-normal">
                               {frequencyLabel(chore.frequency)}

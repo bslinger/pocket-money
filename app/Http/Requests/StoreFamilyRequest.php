@@ -14,8 +14,10 @@ class StoreFamilyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'       => 'required|string|max:255',
-            'avatar_url' => 'nullable|url|max:255',
+            'name'            => 'required|string|max:255',
+            'avatar_url'      => 'nullable|url|max:255',
+            'currency_name'   => 'nullable|string|max:50',
+            'currency_symbol' => 'nullable|string|max:10',
         ];
     }
 }

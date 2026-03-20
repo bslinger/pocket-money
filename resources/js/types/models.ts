@@ -12,6 +12,8 @@ export interface Family {
   id: string;
   name: string;
   avatar_url: string | null;
+  currency_name: string;
+  currency_symbol: string;
   users?: User[];
   spenders?: Spender[];
   created_at: string;
@@ -33,6 +35,8 @@ export interface Spender {
   name: string;
   avatar_url: string | null;
   color: string | null;
+  currency_name: string | null;
+  currency_symbol: string | null;
   family?: Family;
   accounts?: Account[];
   savings_goals?: SavingsGoal[];
