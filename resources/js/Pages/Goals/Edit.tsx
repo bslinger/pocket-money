@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import ImageUpload from '@/Components/ImageUpload';
 
 interface Props {
-    goal: SavingsGoal & { spender: Spender };
+    goal: SavingsGoal & { spender: Spender; image_url: string | null };
     accounts: Account[];
 }
 
@@ -67,6 +68,16 @@ export default function GoalEdit({ goal, accounts }: Props) {
                                 type="date"
                                 value={data.target_date}
                                 onChange={e => setData('target_date', e.target.value)}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label>Cover image <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                            <ImageUpload
+                                currentUrl={goal.image_url}
+                                onUpload={key => setData('image_key', key)}
+                                onClear={() => setData('image_key', '')}
+                                label="Add an inspirational photo"
                             />
                         </div>
 

@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { Spender, Account } from '@/types/models';
+import ImageUpload from '@/Components/ImageUpload';
 
 interface Props {
   spenders: Spender[];
@@ -14,6 +15,7 @@ export default function GoalCreate({ spenders, accounts }: Props) {
     name: '',
     target_amount: '',
     target_date: '',
+    image_key: '',
   });
 
   function submit(e: React.FormEvent) {
@@ -96,6 +98,17 @@ export default function GoalCreate({ spenders, accounts }: Props) {
               value={data.target_date}
               onChange={e => setData('target_date', e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Cover image <span className="text-gray-400">(optional)</span>
+            </label>
+            <ImageUpload
+              onUpload={key => setData('image_key', key)}
+              onClear={() => setData('image_key', '')}
+              label="Add an inspirational photo"
             />
           </div>
 

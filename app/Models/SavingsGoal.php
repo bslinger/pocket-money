@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,8 @@ class SavingsGoal extends Model
 
     public $incrementing = false;
     protected $keyType = 'string';
+
+    protected $appends = ['image_url'];
 
     protected $fillable = [
         'spender_id',
@@ -46,12 +49,12 @@ class SavingsGoal extends Model
         return $this->belongsTo(Account::class);
     }
 
-    public function imageUrl(): ?string
+    protected function imageUrl(): Attribute
     {
-        if ($this->image_key === null) {
-            return null;
-        }
-
-        return Storage::temporaryUrl($this->image_key, now()->addMinutes(60));
+        return Attribute::make(
+            get: fn() => $this->image_key
+                ? Storage::temporaryUrl($this->image_key, now()->addMinutes(60))
+                : null,
+        );
     }
 }

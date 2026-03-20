@@ -13,6 +13,7 @@ interface Props {
     goal: SavingsGoal & {
         spender: Spender & { family: Family };
         account: Account | null;
+        image_url: string | null;
     };
 }
 
@@ -53,6 +54,13 @@ export default function GoalShow({ goal }: Props) {
                 <Link href={route('goals.index')} className="text-sm text-muted-foreground hover:text-foreground">
                     ← All goals
                 </Link>
+
+                {/* Cover image */}
+                {goal.image_url && (
+                    <div className="rounded-xl overflow-hidden h-48">
+                        <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
+                    </div>
+                )}
 
                 {/* Progress card */}
                 <Card>
