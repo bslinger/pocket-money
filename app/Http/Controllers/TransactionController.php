@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TxType;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Account;
 use App\Models\Transaction;
@@ -52,7 +53,7 @@ class TransactionController extends Controller
     {
         DB::transaction(function () use ($request, $account, $transaction) {
             // Revert old balance change
-            if ($transaction->type === 'credit') {
+            if ($transaction->type === TxType::Credit) {
                 $account->decrement('balance', $transaction->amount);
             } else {
                 $account->increment('balance', $transaction->amount);
@@ -75,7 +76,7 @@ class TransactionController extends Controller
     {
         DB::transaction(function () use ($account, $transaction) {
             // Revert balance change
-            if ($transaction->type === 'credit') {
+            if ($transaction->type === TxType::Credit) {
                 $account->decrement('balance', $transaction->amount);
             } else {
                 $account->increment('balance', $transaction->amount);

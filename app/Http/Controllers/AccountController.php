@@ -18,7 +18,7 @@ class AccountController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(\Illuminate\Http\Request $request)
     {
         $user = auth()->user();
         $spenders = $user->isParent()
@@ -26,7 +26,8 @@ class AccountController extends Controller
             : $user->spenders()->get();
 
         return Inertia::render('Accounts/Create', [
-            'spenders' => $spenders,
+            'spenders'              => $spenders,
+            'preselectedSpenderId'  => $request->query('spender_id'),
         ]);
     }
 

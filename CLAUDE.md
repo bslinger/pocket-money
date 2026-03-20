@@ -36,11 +36,17 @@ sail artisan queue:work     # Run queue worker inside container
 
 ### Testing
 ```bash
-sail artisan test                         # Run all tests (SQLite in-memory)
+sail artisan test                         # Run all PHPUnit tests (SQLite in-memory)
 sail artisan test --testsuite=Feature     # Feature tests only
 sail artisan test --testsuite=Unit        # Unit tests only
 sail artisan test tests/Feature/Auth/AuthenticationTest.php  # Single file
+
+npm run test:e2e          # Run Playwright E2E tests (resets DB + seeds first)
+npm run test:e2e:ui       # Playwright interactive UI mode
+npm run test:e2e:headed   # Run with browser visible
 ```
+
+Playwright tests live in `tests/e2e/`. The `globalSetup` runs `sail artisan migrate:fresh --seed` before the suite. Auth state is stored in `tests/e2e/.auth/user.json` (gitignored).
 
 ### Database
 ```bash

@@ -10,20 +10,27 @@ class SavingsGoalController extends Controller
 {
     public function index()
     {
+        $user     = auth()->user();
+        $spenders = \App\Models\Spender::whereIn('family_id', $user->families()->pluck('families.id'))
+            ->with('savingsGoals')
+            ->get();
+
         return Inertia::render('Goals/Index', [
-            'goals' => auth()->user()->families()->with('spenders.savingsGoals')->get(),
+            'spenders' => $spenders,
         ]);
     }
 
     public function create()
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $spenders = $user->isParent()
             ? \App\Models\Spender::whereIn('family_id', $user->families()->pluck('families.id'))->get()
             : $user->spenders()->get();
+        $accounts = \App\Models\Account::whereIn('spender_id', $spenders->pluck('id'))->get();
 
         return Inertia::render('Goals/Create', [
             'spenders' => $spenders,
+            'accounts' => $accounts,
         ]);
     }
 

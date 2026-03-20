@@ -25,7 +25,7 @@ export default function SettingsIndex({ user }: Props) {
     if (!confirm('Are you sure? This will permanently delete your account and all family data you own. This cannot be undone.')) {
       return;
     }
-    deleteForm.delete(route('settings.destroy'));
+    deleteForm.delete(route('settings.account.destroy'));
   }
 
   function exportData(e: React.MouseEvent) {

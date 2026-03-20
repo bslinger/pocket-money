@@ -32,3 +32,6 @@ terraform/terraform.tfvars
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.backup
+tests/e2e/.auth/
+test-results
+playwright-report

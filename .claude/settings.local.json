@@ -25,7 +25,23 @@
       "Bash(./vendor/bin/sail npm:*)",
       "Bash(find /home/ben/Dev/pocket-money -name playwright.config.* -o -name playwright.json)",
       "Bash(find /home/ben/Dev/pocket-money/resources/js/Pages -name *.tsx)",
-      "Bash(/dev/null cat:*)"
+      "Bash(/dev/null cat:*)",
+      "Bash(find /home/ben/Dev/pocket-money/tests/Feature -type f -name *.php)",
+      "Bash(find /home/ben/Dev/pocket-money/tests/Unit -type f -name *.php)",
+      "Bash(./vendor/bin/sail composer:*)",
+      "Bash(./vendor/bin/sail artisan:*)",
+      "Bash(./vendor/bin/sail php:*)",
+      "Bash(grep -rL \"HasFactory\" /home/ben/Dev/pocket-money/app/Models/*.php)",
+      "Bash(xargs -I{} basename {})",
+      "Bash(grep -rn '\\\\[\\\\$,' /home/ben/Dev/pocket-money/tests/Feature/)",
+      "Bash(find:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(cat /home/ben/Dev/pocket-money/playwright-report/data/*.md)",
+      "Bash(./vendor/bin/sail exec:*)",
+      "Bash(grep -r \"dashboard\\\\|HOME\\\\|home\" /home/ben/Dev/pocket-money/app/Providers --include=*.php)",
+      "Bash(grep -r \"redirect\\\\|home\" /home/ben/Dev/pocket-money/bootstrap --include=*.php)",
+      "Bash(python3:*)",
+      "Bash(./vendor/bin/sail logs:*)"
     ]
   }
 }
