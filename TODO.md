@@ -5,10 +5,10 @@ Organised by strategic area, with specific tasks nested under each.
 ---
 ## Dashboard improvements
 
- - [ ] Remove Dashboard title - it's already obvious
- - [ ] Move kid carousel to top above totals
- - [ ] Make the kid cards larger - left justify avatar, name at top
- - [ ] Add quick add quick +/- transaction buttons to each kid card, with a modal that easily lets you add a transaction in minimal clicks
+ - [x] Remove Dashboard title - it's already obvious
+ - [x] Move kid carousel to top above totals
+ - [x] Make the kid cards larger - left justify avatar, name at top
+ - [x] Add quick add quick +/- transaction buttons to each kid card, with a modal that easily lets you add a transaction in minimal clicks
 
 ## 🏠 Family Management
 

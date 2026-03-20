@@ -7,7 +7,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { PlusCircle, ArrowRight, Users, Check, X, LogOut, TrendingUp } from 'lucide-react';
+import { PlusCircle, Check, X, LogOut, TrendingUp, Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
@@ -24,14 +24,13 @@ interface Props {
 
 export default function Dashboard({ isParent, families, spenders, pendingCompletions, recentActivity, totalBalance, paidThisMonth }: Props) {
   const { auth } = usePage().props as any;
-  // A parent user may be previewing the child view — still wrap in layout so the exit banner shows
   const isActualParent: boolean = auth.isParent ?? false;
 
   return (
     <>
       <Head title="Dashboard" />
       {isParent ? (
-        <AuthenticatedLayout header={<h1 className="text-xl font-semibold">Dashboard</h1>}>
+        <AuthenticatedLayout>
           <ParentDashboard
             families={families}
             pendingCompletions={pendingCompletions}
@@ -41,7 +40,6 @@ export default function Dashboard({ isParent, families, spenders, pendingComplet
           />
         </AuthenticatedLayout>
       ) : isActualParent ? (
-        // Parent previewing child view — keep layout for the "exit view" banner
         <AuthenticatedLayout>
           <ChildDashboard spenders={spenders} />
         </AuthenticatedLayout>
@@ -67,19 +65,19 @@ function ParentDashboard({
   totalBalance: string;
   paidThisMonth: string;
 }) {
+  const [quickTxModal, setQuickTxModal] = useState<{ spender: Spender; accountId: string; type: 'credit' | 'debit' } | null>(null);
   const familyCurrencySymbol = families[0]?.currency_symbol ?? '$';
-  // Onboarding: no family yet
+
   if (families.length === 0) {
     return <CreateFamilyWizard />;
   }
 
-  // Onboarding: family exists but no spenders
   if (families.length > 0 && (families[0].spenders?.length ?? 0) === 0) {
     return (
       <Card className="max-w-md mx-auto mt-16 text-center">
         <CardContent className="pt-10 pb-10 flex flex-col items-center gap-4">
           <div className="rounded-full bg-muted p-4">
-            <Users className="h-8 w-8 text-muted-foreground" />
+            <PlusCircle className="h-8 w-8 text-muted-foreground" />
           </div>
           <div>
             <h2 className="font-semibold text-lg">Add your first kid</h2>
@@ -98,8 +96,39 @@ function ParentDashboard({
     );
   }
 
+  const allSpenders = families.flatMap(f => (f.spenders ?? []).map(s => ({ spender: s, family: f })));
+
+  function openQuickTx(spender: Spender, type: 'credit' | 'debit') {
+    const mainAccount = spender.accounts?.find(a => !a.is_savings_pot);
+    if (!mainAccount) return;
+    setQuickTxModal({ spender, accountId: mainAccount.id, type });
+  }
+
   return (
     <div className="space-y-6">
+      {/* Kids carousel — top */}
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Kids</h2>
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {allSpenders.map(({ spender, family }) => (
+            <KidCard
+              key={spender.id}
+              spender={spender}
+              currencySymbol={spender.currency_symbol ?? family.currency_symbol}
+              onAdd={() => openQuickTx(spender, 'credit')}
+              onSubtract={() => openQuickTx(spender, 'debit')}
+            />
+          ))}
+          <Link
+            href={route('spenders.create')}
+            className="shrink-0 flex flex-col items-center justify-center w-36 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors text-muted-foreground text-sm gap-2 min-h-[140px]"
+          >
+            <PlusCircle className="h-5 w-5" />
+            Add kid
+          </Link>
+        </div>
+      </div>
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-4">
         <Card>
@@ -114,23 +143,6 @@ function ParentDashboard({
             <p className="text-3xl font-bold tabular-nums mt-1">{formatAmount(paidThisMonth, familyCurrencySymbol)}</p>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Kids section */}
-      <div>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Kids</h2>
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {families.flatMap(f => (f.spenders ?? []).map(s => ({ spender: s, family: f }))).map(({ spender, family }) => (
-            <KidCard key={spender.id} spender={spender} currencySymbol={spender.currency_symbol ?? family.currency_symbol} />
-          ))}
-          <Link
-            href={route('spenders.create')}
-            className="shrink-0 flex flex-col items-center justify-center w-32 h-36 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors text-muted-foreground text-sm gap-2"
-          >
-            <PlusCircle className="h-5 w-5" />
-            Add kid
-          </Link>
-        </div>
       </div>
 
       {/* Pending approvals */}
@@ -175,11 +187,33 @@ function ParentDashboard({
           </CardContent>
         </Card>
       )}
+
+      {/* Quick transaction modal */}
+      {quickTxModal && (
+        <QuickTransactionModal
+          spender={quickTxModal.spender}
+          accountId={quickTxModal.accountId}
+          initialType={quickTxModal.type}
+          onClose={() => setQuickTxModal(null)}
+        />
+      )}
     </div>
   );
 }
 
-function KidCard({ spender, currencySymbol = '$' }: { spender: Spender; currencySymbol?: string }) {
+// ── Kid Card ──────────────────────────────────────────────────────────────────
+
+function KidCard({
+  spender,
+  currencySymbol = '$',
+  onAdd,
+  onSubtract,
+}: {
+  spender: Spender;
+  currencySymbol?: string;
+  onAdd: () => void;
+  onSubtract: () => void;
+}) {
   const mainBalance = spender.accounts
     ?.filter(a => !a.is_savings_pot)
     .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
@@ -193,25 +227,187 @@ function KidCard({ spender, currencySymbol = '$' }: { spender: Spender; currency
     : null;
 
   return (
-    <Link href={route('spenders.show', spender.id)} className="shrink-0">
-      <div className="w-32 h-36 rounded-xl border bg-card p-3 flex flex-col items-center gap-2 hover:border-primary/50 transition-colors">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={spender.avatar_url ?? undefined} />
-          <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white font-semibold">
-            {spender.name[0].toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <p className="text-sm font-medium truncate w-full text-center">{spender.name}</p>
-        <p className="text-base font-bold tabular-nums">{formatAmount(mainBalance, currencySymbol)}</p>
+    <div className="shrink-0 w-40 rounded-xl border bg-card hover:border-primary/40 transition-colors flex flex-col">
+      {/* Clickable top area */}
+      <Link href={route('spenders.show', spender.id)} className="flex flex-col gap-3 p-3 flex-1">
+        {/* Avatar + name row */}
+        <div className="flex items-center gap-2.5">
+          <Avatar className="h-10 w-10 shrink-0">
+            <AvatarImage src={spender.avatar_url ?? undefined} />
+            <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white font-semibold text-sm">
+              {spender.name[0].toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <p className="text-sm font-semibold truncate leading-tight">{spender.name}</p>
+        </div>
+
+        {/* Balance */}
+        <p className="text-2xl font-bold tabular-nums">{formatAmount(mainBalance, currencySymbol)}</p>
+
+        {/* Goal progress */}
         {goalProgress !== null && (
           <div className="w-full bg-muted rounded-full h-1.5">
             <div className="bg-amber-400 h-1.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
           </div>
         )}
+      </Link>
+
+      {/* Quick +/- buttons */}
+      <div className="flex border-t">
+        <button
+          onClick={onSubtract}
+          className="flex-1 flex items-center justify-center gap-1 py-2 text-red-500 hover:bg-red-50 transition-colors rounded-bl-xl"
+          aria-label={`Subtract from ${spender.name}`}
+        >
+          <Minus className="h-3.5 w-3.5" />
+          <span className="text-xs font-medium">Take</span>
+        </button>
+        <div className="w-px bg-border" />
+        <button
+          onClick={onAdd}
+          className="flex-1 flex items-center justify-center gap-1 py-2 text-green-600 hover:bg-green-50 transition-colors rounded-br-xl"
+          aria-label={`Add to ${spender.name}`}
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span className="text-xs font-medium">Add</span>
+        </button>
       </div>
-    </Link>
+    </div>
   );
 }
+
+// ── Quick Transaction Modal ───────────────────────────────────────────────────
+
+function QuickTransactionModal({
+  spender,
+  accountId,
+  initialType,
+  onClose,
+}: {
+  spender: Spender;
+  accountId: string;
+  initialType: 'credit' | 'debit';
+  onClose: () => void;
+}) {
+  const currencySymbol = spenderCurrencySymbol(spender);
+  const [type, setType] = useState<'credit' | 'debit'>(initialType);
+  const { data, setData, post, processing, errors, reset } = useForm({
+    type,
+    amount: '',
+    description: '',
+    occurred_at: new Date().toISOString(),
+  });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    post(route('accounts.transactions.store', accountId), {
+      onSuccess: () => {
+        reset();
+        onClose();
+        router.reload({ only: ['families', 'totalBalance', 'paidThisMonth', 'recentActivity'] });
+      },
+    });
+  }
+
+  function switchType(newType: 'credit' | 'debit') {
+    setType(newType);
+    setData('type', newType);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" />
+
+      {/* Panel */}
+      <div
+        className="relative w-full max-w-sm bg-card rounded-2xl shadow-xl p-5 flex flex-col gap-4"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={spender.avatar_url ?? undefined} />
+              <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white text-xs font-semibold">
+                {spender.name[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-semibold text-sm">{spender.name}</span>
+          </div>
+          <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Credit / Debit toggle — subtract left, add right */}
+        <div className="flex rounded-lg border overflow-hidden">
+          <button
+            type="button"
+            onClick={() => switchType('debit')}
+            className={`flex-1 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
+              type === 'debit' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <Minus className="h-3.5 w-3.5" />
+            Take away
+          </button>
+          <div className="w-px bg-border" />
+          <button
+            type="button"
+            onClick={() => switchType('credit')}
+            className={`flex-1 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
+              type === 'credit' ? 'bg-green-600 text-white' : 'text-muted-foreground hover:bg-muted'
+            }`}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add money
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={submit} className="flex flex-col gap-3">
+          {/* Amount */}
+          <div className="space-y-1">
+            <Label htmlFor="quick-amount">Amount ({currencySymbol})</Label>
+            <Input
+              id="quick-amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="0.00"
+              value={data.amount}
+              onChange={e => setData('amount', e.target.value)}
+              autoFocus
+            />
+            {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
+          </div>
+
+          {/* Description */}
+          <div className="space-y-1">
+            <Label htmlFor="quick-desc">Note <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Input
+              id="quick-desc"
+              placeholder="e.g. Pocket money"
+              value={data.description}
+              onChange={e => setData('description', e.target.value)}
+            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={processing || !data.amount}
+            className={type === 'credit' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600'}
+          >
+            {type === 'credit' ? 'Add' : 'Deduct'} {data.amount ? `${currencySymbol}${data.amount}` : ''}
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Pending Approvals ─────────────────────────────────────────────────────────
 
 function PendingApprovals({ initialPending }: {
   initialPending: (ChoreCompletion & { chore: Chore; spender: Spender })[];
@@ -274,6 +470,8 @@ function PendingApprovals({ initialPending }: {
   );
 }
 
+// ── Create Family Wizard ──────────────────────────────────────────────────────
+
 function CreateFamilyWizard() {
   const { data, setData, post, processing, errors } = useForm({ name: '' });
 
@@ -286,7 +484,7 @@ function CreateFamilyWizard() {
     <Card className="max-w-md mx-auto mt-16">
       <CardContent className="pt-10 pb-10 flex flex-col items-center gap-6">
         <div className="rounded-full bg-muted p-4">
-          <Users className="h-8 w-8 text-muted-foreground" />
+          <PlusCircle className="h-8 w-8 text-muted-foreground" />
         </div>
         <div className="text-center">
           <h2 className="font-semibold text-lg">Create your family</h2>
@@ -315,11 +513,8 @@ function CreateFamilyWizard() {
 // ── Child ─────────────────────────────────────────────────────────────────────
 
 function ChildDashboard({ spenders }: { spenders: Spender[] }) {
-  const { auth } = usePage().props as any;
-
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Minimal header */}
       <header className="flex items-center justify-between px-6 py-4">
         <span className="font-serif text-xl font-bold tracking-tight text-white">Quiddo</span>
         <Link
@@ -387,11 +582,9 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
     .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
 
   const goals = spender.savings_goals ?? [];
-  const weekCompletions = spender.chore_completions ?? [];
 
   return (
     <div className="space-y-6">
-      {/* Balance hero */}
       <div className="text-center pt-6">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
           style={{ backgroundColor: spender.color ?? '#6366f1' }}>
@@ -403,7 +596,6 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
         </p>
       </div>
 
-      {/* Savings goals */}
       {goals.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Goals</h3>
@@ -413,12 +605,11 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
         </div>
       )}
 
-      {/* Chores */}
       {(spender.chores?.length ?? 0) > 0 && (
         <div className="space-y-3">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Chores</h3>
           {spender.chores?.map(chore => (
-            <ChoreItem key={chore.id} chore={chore} spenderId={spender.id} weekCompletions={weekCompletions} currencySymbol={currencySymbol} />
+            <ChoreItem key={chore.id} chore={chore} spenderId={spender.id} weekCompletions={spender.chore_completions ?? []} currencySymbol={currencySymbol} />
           ))}
         </div>
       )}

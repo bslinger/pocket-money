@@ -41,14 +41,24 @@ class DatabaseSeeder extends Seeder
             ['color' => '#0ea5e9']
         );
 
+        $theodore = Spender::firstOrCreate(
+            ['family_id' => $family->id, 'name' => 'Theodore'],
+            ['color' => '#10b981']
+        );
+
         Account::firstOrCreate(
             ['spender_id' => $emma->id, 'name' => 'Savings'],
-            ['balance' => '0.00', 'is_savings_pot' => false]
+            ['balance' => '12.50', 'is_savings_pot' => false]
         );
 
         Account::firstOrCreate(
             ['spender_id' => $jack->id, 'name' => 'Savings'],
-            ['balance' => '0.00', 'is_savings_pot' => false]
+            ['balance' => '5.00', 'is_savings_pot' => false]
+        );
+
+        Account::firstOrCreate(
+            ['spender_id' => $theodore->id, 'name' => 'Savings'],
+            ['balance' => '27.80', 'is_savings_pot' => false]
         );
     }
 }
