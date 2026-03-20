@@ -87,7 +87,7 @@ function FamilyAccountMenu({
                             </Link>
                         </Button>
                         <Button variant="outline" size="sm" className="flex-1 gap-1.5" asChild>
-                            <Link href={route('families.show', activeFamily.id)}>
+                            <Link href={route('families.show', activeFamily.id) + '#parents'}>
                                 <User className="h-3.5 w-3.5" />
                                 Invite
                             </Link>

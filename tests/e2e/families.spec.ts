@@ -68,7 +68,9 @@ test.describe('Family context switcher', () => {
         await page.locator('nav').getByText("Ben's Family").click();
         // Family card
         await expect(page.getByRole('menuitem', { name: /Settings/i }).first()).toBeVisible();
-        await expect(page.getByRole('link', { name: /Invite/i })).toBeVisible();
+        const inviteLink = page.getByRole('link', { name: /Invite/i });
+        await expect(inviteLink).toBeVisible();
+        await expect(inviteLink).toHaveAttribute('href', /#parents$/);
         // Family list (active family has checkmark)
         await expect(page.getByRole('menuitem', { name: /New family/i })).toBeVisible();
         // Account actions

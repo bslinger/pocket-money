@@ -193,7 +193,7 @@ function ParentsSection({ family, authUserId }: {
     }
 
     return (
-        <Card>
+        <Card id="parents">
             <CardHeader className="pb-3">
                 <CardTitle className="text-base">Parents & carers</CardTitle>
             </CardHeader>
