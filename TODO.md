@@ -28,6 +28,20 @@ Organised by strategic area, with specific tasks nested under each.
 
 ---
 
+## 🏦 Savings Goals
+
+**Goal:** Give kids a concrete target to save towards; give parents an easy way to see and encourage progress.
+
+- [x] **Basic CRUD** — create, list, update, delete a goal
+- [ ] **Goal detail page** — large progress bar, current vs target, days remaining, contribute button
+- [ ] **Manual contributions** — parent logs an amount added to the goal; auto-marks complete when target reached
+- [ ] **Goal cover image** — upload an inspirational photo (e.g. photo of the bike the kid wants)
+- [ ] **Savings pot link** — when linked to an account, offer to pull/sync current_amount from pot balance
+- [ ] **Goal matching** — parents can optionally pledge to match kid contributions (e.g. "I'll match 50%")
+- [ ] **Kid-facing goal view** — kids see their own goals with progress and can celebrate when reached
+
+---
+
 ## ✅ Chores & Approvals
 
 **Goal:** Keep the chore approval loop fast enough that parents actually use it daily.

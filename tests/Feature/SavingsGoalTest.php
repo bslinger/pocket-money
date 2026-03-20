@@ -72,6 +72,49 @@ describe('savings goals', function () {
         });
     });
 
+    describe('contribute', function () {
+        it('adds to the current amount', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'     => $spenders->first()->id,
+                'target_amount'  => '100.00',
+                'current_amount' => '20.00',
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('goals.contribute', $goal), ['amount' => '30.00'])
+                ->assertRedirect();
+
+            expect((float) $goal->fresh()->current_amount)->toBe(50.0);
+            expect($goal->fresh()->is_completed)->toBeFalse();
+        });
+
+        it('marks the goal complete when current_amount reaches target', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'     => $spenders->first()->id,
+                'target_amount'  => '100.00',
+                'current_amount' => '80.00',
+                'is_completed'   => false,
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('goals.contribute', $goal), ['amount' => '20.00'])
+                ->assertRedirect();
+
+            expect($goal->fresh()->is_completed)->toBeTrue();
+        });
+
+        it('validates amount is required and positive', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create(['spender_id' => $spenders->first()->id]);
+
+            $this->actingAs($user)
+                ->post(route('goals.contribute', $goal), ['amount' => '0'])
+                ->assertSessionHasErrors('amount');
+        });
+    });
+
     describe('destroy', function () {
         it('deletes a savings goal', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);

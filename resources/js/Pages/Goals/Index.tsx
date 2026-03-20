@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Spender, SavingsGoal } from '@/types/models';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 
@@ -49,7 +49,7 @@ export default function GoalsIndex({ spenders }: { spenders: SpenderWithGoals[] 
                     const target = parseFloat(goal.target_amount);
                     const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
                     return (
-                      <div key={goal.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+                      <div key={goal.id} className="bg-white dark:bg-gray-800 rounded-xl shadow p-5 cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.visit(route('goals.show', goal.id))}>
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <p className="font-medium text-gray-900 dark:text-gray-100">{goal.name}</p>

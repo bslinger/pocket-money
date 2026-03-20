@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSavingsGoalRequest;
 use App\Models\SavingsGoal;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SavingsGoalController extends Controller
@@ -57,15 +58,33 @@ class SavingsGoalController extends Controller
     public function show(SavingsGoal $goal)
     {
         return Inertia::render('Goals/Show', [
-            'goal' => $goal->load('spender'),
+            'goal' => $goal->load(['spender.family', 'account']),
         ]);
     }
 
     public function edit(SavingsGoal $goal)
     {
+        $goal->load('spender');
+        $accounts = \App\Models\Account::where('spender_id', $goal->spender_id)->get();
+
         return Inertia::render('Goals/Edit', [
-            'goal' => $goal,
+            'goal'     => $goal,
+            'accounts' => $accounts,
         ]);
+    }
+
+    public function contribute(Request $request, SavingsGoal $goal)
+    {
+        $request->validate(['amount' => 'required|numeric|min:0.01']);
+
+        $goal->increment('current_amount', $request->amount);
+        $goal->refresh();
+
+        if (!$goal->is_completed && $goal->current_amount >= $goal->target_amount) {
+            $goal->update(['is_completed' => true]);
+        }
+
+        return back()->with('success', 'Contribution added!');
     }
 
     public function update(StoreSavingsGoalRequest $request, SavingsGoal $goal)
