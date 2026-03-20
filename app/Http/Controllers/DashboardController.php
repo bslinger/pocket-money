@@ -42,7 +42,7 @@ class DashboardController extends Controller
         if ($user->isParent() && $viewingAsSpenderId) {
             $spender = Spender::with([
                 'accounts',
-                'savingsGoals',
+                'savingsGoals.account',
                 'family',
                 'chores' => fn($q) => $q->where('is_active', true),
                 'choreCompletions' => fn($q) => $q->whereBetween('completed_at', [
@@ -117,7 +117,7 @@ class DashboardController extends Controller
 
         $spenders = $user->spenders()->with([
             'accounts',
-            'savingsGoals',
+            'savingsGoals.account',
             'family',
             'chores' => fn($q) => $q->where('is_active', true),
             'choreCompletions' => fn($q) => $q->whereBetween('completed_at', [

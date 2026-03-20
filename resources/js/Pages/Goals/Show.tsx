@@ -7,7 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
-import { CheckCircle2, Pencil, RefreshCw, Target, CalendarDays, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Pencil, Target, CalendarDays, TrendingUp } from 'lucide-react';
 
 interface Props {
     goal: SavingsGoal & {
@@ -19,17 +19,18 @@ interface Props {
 
 export default function GoalShow({ goal }: Props) {
     const symbol = spenderCurrencySymbol(goal.spender);
-    const current = parseFloat(goal.current_amount);
+    // If linked to an account, account balance IS the current amount
+    const current = goal.account ? parseFloat(goal.account.balance) : parseFloat(goal.current_amount);
     const target  = parseFloat(goal.target_amount);
     const pct     = target > 0 ? Math.min(100, (current / target) * 100) : 0;
     const remaining = target - current;
+    const isCompleted = goal.is_completed || current >= target;
 
     const daysLeft = goal.target_date
         ? Math.ceil((new Date(goal.target_date).getTime() - Date.now()) / 86_400_000)
         : null;
 
     const { data, setData, post, processing, errors, reset } = useForm({ amount: '' });
-    const { post: syncPost, processing: syncing } = useForm({});
 
     function contribute(e: React.FormEvent) {
         e.preventDefault();
@@ -76,7 +77,7 @@ export default function GoalShow({ goal }: Props) {
                                 </span>
                                 {goal.spender.name}'s goal
                             </CardTitle>
-                            {goal.is_completed && (
+                            {isCompleted && (
                                 <Badge className="bg-green-500 hover:bg-green-500 gap-1">
                                     <CheckCircle2 className="h-3 w-3" /> Complete
                                 </Badge>
@@ -100,7 +101,7 @@ export default function GoalShow({ goal }: Props) {
                         <div className="space-y-1.5">
                             <div className="w-full h-4 bg-muted rounded-full overflow-hidden">
                                 <div
-                                    className={`h-4 rounded-full transition-all duration-500 ${goal.is_completed ? 'bg-green-500' : 'bg-primary'}`}
+                                    className={`h-4 rounded-full transition-all duration-500 ${isCompleted ? 'bg-green-500' : 'bg-primary'}`}
                                     style={{ width: `${pct}%` }}
                                 />
                             </div>
@@ -131,32 +132,20 @@ export default function GoalShow({ goal }: Props) {
                     </CardContent>
                 </Card>
 
-                {/* Sync from linked account */}
-                {!goal.is_completed && goal.account && (
+                {/* Linked account info */}
+                {goal.account && (
                     <Card>
-                        <CardContent className="py-4 flex items-center justify-between gap-3">
-                            <div>
-                                <p className="text-sm font-medium">Linked account: {goal.account.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    Current balance: {formatAmount(goal.account.balance, symbol)}
-                                </p>
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={syncing}
-                                onClick={() => syncPost(route('goals.sync', goal.id))}
-                                className="gap-1.5 shrink-0"
-                            >
-                                <RefreshCw className={`h-3.5 w-3.5 ${syncing ? 'animate-spin' : ''}`} />
-                                Sync balance
-                            </Button>
+                        <CardContent className="py-4">
+                            <p className="text-sm font-medium">Linked to: {goal.account.name}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                Progress updates automatically as the account balance changes.
+                            </p>
                         </CardContent>
                     </Card>
                 )}
 
-                {/* Contribute */}
-                {!goal.is_completed && (
+                {/* Contribute (only for goals without a linked account) */}
+                {!isCompleted && !goal.account && (
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base flex items-center gap-2">
@@ -191,7 +180,7 @@ export default function GoalShow({ goal }: Props) {
                 )}
 
                 {/* Completion message */}
-                {goal.is_completed && (
+                {isCompleted && (
                     <Card className="border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-900">
                         <CardContent className="py-4 flex items-center gap-3">
                             <CheckCircle2 className="h-6 w-6 text-green-600 shrink-0" />

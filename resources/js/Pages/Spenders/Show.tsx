@@ -164,13 +164,14 @@ export default function SpenderShow({ spender }: { spender: Spender }) {
                         <Card>
                             <CardContent className="pt-4 space-y-4">
                                 {spender.savings_goals?.map(goal => {
-                                    const pct = Math.min(100, (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100);
+                                    const current = goal.account ? parseFloat(goal.account.balance) : parseFloat(goal.current_amount);
+                                    const pct = Math.min(100, (current / parseFloat(goal.target_amount)) * 100);
                                     return (
                                         <div key={goal.id}>
                                             <div className="flex justify-between text-sm mb-1.5">
                                                 <span className="font-medium">{goal.name}</span>
                                                 <span className="text-muted-foreground tabular-nums">
-                                                    {formatAmount(goal.current_amount, currencySymbol)} / {formatAmount(goal.target_amount, currencySymbol)}
+                                                    {formatAmount(current, currencySymbol)} / {formatAmount(goal.target_amount, currencySymbol)}
                                                 </span>
                                             </div>
                                             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">

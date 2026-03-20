@@ -132,4 +132,5 @@ export interface SavingsGoal {
   is_completed: boolean;
   match_percentage: number | null;
   spender?: Spender;
+  account?: Account | null;
 }

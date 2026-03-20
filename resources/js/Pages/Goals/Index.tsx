@@ -45,7 +45,7 @@ export default function GoalsIndex({ spenders }: { spenders: SpenderWithGoals[] 
                 </div>
                 <div className="space-y-3">
                   {spender.savings_goals.map(goal => {
-                    const current = parseFloat(goal.current_amount);
+                    const current = goal.account ? parseFloat(goal.account.balance) : parseFloat(goal.current_amount);
                     const target = parseFloat(goal.target_amount);
                     const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
                     return (

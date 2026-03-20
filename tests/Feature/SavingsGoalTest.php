@@ -165,6 +165,20 @@ describe('savings goals', function () {
                 ->post(route('goals.contribute', $goal), ['amount' => '0'])
                 ->assertSessionHasErrors('amount');
         });
+
+        it('rejects contributions to goals linked to an account', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id, 'balance' => '50.00']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'    => $spenders->first()->id,
+                'account_id'    => $account->id,
+                'target_amount' => '100.00',
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('goals.contribute', $goal), ['amount' => '10.00'])
+                ->assertStatus(422);
+        });
     });
 
     describe('destroy', function () {

@@ -17,7 +17,7 @@ class SavingsGoalController extends Controller
                     ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
                     ->pluck('families.id')
             )
-            ->with(['savingsGoals', 'family'])
+            ->with(['savingsGoals.account', 'family'])
             ->get();
 
         return Inertia::render('Goals/Index', [
@@ -91,6 +91,8 @@ class SavingsGoalController extends Controller
 
     public function contribute(Request $request, SavingsGoal $goal)
     {
+        abort_if($goal->account_id !== null, 422, 'Contributions are tracked automatically via the linked account balance.');
+
         $request->validate(['amount' => 'required|numeric|min:0.01']);
 
         $contribution = (float) $request->amount;

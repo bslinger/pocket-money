@@ -185,8 +185,11 @@ function KidCard({ spender, currencySymbol = '$' }: { spender: Spender; currency
     .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
 
   const goal = spender.savings_goals?.[0];
+  const goalCurrent = goal
+    ? (goal.account ? parseFloat(String(goal.account.balance)) : parseFloat(String(goal.current_amount)))
+    : 0;
   const goalProgress = goal
-    ? Math.min(100, (parseFloat(String(goal.current_amount)) / parseFloat(String(goal.target_amount))) * 100)
+    ? Math.min(100, (goalCurrent / parseFloat(String(goal.target_amount))) * 100)
     : null;
 
   return (
@@ -343,7 +346,7 @@ function ChildDashboard({ spenders }: { spenders: Spender[] }) {
 }
 
 function GoalProgressCard({ goal, currencySymbol }: { goal: SavingsGoal; currencySymbol: string }) {
-  const current = parseFloat(String(goal.current_amount));
+  const current = goal.account ? parseFloat(String(goal.account.balance)) : parseFloat(String(goal.current_amount));
   const target  = parseFloat(String(goal.target_amount));
   const pct     = Math.min(100, target > 0 ? (current / target) * 100 : 0);
 

@@ -27,7 +27,7 @@ class SpenderController extends Controller
         return Inertia::render('Spenders/Show', [
             'spender' => $spender->load([
                 'accounts.transactions' => fn($q) => $q->latest('occurred_at')->limit(20),
-                'savingsGoals',
+                'savingsGoals.account',
                 'family',
                 'users',
             ]),
