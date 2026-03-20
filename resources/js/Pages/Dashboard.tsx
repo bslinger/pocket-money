@@ -217,7 +217,14 @@ function KidCard({
     ?.filter(a => !a.is_savings_pot)
     .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
 
-  const goal = spender.savings_goals?.[0];
+  // Pick the goal closest to completion (highest progress %)
+  const goal = spender.savings_goals
+    ?.filter(g => !g.is_completed)
+    .sort((a, b) => {
+      const pctA = a.account ? parseFloat(String(a.account.balance)) / Math.max(parseFloat(String(a.target_amount)), 0.01) : 0;
+      const pctB = b.account ? parseFloat(String(b.account.balance)) / Math.max(parseFloat(String(b.target_amount)), 0.01) : 0;
+      return pctB - pctA;
+    })[0] ?? null;
   const goalCurrent = goal
     ? (goal.account ? parseFloat(String(goal.account.balance)) : 0)
     : 0;
