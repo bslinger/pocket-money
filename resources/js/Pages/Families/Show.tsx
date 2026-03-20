@@ -9,8 +9,7 @@ import { guessNameFromEmoji } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
 import { PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon, ArchiveRestore } from 'lucide-react';
-import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
-import { useState, useRef, useEffect } from 'react';
+import EmojiPickerField from '@/Components/EmojiPickerField';
 
 interface Props {
     family: Family & {
@@ -48,24 +47,6 @@ function FamilyDetailsSection({ family }: { family: Family }) {
         currency_name:   family.currency_name,
         currency_symbol: family.currency_symbol,
     });
-
-    const [showPicker, setShowPicker] = useState(false);
-    const pickerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        function handleClickOutside(e: MouseEvent) {
-            if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
-                setShowPicker(false);
-            }
-        }
-        if (showPicker) document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showPicker]);
-
-    function onEmojiClick(emojiData: EmojiClickData) {
-        setData({ ...data, currency_symbol: emojiData.emoji, currency_name: guessNameFromEmoji(emojiData.names) });
-        setShowPicker(false);
-    }
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
@@ -126,30 +107,13 @@ function FamilyDetailsSection({ family }: { family: Family }) {
 
                         {/* Custom emoji */}
                         <div className="flex items-center gap-3 pt-1">
-                            <div className="relative" ref={pickerRef}>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPicker(v => !v)}
-                                    className={`w-12 h-10 rounded-lg border text-xl flex items-center justify-center transition-colors ${
-                                        isCustomPreset
-                                            ? 'border-primary bg-primary/5'
-                                            : 'border-border hover:border-primary/40 bg-background'
-                                    }`}
-                                    aria-label="Custom emoji currency"
-                                >
-                                    {isCustomPreset ? data.currency_symbol : '✏️'}
-                                </button>
-                                {showPicker && (
-                                    <div className="absolute left-0 top-12 z-50">
-                                        <EmojiPicker
-                                            onEmojiClick={onEmojiClick}
-                                            theme={Theme.AUTO}
-                                            lazyLoadEmojis
-                                            searchPlaceholder="Search emoji…"
-                                        />
-                                    </div>
-                                )}
-                            </div>
+                            <EmojiPickerField
+                                value={isCustomPreset ? data.currency_symbol : ''}
+                                defaultEmoji="✏️"
+                                onChange={e => setData({ ...data, currency_symbol: e })}
+                                onPickerChange={d => setData({ ...data, currency_symbol: d.emoji, currency_name: guessNameFromEmoji(d.names) })}
+                                pickerAlign="left"
+                            />
                             <div>
                                 <p className="text-sm font-medium">Custom emoji</p>
                                 <p className="text-xs text-muted-foreground">Pick any emoji for your currency</p>

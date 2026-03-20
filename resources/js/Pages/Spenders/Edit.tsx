@@ -6,9 +6,9 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { cn, guessNameFromEmoji } from '@/lib/utils';
-import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import EmojiPickerField from '@/Components/EmojiPickerField';
 import ImageUpload from '@/Components/ImageUpload';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 
 const COLOURS = [
     '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316',
@@ -27,24 +27,6 @@ export default function SpenderEdit({ spender, family }: { spender: Spender; fam
         currency_name:    spender.currency_name ?? '',
         currency_symbol:  spender.currency_symbol ?? '',
     });
-
-    const [showPicker, setShowPicker] = useState(false);
-    const pickerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        function handleClickOutside(e: MouseEvent) {
-            if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
-                setShowPicker(false);
-            }
-        }
-        if (showPicker) document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showPicker]);
-
-    function onEmojiClick(emojiData: EmojiClickData) {
-        setData(d => ({ ...d, currency_symbol: emojiData.emoji, currency_name: guessNameFromEmoji(emojiData.names) }));
-        setShowPicker(false);
-    }
 
     function toggleOverride(checked: boolean) {
         setOverrideCurrency(checked);
@@ -129,26 +111,13 @@ export default function SpenderEdit({ spender, family }: { spender: Spender; fam
                                     <div className="flex items-center gap-3">
                                         <div className="space-y-1">
                                             <Label className="text-xs">Emoji symbol</Label>
-                                            <div className="relative" ref={pickerRef}>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPicker(v => !v)}
-                                                    className="w-12 h-10 rounded-lg border border-input bg-background text-xl flex items-center justify-center hover:bg-accent transition-colors"
-                                                    aria-label="Pick emoji"
-                                                >
-                                                    {data.currency_symbol || <span className="text-muted-foreground text-sm">😀</span>}
-                                                </button>
-                                                {showPicker && (
-                                                    <div className="absolute left-0 top-12 z-50">
-                                                        <EmojiPicker
-                                                            onEmojiClick={onEmojiClick}
-                                                            theme={Theme.AUTO}
-                                                            lazyLoadEmojis
-                                                            searchPlaceholder="Search emoji…"
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <EmojiPickerField
+                                                value={data.currency_symbol}
+                                                defaultEmoji="💰"
+                                                onChange={e => setData(d => ({ ...d, currency_symbol: e }))}
+                                                onPickerChange={d => setData(prev => ({ ...prev, currency_symbol: d.emoji, currency_name: guessNameFromEmoji(d.names) }))}
+                                                pickerAlign="left"
+                                            />
                                         </div>
                                         <div className="flex-1 space-y-1">
                                             <Label htmlFor="currency_name" className="text-xs">Currency name</Label>

@@ -5,8 +5,7 @@ import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
-import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
-import { useState, useRef, useEffect } from 'react';
+import EmojiPickerField from '@/Components/EmojiPickerField';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -49,24 +48,6 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
     is_active:         chore?.is_active ?? true,
     spender_ids:       chore?.spenders?.map(s => s.id) ?? [] as string[],
   });
-
-  const [showPicker, setShowPicker] = useState(false);
-  const pickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
-        setShowPicker(false);
-      }
-    }
-    if (showPicker) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showPicker]);
-
-  function onEmojiClick(emojiData: EmojiClickData) {
-    setData('emoji', emojiData.emoji);
-    setShowPicker(false);
-  }
 
   function toggleDay(dayIndex: number) {
     const current = data.days_of_week as number[];
@@ -123,26 +104,11 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
             </div>
             <div className="space-y-1.5">
               <Label>Emoji</Label>
-              <div className="relative" ref={pickerRef}>
-                <button
-                  type="button"
-                  onClick={() => setShowPicker(v => !v)}
-                  className="w-14 h-10 rounded-md border border-input bg-background text-xl flex items-center justify-center hover:bg-accent transition-colors"
-                  aria-label="Pick emoji"
-                >
-                  {data.emoji || <span className="text-muted-foreground text-sm">😀</span>}
-                </button>
-                {showPicker && (
-                  <div className="absolute right-0 top-11 z-50">
-                    <EmojiPicker
-                      onEmojiClick={onEmojiClick}
-                      theme={Theme.AUTO}
-                      lazyLoadEmojis
-                      searchPlaceholder="Search emoji…"
-                    />
-                  </div>
-                )}
-              </div>
+              <EmojiPickerField
+                value={data.emoji}
+                defaultEmoji="📋"
+                onChange={e => setData('emoji', e)}
+              />
             </div>
           </div>
 
