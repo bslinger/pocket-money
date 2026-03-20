@@ -7,6 +7,7 @@ use App\Models\Family;
 use App\Models\FamilyUser;
 use App\Models\User;
 use App\Enums\FamilyRole;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -76,6 +77,13 @@ class FamilyController extends Controller
         );
 
         return back()->with('success', 'User invited successfully.');
+    }
+
+    public function switchActive(Family $family): RedirectResponse
+    {
+        session(['active_family_id' => $family->id]);
+
+        return redirect()->route('dashboard');
     }
 
     public function removeMember(Family $family, User $user)

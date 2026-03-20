@@ -3,14 +3,14 @@ import { test, expect } from './fixtures';
 test.describe('Families', () => {
     test('can view the families list', async ({ page }) => {
         await page.goto('/families');
-        await expect(page.getByText("Ben's Family")).toBeVisible();
+        await expect(page.locator('main').getByText("Ben's Family")).toBeVisible();
     });
 
     test('can view a family', async ({ page }) => {
         await page.goto('/families');
         // Family name is a span, not a link — use the "View" link
         await page.getByRole('link', { name: 'View' }).first().click();
-        await expect(page.getByText("Ben's Family")).toBeVisible();
+        await expect(page.locator('main').getByText("Ben's Family")).toBeVisible();
     });
 
     test('can create a new family', async ({ page }) => {
@@ -32,13 +32,27 @@ test.describe('Families', () => {
         await page.getByRole('link', { name: 'Edit' }).first().click();
         await page.fill('#name', "Ben's Updated Family");
         await page.click('button:has-text("Save Changes")');
-        await expect(page.getByText("Ben's Updated Family")).toBeVisible();
+        await expect(page.getByText("Ben's Updated Family").first()).toBeVisible();
 
         // Restore original name
         await page.goto('/families');
         await page.getByRole('link', { name: 'Edit' }).first().click();
         await page.fill('#name', "Ben's Family");
         await page.click('button:has-text("Save Changes")');
+    });
+});
+
+test.describe('Family context switcher', () => {
+    test('shows the active family name in the nav bar', async ({ page }) => {
+        await page.goto('/dashboard');
+        await expect(page.getByRole('button', { name: "Ben's Family" })).toBeVisible();
+    });
+
+    test('opens switcher and shows manage/add options', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByRole('button', { name: "Ben's Family" }).click();
+        await expect(page.getByRole('menuitem', { name: /Manage families/i })).toBeVisible();
+        await expect(page.getByRole('menuitem', { name: /Add new family/i })).toBeVisible();
     });
 });
 
@@ -56,12 +70,12 @@ test.describe('Family settings page', () => {
         await page.getByRole('link', { name: 'View' }).first().click();
         await page.fill('#family-name', "Ben's Updated Family");
         await page.click('button:has-text("Save")');
-        await expect(page.getByText("Ben's Updated Family")).toBeVisible();
+        await expect(page.getByText("Ben's Updated Family").first()).toBeVisible();
 
         // Restore
         await page.fill('#family-name', "Ben's Family");
         await page.click('button:has-text("Save")');
-        await expect(page.getByText("Ben's Family")).toBeVisible();
+        await expect(page.getByText("Ben's Family").first()).toBeVisible();
     });
 
     test('can select a currency preset', async ({ page }) => {

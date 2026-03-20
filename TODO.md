@@ -21,6 +21,8 @@ Organised by strategic area, with specific tasks nested under each.
 **Goal:** Make the core earn/spend loop fast and reliable for parents and kids.
 
 - [ ] **Integer amounts for non-dollar currencies** — when using coins/stars, forms should default to whole numbers
+- [ ] **Currency plural handling** — correctly pluralise currency names where possible (e.g. "1 Sheep / 2 Sheep", "1 Mouse / 2 Mice"); allow parents to specify an optional plural form
+- [ ] **Guess currency name from emoji** — when parent picks an emoji, auto-suggest the currency name (e.g. ⭐ → "Star", 🪙 → "Coin", 🍕 → "Pizza Slice")
 - [ ] **Savings goal matching** — parents can optionally match kid contributions on goals
 - [ ] **Onboarding flow** — smoother setup wizard: create family → choose currency → add kids → set pocket money → create first chore
 

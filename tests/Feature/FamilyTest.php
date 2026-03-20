@@ -187,6 +187,17 @@ describe('families', function () {
         });
     });
 
+    describe('switch active', function () {
+        it('stores the family id in the session', function () {
+            [$user, $family] = parentWithFamily();
+
+            $this->actingAs($user)
+                ->post(route('families.switch', $family))
+                ->assertRedirect(route('dashboard'))
+                ->assertSessionHas('active_family_id', $family->id);
+        });
+    });
+
     describe('invite', function () {
         it('adds an existing user to the family', function () {
             [$user, $family] = parentWithFamily();

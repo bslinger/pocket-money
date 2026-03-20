@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { CheckSquare, LayoutDashboard, LogOut, Settings, User, Wallet, Coins } from 'lucide-react';
+import { CheckSquare, Check, ChevronDown, LayoutDashboard, LogOut, PlusCircle, Settings, Settings2, User, Wallet, Coins } from 'lucide-react';
 
 export default function AuthenticatedLayout({
     header,
@@ -19,6 +19,8 @@ export default function AuthenticatedLayout({
     const { auth } = usePage().props as any;
     const user = auth.user;
     const isParent: boolean = auth.isParent ?? false;
+    const activeFamily: { id: string; name: string } | null = auth.activeFamily ?? null;
+    const userFamilies: { id: string; name: string }[] = auth.userFamilies ?? [];
     const initials = (user.display_name ?? user.name)
         .split(' ')
         .map((w: string) => w[0])
@@ -63,6 +65,47 @@ export default function AuthenticatedLayout({
                                 )}
                             </div>
                         </div>
+
+                        {/* Family context switcher */}
+                        {isParent && activeFamily && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="gap-1.5 max-w-[180px]">
+                                        <span className="truncate text-sm font-medium">{activeFamily.name}</span>
+                                        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-52">
+                                    {userFamilies.map(f => (
+                                        <DropdownMenuItem
+                                            key={f.id}
+                                            onSelect={() => {
+                                                if (f.id !== activeFamily.id) {
+                                                    router.post(route('families.switch', f.id));
+                                                }
+                                            }}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <Check className={`h-3.5 w-3.5 shrink-0 ${f.id === activeFamily.id ? 'text-primary' : 'invisible'}`} />
+                                            <span className="truncate">{f.name}</span>
+                                        </DropdownMenuItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <Link href={route('families.index')} className="flex items-center gap-2">
+                                            <Settings2 className="h-3.5 w-3.5" />
+                                            Manage families
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href={route('families.create')} className="flex items-center gap-2">
+                                            <PlusCircle className="h-3.5 w-3.5" />
+                                            Add new family
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
 
                         {/* User menu */}
                         <DropdownMenu>

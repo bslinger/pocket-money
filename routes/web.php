@@ -32,6 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Family routes available to any authenticated user (creating a family establishes parent status)
     Route::resource('families', FamilyController::class);
+    Route::post('/families/{family}/switch', [FamilyController::class, 'switchActive'])->name('families.switch');
     Route::post('/families/{family}/invite', [FamilyController::class, 'invite'])->name('families.invite');
     Route::delete('/families/{family}/members/{user}', [FamilyController::class, 'removeMember'])->name('families.members.destroy');
     Route::patch('/families/{family}/members/{user}/role', [FamilyController::class, 'updateMemberRole'])->name('families.members.role');
