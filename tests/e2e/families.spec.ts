@@ -43,16 +43,22 @@ test.describe('Families', () => {
 });
 
 test.describe('Family context switcher', () => {
-    test('shows the active family name in the nav bar', async ({ page }) => {
+    test('shows the active family name in the nav trigger', async ({ page }) => {
         await page.goto('/dashboard');
-        await expect(page.getByRole('button', { name: "Ben's Family" })).toBeVisible();
+        await expect(page.locator('nav').getByText("Ben's Family")).toBeVisible();
     });
 
-    test('opens switcher and shows manage/add options', async ({ page }) => {
+    test('opens the combined menu and shows family card, family list, and account actions', async ({ page }) => {
         await page.goto('/dashboard');
-        await page.getByRole('button', { name: "Ben's Family" }).click();
-        await expect(page.getByRole('menuitem', { name: /Manage families/i })).toBeVisible();
-        await expect(page.getByRole('menuitem', { name: /Add new family/i })).toBeVisible();
+        await page.locator('nav').getByText("Ben's Family").click();
+        // Family card
+        await expect(page.getByRole('menuitem', { name: /Settings/i }).first()).toBeVisible();
+        await expect(page.getByRole('link', { name: /Invite/i })).toBeVisible();
+        // Family list (active family has checkmark)
+        await expect(page.getByRole('menuitem', { name: /New family/i })).toBeVisible();
+        // Account actions
+        await expect(page.getByRole('menuitem', { name: /Profile settings/i })).toBeVisible();
+        await expect(page.getByRole('menuitem', { name: /Log out/i })).toBeVisible();
     });
 });
 

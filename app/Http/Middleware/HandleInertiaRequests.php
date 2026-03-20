@@ -57,6 +57,7 @@ class HandleInertiaRequests extends Middleware
 
         $families = $user->families()
             ->select(['families.id', 'families.name', 'families.currency_name', 'families.currency_symbol'])
+            ->withCount(['familyUsers as parents_count', 'spenders as kids_count'])
             ->get();
 
         if ($families->isEmpty()) {

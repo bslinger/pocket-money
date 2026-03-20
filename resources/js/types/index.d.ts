@@ -10,6 +10,8 @@ export interface ActiveFamily {
     name: string;
     currency_name: string;
     currency_symbol: string;
+    parents_count: number;
+    kids_count: number;
 }
 
 export type PageProps<
