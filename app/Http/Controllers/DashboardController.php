@@ -21,6 +21,7 @@ class DashboardController extends Controller
 
         if ($showAsParent) {
             $families = $user->families()
+                ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
                 ->with(['spenders.accounts', 'spenders.savingsGoals'])
                 ->get();
 

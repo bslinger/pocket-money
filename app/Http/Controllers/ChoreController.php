@@ -13,6 +13,7 @@ class ChoreController extends Controller
     {
         $families = $request->user()
             ->families()
+            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
             ->with(['chores.spenders', 'spenders'])
             ->get();
 
@@ -23,7 +24,9 @@ class ChoreController extends Controller
 
     public function create(Request $request)
     {
-        $families  = $request->user()->families()->with('spenders')->get();
+        $families  = $request->user()->families()
+            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->with('spenders')->get();
         $spenders  = $families->flatMap(fn($f) => $f->spenders)->values();
 
         return Inertia::render('Chores/Create', [
@@ -47,7 +50,9 @@ class ChoreController extends Controller
     public function edit(Chore $chore)
     {
         $chore->load('spenders');
-        $families = auth()->user()->families()->with('spenders')->get();
+        $families = auth()->user()->families()
+            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->with('spenders')->get();
         $spenders = $families->flatMap(fn($f) => $f->spenders)->values();
 
         return Inertia::render('Chores/Edit', [

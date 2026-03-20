@@ -16,7 +16,9 @@ class PocketMoneyReleaseController extends Controller
 
         abort_if($user === null, 401);
 
-        $familyIds = $user->families()->pluck('families.id');
+        $familyIds = $user->families()
+            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->pluck('families.id');
 
         $spenders = \App\Models\Spender::whereIn('family_id', $familyIds)
             ->with([

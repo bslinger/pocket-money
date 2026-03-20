@@ -11,7 +11,11 @@ class SavingsGoalController extends Controller
     public function index()
     {
         $user     = auth()->user();
-        $spenders = \App\Models\Spender::whereIn('family_id', $user->families()->pluck('families.id'))
+        $spenders = \App\Models\Spender::whereIn('family_id',
+                $user->families()
+                    ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+                    ->pluck('families.id')
+            )
             ->with(['savingsGoals', 'family'])
             ->get();
 
@@ -24,7 +28,11 @@ class SavingsGoalController extends Controller
     {
         $user     = auth()->user();
         $spenders = $user->isParent()
-            ? \App\Models\Spender::whereIn('family_id', $user->families()->pluck('families.id'))->get()
+            ? \App\Models\Spender::whereIn('family_id',
+                $user->families()
+                    ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+                    ->pluck('families.id')
+              )->get()
             : $user->spenders()->get();
         $accounts = \App\Models\Account::whereIn('spender_id', $spenders->pluck('id'))->get();
 

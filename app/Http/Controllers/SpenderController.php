@@ -34,7 +34,9 @@ class SpenderController extends Controller
     public function create()
     {
         return Inertia::render('Spenders/Create', [
-            'families' => auth()->user()->families()->get(),
+            'families' => auth()->user()->families()
+                ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+                ->get(),
         ]);
     }
 
