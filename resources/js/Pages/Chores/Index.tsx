@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
-import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History } from 'lucide-react';
 import { formatAmount } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -189,6 +189,11 @@ export default function ChoresIndex({ families }: Props) {
                               </Avatar>
                             ))}
                           </div>
+                          <Button variant="ghost" size="icon" asChild className="h-7 w-7" title="History">
+                            <Link href={route('chores.history', chore.id)}>
+                              <History className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
                           <Button variant="ghost" size="icon" asChild className="h-7 w-7">
                             <Link href={route('chores.edit', chore.id)}>
                               <Pencil className="h-3.5 w-3.5" />

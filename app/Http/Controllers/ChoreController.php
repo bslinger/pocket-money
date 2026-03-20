@@ -74,6 +74,21 @@ class ChoreController extends Controller
         return redirect()->route('chores.index');
     }
 
+    public function history(Chore $chore)
+    {
+        $chore->load('spenders');
+
+        $completions = $chore->completions()
+            ->with('spender')
+            ->orderByDesc('completed_at')
+            ->paginate(30);
+
+        return Inertia::render('Chores/History', [
+            'chore'       => $chore,
+            'completions' => $completions,
+        ]);
+    }
+
     public function destroy(Chore $chore)
     {
         $chore->delete();

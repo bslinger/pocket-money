@@ -248,6 +248,28 @@ describe('chore completions', function () {
         });
     });
 
+    describe('history', function () {
+        it('returns the history page for a chore', function () {
+            [$parent, $family, $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            ChoreCompletion::factory()->create([
+                'chore_id'   => $chore->id,
+                'spender_id' => $spender->id,
+                'status'     => CompletionStatus::Approved,
+            ]);
+
+            $this->actingAs($parent)
+                ->get(route('chores.history', $chore))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Chores/History')
+                    ->has('chore')
+                    ->has('completions.data', 1)
+                );
+        });
+    });
+
     describe('decline', function () {
         it('declines a completion with an optional note', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);

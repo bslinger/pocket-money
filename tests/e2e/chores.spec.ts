@@ -66,7 +66,7 @@ test.describe('Chores', () => {
 
         // Edit it — find the pencil/edit button in the same row
         const choreRow = page.locator('.divide-y > div').filter({ hasText: 'Editable Chore' });
-        await choreRow.getByRole('link').first().click();
+        await choreRow.getByRole('link').last().click();
         await expect(page).toHaveURL(/\/chores\/.*\/edit/);
         await page.fill('#name', 'Edited Chore');
         await page.click('button:has-text("Save Changes")');
@@ -89,6 +89,24 @@ test.describe('Chores', () => {
         // Delete button is the last button in the row (after the edit link)
         await choreRow.locator('button').last().click();
         await expect(page.getByText('Delete Me Chore')).not.toBeVisible();
+    });
+
+    test('can view chore history page', async ({ page }) => {
+        // Create a chore
+        await page.goto('/chores/create');
+        await page.fill('#name', 'History Test Chore');
+        await page.click('button:has-text("Earns")');
+        await page.fill('#amount', '1.00');
+        await page.click('button:has-text("Emma")');
+        await page.click('button:has-text("Create Chore")');
+        await expect(page.getByText('History Test Chore')).toBeVisible();
+
+        // Click the history button (clock icon)
+        const choreRow = page.locator('.divide-y > div').filter({ hasText: 'History Test Chore' });
+        await choreRow.getByTitle('History').click();
+        await expect(page).toHaveURL(/\/chores\/.*\/history/);
+        await expect(page.getByText('History Test Chore')).toBeVisible();
+        await expect(page.getByText('No completions yet.')).toBeVisible();
     });
 
     test('can filter chores by kid', async ({ page }) => {

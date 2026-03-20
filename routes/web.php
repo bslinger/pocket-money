@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
 
         Route::resource('chores', ChoreController::class)->except('show');
+        Route::get('/chores/{chore}/history', [ChoreController::class, 'history'])->name('chores.history');
         Route::patch('/chore-completions/{completion}/approve', [ChoreCompletionController::class, 'approve'])->name('chore-completions.approve');
         Route::patch('/chore-completions/{completion}/decline', [ChoreCompletionController::class, 'decline'])->name('chore-completions.decline');
         Route::post('/chore-completions/bulk-approve', [ChoreCompletionController::class, 'bulkApprove'])->name('chore-completions.bulk-approve');
