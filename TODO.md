@@ -1,0 +1,81 @@
+# Pocket Money — TODO
+
+Organised by strategic area, with specific tasks nested under each.
+
+---
+
+## 🏠 Family Management ← next up
+
+**Goal:** Give parents full control over their family setup — members, kids, and settings.
+
+- [ ] **Invite a second parent / carer** — email invite flow; invited user joins the family with Member role
+- [ ] **Manage family members** — list current parents/carers, remove a member, change role (Admin ↔ Member)
+- [ ] **Edit kid profile** — update name, avatar, colour, and currency override from a single place (currently split across pages)
+- [ ] **Archive / deactivate a kid** — soft-delete so history is preserved when a child ages out
+- [ ] **Family settings page** — consolidate currency, pocket money day, and member management into one place
+
+---
+
+## 💰 Pocket Money & Transactions
+
+**Goal:** Make the core earn/spend loop fast and reliable for parents and kids.
+
+- [ ] **Integer amounts for non-dollar currencies** — when using coins/stars, forms should default to whole numbers
+- [ ] **Savings goal matching** — parents can optionally match kid contributions on goals
+- [ ] **Onboarding flow** — smoother setup wizard: create family → choose currency → add kids → set pocket money → create first chore
+
+---
+
+## ✅ Chores & Approvals
+
+**Goal:** Keep the chore approval loop fast enough that parents actually use it daily.
+
+- [ ] **Approval flow speed** — one-tap approve from push notification; reachable in under 10 seconds
+- [ ] **Bulk approve** — approve multiple pending chores at once from the dashboard
+- [ ] **Chore history** — view past completions and approval decisions per chore
+
+---
+
+## 🏆 Engagement & Rewards
+
+**Goal:** Give kids reasons to keep coming back; give parents tools beyond money.
+
+- [ ] **Achievements & badges** — auto-awarded milestones ('First $10 saved!', '10 chores completed'); parents can create custom badges
+- [ ] **Family reward store** — parents create a store of privileges (screen time, choose dinner, stay up late) with point costs
+- [ ] **Family leaderboard** — optional sibling competition for most chores this week
+- [ ] **Wish list** — kids add items with prices; parents see saving progress; grandparents can give targeted gifts
+
+---
+
+## 📱 Kid Experience
+
+**Goal:** A dedicated view kids actually enjoy using.
+
+- [ ] **Kid-facing app view** — dedicated child dashboard: balance hero, chore list, goal progress bar
+- [ ] **Push notifications** — notify kids when a chore is approved ('You now have 450 coins!')
+- [ ] **Age-appropriate money tips** nudged into the UI
+
+---
+
+## 📣 Communication & Sharing
+
+**Goal:** Keep the family connected to the app between sessions.
+
+- [ ] **Weekly email digest** — parents receive balances, chores done, upcoming goals
+- [ ] **Printable goal cards** — kids can show grandparents their savings progress
+
+---
+
+## 🎨 Customisation & Upsell
+
+**Goal:** Premium features that delight without being essential.
+
+- [ ] **Dark mode / custom themes**
+- [ ] **Seasonal badge packs**
+
+---
+
+## 🔧 Tech / Infrastructure
+
+- [ ] **Spender Create page** — add optional currency override (currently only on Edit)
+- [ ] **PHPStan** — keep at level 5; run after every PHP change
