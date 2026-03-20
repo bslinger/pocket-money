@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     RecurringTransactionController, SavingsGoalController,
     BillingController, SettingsController, ImageUploadController,
     ChoreController, ChoreCompletionController, PocketMoneyReleaseController,
-    PocketMoneyScheduleController,
+    PocketMoneyScheduleController, ChoreRewardController,
     MarketingController, InvitationController
 };
 use App\Http\Controllers\ProfileController;
@@ -71,6 +71,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/pocket-money/release', [PocketMoneyReleaseController::class, 'pay'])->name('pocket-money.pay');
         Route::post('/spenders/{spender}/pocket-money-schedule', [PocketMoneyScheduleController::class, 'store'])->name('pocket-money-schedule.store');
         Route::delete('/pocket-money-schedules/{schedule}', [PocketMoneyScheduleController::class, 'destroy'])->name('pocket-money-schedule.destroy');
+        Route::post('/spenders/{spender}/chore-rewards', [ChoreRewardController::class, 'store'])->name('chore-rewards.store');
+        Route::delete('/chore-rewards/{choreReward}', [ChoreRewardController::class, 'destroy'])->name('chore-rewards.destroy');
     });
 
     // Wildcard show routes AFTER resource routes to avoid capturing /spenders/create etc.

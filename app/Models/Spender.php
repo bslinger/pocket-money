@@ -79,4 +79,10 @@ class Spender extends Model
     {
         return $this->hasMany(ChoreCompletion::class);
     }
+
+    /** @return HasMany<ChoreReward, $this> */
+    public function choreRewards(): HasMany
+    {
+        return $this->hasMany(ChoreReward::class);
+    }
 }

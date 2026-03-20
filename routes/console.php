@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('recurring:run')->hourly();
 Schedule::command('pocket-money:run')->hourly();
+Schedule::command('chore-rewards:run')->daily();

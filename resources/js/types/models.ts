@@ -136,6 +136,20 @@ export interface PocketMoneySchedule {
   updated_at: string;
 }
 
+export interface ChoreReward {
+  id: string;
+  spender_id: string;
+  amount: string;
+  description: string | null;
+  payout_date: string | null;
+  is_paid: boolean;
+  paid_at: string | null;
+  transaction_id: string | null;
+  chores?: Chore[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SavingsGoal {
   id: string;
   spender_id: string;

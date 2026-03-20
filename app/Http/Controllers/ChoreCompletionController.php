@@ -6,6 +6,7 @@ use App\Enums\CompletionStatus;
 use App\Enums\ChoreRewardType;
 use App\Models\Chore;
 use App\Models\ChoreCompletion;
+use App\Models\ChoreReward;
 use App\Models\Transaction;
 use App\Services\SpenderService;
 use Illuminate\Http\Request;
@@ -88,7 +89,26 @@ class ChoreCompletionController extends Controller
             }
         });
 
+        // Auto-pay any chore rewards with no payout date that are now fully complete
+        $this->maybePayChoreRewards($completion);
+
         return back()->with('success', 'Chore approved.');
+    }
+
+    private function maybePayChoreRewards(ChoreCompletion $completion): void
+    {
+        $rewards = ChoreReward::where('spender_id', $completion->spender_id)
+            ->where('is_paid', false)
+            ->whereNull('payout_date')
+            ->with(['chores', 'spender.choreCompletions'])
+            ->get();
+
+        foreach ($rewards as $reward) {
+            /** @var ChoreReward $reward */
+            if ($reward->allChoresCompleted()) {
+                ChoreRewardController::pay($reward);
+            }
+        }
     }
 
     public function bulkApprove(Request $request)

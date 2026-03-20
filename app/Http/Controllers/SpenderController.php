@@ -129,10 +129,18 @@ class SpenderController extends Controller
             ->where('is_active', true)
             ->first();
 
+        $choreRewards = $spender->choreRewards()
+            ->with('chores')
+            ->where('is_paid', false)
+            ->orderBy('created_at')
+            ->get();
+
         return Inertia::render('Spenders/Edit', [
-            'spender'          => $spender,
-            'family'           => $spender->family,
+            'spender'             => $spender,
+            'family'              => $spender->family,
             'pocketMoneySchedule' => $schedule,
+            'choreRewards'        => $choreRewards,
+            'availableChores'     => $spender->chores()->where('is_active', true)->get(),
         ]);
     }
 
