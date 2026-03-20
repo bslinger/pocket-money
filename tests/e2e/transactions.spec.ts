@@ -30,7 +30,7 @@ test.describe('Transactions', () => {
 
     test('can add a credit transaction', async ({ page }) => {
         await page.click('a:has-text("+ Transaction")');
-        await page.selectOption('select', 'credit');
+        await page.click('button:has-text("Money In")');
         await page.fill('input[type=number]', '10.50');
         await page.fill('input[type=text]', 'Birthday money');
         await page.click('button:has-text("Save Transaction")');
@@ -42,7 +42,7 @@ test.describe('Transactions', () => {
 
     test('can add a debit transaction', async ({ page }) => {
         await page.click('a:has-text("+ Transaction")');
-        await page.selectOption('select', 'debit');
+        await page.click('button:has-text("Money Out")');
         await page.fill('input[type=number]', '2.00');
         await page.fill('input[type=text]', 'Sweets');
         await page.click('button:has-text("Save Transaction")');
@@ -82,7 +82,7 @@ test.describe('Transfers', () => {
         // Add some money to source account first
         await page.goto(url1);
         await page.click('a:has-text("+ Transaction")');
-        await page.selectOption('select', 'credit');
+        await page.click('button:has-text("Money In")');
         await page.fill('input[type=number]', '20.00');
         await page.fill('input[type=text]', 'Initial deposit');
         await page.click('button:has-text("Save Transaction")');

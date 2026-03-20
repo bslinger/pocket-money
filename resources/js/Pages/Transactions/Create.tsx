@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Account } from '@/types/models';
 
 export default function TransactionCreate({ account }: { account: Account }) {
@@ -19,17 +19,38 @@ export default function TransactionCreate({ account }: { account: Account }) {
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Add Transaction</h2>}>
       <Head title="Add Transaction" />
       <div className="py-8 max-w-lg mx-auto px-4">
+        <Link
+          href={route('accounts.show', account.id)}
+          className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-4"
+        >
+          ← Back
+        </Link>
         <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
-            <select
-              value={data.type}
-              onChange={e => setData('type', e.target.value as 'credit' | 'debit')}
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="credit">Credit (money in)</option>
-              <option value="debit">Debit (money out)</option>
-            </select>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setData('type', 'credit')}
+                className={`py-4 rounded-xl text-base font-semibold transition-colors ${
+                  data.type === 'credit'
+                    ? 'bg-green-500 text-white shadow-sm'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                💰 Money In
+              </button>
+              <button
+                type="button"
+                onClick={() => setData('type', 'debit')}
+                className={`py-4 rounded-xl text-base font-semibold transition-colors ${
+                  data.type === 'debit'
+                    ? 'bg-red-500 text-white shadow-sm'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                💸 Money Out
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
