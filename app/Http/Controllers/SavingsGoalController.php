@@ -93,14 +93,23 @@ class SavingsGoalController extends Controller
     {
         $request->validate(['amount' => 'required|numeric|min:0.01']);
 
-        $goal->increment('current_amount', $request->amount);
+        $contribution = (float) $request->amount;
+        $matched      = $goal->match_percentage
+            ? round($contribution * $goal->match_percentage / 100, 2)
+            : 0;
+
+        $goal->increment('current_amount', $contribution + $matched);
         $goal->refresh();
 
         if (!$goal->is_completed && $goal->current_amount >= $goal->target_amount) {
             $goal->update(['is_completed' => true]);
         }
 
-        return back()->with('success', 'Contribution added!');
+        $message = $matched > 0
+            ? "Contribution added! (including {$goal->match_percentage}% match of {$matched})"
+            : 'Contribution added!';
+
+        return back()->with('success', $message);
     }
 
     public function update(StoreSavingsGoalRequest $request, SavingsGoal $goal)

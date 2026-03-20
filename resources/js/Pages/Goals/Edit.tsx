@@ -14,11 +14,12 @@ interface Props {
 
 export default function GoalEdit({ goal, accounts }: Props) {
     const { data, setData, put, processing, errors } = useForm({
-        name:          goal.name,
-        target_amount: goal.target_amount,
-        target_date:   goal.target_date ?? '',
-        account_id:    goal.account_id ?? '',
-        image_key:     goal.image_key ?? '',
+        name:             goal.name,
+        target_amount:    goal.target_amount,
+        target_date:      goal.target_date ?? '',
+        account_id:       goal.account_id ?? '',
+        image_key:        goal.image_key ?? '',
+        match_percentage: goal.match_percentage ? String(goal.match_percentage) : '',
     });
 
     function submit(e: React.FormEvent) {
@@ -69,6 +70,26 @@ export default function GoalEdit({ goal, accounts }: Props) {
                                 value={data.target_date}
                                 onChange={e => setData('target_date', e.target.value)}
                             />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="match_percentage">
+                                Parent match <span className="text-muted-foreground text-xs">(optional)</span>
+                            </Label>
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    id="match_percentage"
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    value={data.match_percentage}
+                                    onChange={e => setData('match_percentage', e.target.value)}
+                                    placeholder="e.g. 50"
+                                    className="w-24"
+                                />
+                                <span className="text-sm text-muted-foreground">% — you'll match this % of each contribution</span>
+                            </div>
+                            {errors.match_percentage && <p className="text-xs text-destructive">{errors.match_percentage}</p>}
                         </div>
 
                         <div className="space-y-1.5">

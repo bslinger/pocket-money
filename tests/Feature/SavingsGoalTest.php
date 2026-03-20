@@ -140,6 +140,23 @@ describe('savings goals', function () {
             expect($goal->fresh()->is_completed)->toBeTrue();
         });
 
+        it('applies parent match percentage to contribution', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'      => $spenders->first()->id,
+                'target_amount'   => '200.00',
+                'current_amount'  => '0.00',
+                'match_percentage' => 50,
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('goals.contribute', $goal), ['amount' => '20.00'])
+                ->assertRedirect();
+
+            // 20 contributed + 10 matched (50%) = 30 total
+            expect((float) $goal->fresh()->current_amount)->toBe(30.0);
+        });
+
         it('validates amount is required and positive', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
             $goal = SavingsGoal::factory()->create(['spender_id' => $spenders->first()->id]);

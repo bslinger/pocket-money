@@ -162,6 +162,11 @@ export default function GoalShow({ goal }: Props) {
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Target className="h-4 w-4" />
                                 Add a contribution
+                                {goal.match_percentage && (
+                                    <Badge variant="secondary" className="text-xs ml-auto font-normal">
+                                        {goal.match_percentage}% parent match
+                                    </Badge>
+                                )}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>

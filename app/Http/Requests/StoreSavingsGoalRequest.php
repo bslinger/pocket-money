@@ -17,7 +17,8 @@ class StoreSavingsGoalRequest extends FormRequest
             'name'          => 'required|string|max:255',
             'target_amount' => 'required|numeric|min:0.01',
             'image_key'     => 'nullable|string|max:500',
-            'target_date'   => 'nullable|date',
+            'target_date'      => 'nullable|date',
+            'match_percentage' => 'nullable|integer|min:1|max:100',
         ];
     }
 }

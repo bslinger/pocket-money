@@ -27,6 +27,7 @@ class SavingsGoal extends Model
         'image_key',
         'target_date',
         'is_completed',
+        'match_percentage',
     ];
 
     protected function casts(): array
@@ -35,7 +36,8 @@ class SavingsGoal extends Model
             'target_amount' => 'decimal:2',
             'current_amount' => 'decimal:2',
             'target_date' => 'date',
-            'is_completed' => 'boolean',
+            'is_completed'     => 'boolean',
+            'match_percentage' => 'integer',
         ];
     }
 

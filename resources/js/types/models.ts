@@ -129,5 +129,6 @@ export interface SavingsGoal {
   image_url: string | null;
   target_date: string | null;
   is_completed: boolean;
+  match_percentage: number | null;
   spender?: Spender;
 }
