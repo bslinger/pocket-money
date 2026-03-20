@@ -168,7 +168,7 @@ describe('chore completions', function () {
         it('approves a completion and credits the account for an earns chore', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
-            $account = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0, 'is_savings_pot' => false]);
+            $account = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
             $chore   = Chore::factory()->earns(2.50)->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             $completion = ChoreCompletion::factory()->create([
                 'chore_id'   => $chore->id,

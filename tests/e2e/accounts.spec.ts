@@ -17,15 +17,6 @@ test.describe('Accounts', () => {
         await expect(page.getByText('$0.00')).toBeVisible();
     });
 
-    test('can create a savings pot account', async ({ page }) => {
-        await page.click('a:has-text("Add account")');
-        await page.fill('#name', 'Savings Pot');
-        await page.locator('#is_savings_pot').check();
-        await page.click('button[type=submit]');
-        await expect(page).toHaveURL(/\/accounts\//);
-        await expect(page.getByText('Savings Pot')).toBeVisible();
-    });
-
     test('shows zero balance on a new account', async ({ page }) => {
         await page.click('a:has-text("Add account")');
         await page.fill('#name', 'Zero Balance');

@@ -6,25 +6,15 @@ use App\Models\Family;
 use App\Services\SpenderService;
 
 describe('SpenderService::mainAccount', function () {
-    it('returns the first non-savings-pot account', function () {
+    it('returns the first account by creation order', function () {
         $family  = Family::factory()->create();
         $spender = Spender::factory()->create(['family_id' => $family->id]);
-        $savings = Account::factory()->savingsPot()->create(['spender_id' => $spender->id]);
-        $main    = Account::factory()->create(['spender_id' => $spender->id, 'is_savings_pot' => false]);
+        $first   = Account::factory()->create(['spender_id' => $spender->id]);
+        Account::factory()->create(['spender_id' => $spender->id]);
 
         $result = SpenderService::mainAccount($spender);
 
-        expect($result->id)->toBe($main->id);
-    });
-
-    it('falls back to any account if all are savings pots', function () {
-        $family  = Family::factory()->create();
-        $spender = Spender::factory()->create(['family_id' => $family->id]);
-        $savings = Account::factory()->savingsPot()->create(['spender_id' => $spender->id]);
-
-        $result = SpenderService::mainAccount($spender);
-
-        expect($result->id)->toBe($savings->id);
+        expect($result->id)->toBe($first->id);
     });
 
     it('throws if the spender has no accounts', function () {

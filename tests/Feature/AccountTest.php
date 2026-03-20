@@ -11,29 +11,14 @@ describe('accounts', function () {
 
             $this->actingAs($user)
                 ->post(route('accounts.store'), [
-                    'spender_id'    => $spender->id,
-                    'name'          => 'Spending',
-                    'is_savings_pot' => false,
+                    'spender_id' => $spender->id,
+                    'name'       => 'Spending',
                 ])
                 ->assertRedirect();
 
             $account = Account::where('spender_id', $spender->id)->first();
             expect($account)->not->toBeNull();
             expect((float) $account->balance)->toBe(0.0);
-        });
-
-        it('creates a savings pot account', function () {
-            [$user, , $spenders] = parentWithFamily(['Emma']);
-
-            $this->actingAs($user)
-                ->post(route('accounts.store'), [
-                    'spender_id'    => $spenders->first()->id,
-                    'name'          => 'Savings',
-                    'is_savings_pot' => true,
-                ])
-                ->assertRedirect();
-
-            expect(Account::where('is_savings_pot', true)->exists())->toBeTrue();
         });
 
         it('validates that name is required', function () {

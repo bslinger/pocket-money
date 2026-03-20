@@ -20,14 +20,12 @@ class Account extends Model
         'spender_id',
         'name',
         'balance',
-        'is_savings_pot',
     ];
 
     protected function casts(): array
     {
         return [
             'balance' => 'decimal:2',
-            'is_savings_pot' => 'boolean',
         ];
     }
 

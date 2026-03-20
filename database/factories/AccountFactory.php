@@ -13,13 +13,7 @@ class AccountFactory extends Factory
             'spender_id'    => Spender::factory(),
             'name'          => fake()->randomElement(['Spending', 'Savings', 'Pocket Money']),
             'balance'       => 0,
-            'is_savings_pot' => false,
         ];
-    }
-
-    public function savingsPot(): static
-    {
-        return $this->state(['is_savings_pot' => true]);
     }
 
     public function withBalance(float $amount): static

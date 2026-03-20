@@ -59,7 +59,6 @@ export interface Account {
   spender_id: string;
   name: string;
   balance: string;
-  is_savings_pot: boolean;
   spender?: Spender;
   transactions?: Transaction[];
   created_at: string;

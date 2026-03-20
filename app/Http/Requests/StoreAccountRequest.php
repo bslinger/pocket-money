@@ -14,8 +14,7 @@ class StoreAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'           => 'required|string|max:255',
-            'is_savings_pot' => 'nullable|boolean',
+            'name' => 'required|string|max:255',
         ];
     }
 }

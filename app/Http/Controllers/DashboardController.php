@@ -95,7 +95,7 @@ class DashboardController extends Controller
                 ->get();
 
             $totalBalance = $families->flatMap(fn($f) => $f->spenders)
-                ->flatMap(fn($s) => $s->accounts->where('is_savings_pot', false))
+                ->flatMap(fn($s) => $s->accounts)
                 ->sum('balance');
 
             $paidThisMonth = Transaction::whereHas('account.spender',

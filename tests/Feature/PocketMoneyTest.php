@@ -39,7 +39,7 @@ describe('pocket money release', function () {
     it('pays pocket money and credits the main account', function () {
         [$user, , $spenders] = parentWithFamily(['Emma']);
         $spender = $spenders->first();
-        $account = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0, 'is_savings_pot' => false]);
+        $account = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
 
         $this->actingAs($user)
             ->post(route('pocket-money.pay'), [

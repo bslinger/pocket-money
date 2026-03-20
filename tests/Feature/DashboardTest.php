@@ -31,15 +31,15 @@ describe('dashboard', function () {
             );
     });
 
-    it('calculates totalBalance excluding savings pots', function () {
+    it('calculates totalBalance across all accounts', function () {
         [$user, , $spenders] = parentWithFamily(['Emma']);
         $spender = $spenders->first();
-        Account::factory()->withBalance(30)->create(['spender_id' => $spender->id, 'is_savings_pot' => false]);
-        Account::factory()->withBalance(100)->create(['spender_id' => $spender->id, 'is_savings_pot' => true]);
+        Account::factory()->withBalance(30)->create(['spender_id' => $spender->id]);
+        Account::factory()->withBalance(100)->create(['spender_id' => $spender->id]);
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertInertia(fn($page) => $page->where('totalBalance', '30.00'));
+            ->assertInertia(fn($page) => $page->where('totalBalance', '130.00'));
     });
 
     it('calculates paidThisMonth from current month credits', function () {

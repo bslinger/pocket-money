@@ -137,9 +137,7 @@ export default function SpenderShow({ spender }: { spender: Spender }) {
                                         <CardContent className="pt-4">
                                             <div className="flex items-center justify-between mb-1">
                                                 <p className="text-sm font-medium">{account.name}</p>
-                                                {account.is_savings_pot && (
-                                                    <Badge variant="secondary" className="text-xs">Savings</Badge>
-                                                )}
+
                                             </div>
                                             <p className="text-2xl font-bold tabular-nums">
                                                 {formatAmount(account.balance, currencySymbol)}

@@ -98,7 +98,7 @@ function ParentDashboard({
   const allSpenders = families.flatMap(f => (f.spenders ?? []).map(s => ({ spender: s, family: f })));
 
   function openQuickTx(spender: Spender, type: 'credit' | 'debit') {
-    const mainAccount = spender.accounts?.find(a => !a.is_savings_pot);
+    const mainAccount = spender.accounts?.[0];
     if (!mainAccount) return;
     setQuickTxModal({ spender, accountId: mainAccount.id, type });
   }
@@ -214,8 +214,7 @@ function KidCard({
   onSubtract: () => void;
 }) {
   const mainBalance = spender.accounts
-    ?.filter(a => !a.is_savings_pot)
-    .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
+    ?.reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
 
   // Pick the goal closest to completion (highest progress %)
   const goal = spender.savings_goals
@@ -617,8 +616,7 @@ function GoalProgressCard({ goal, currencySymbol }: { goal: SavingsGoal; currenc
 function ChildSpenderView({ spender }: { spender: Spender }) {
   const currencySymbol = spenderCurrencySymbol(spender);
   const mainBalance = spender.accounts
-    ?.filter(a => !a.is_savings_pot)
-    .reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
+    ?.reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
 
   const goals = spender.savings_goals ?? [];
 

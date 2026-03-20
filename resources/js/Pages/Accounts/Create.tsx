@@ -11,7 +11,6 @@ export default function AccountCreate({ spenders, preselectedSpenderId }: Props)
   const { data, setData, post, processing, errors } = useForm({
     spender_id: preselectedSpenderId ?? spenders[0]?.id ?? '',
     name: '',
-    is_savings_pot: false,
   });
 
   function submit(e: React.FormEvent) {
@@ -51,17 +50,6 @@ export default function AccountCreate({ spenders, preselectedSpenderId }: Props)
               autoFocus
             />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              id="is_savings_pot"
-              type="checkbox"
-              checked={data.is_savings_pot}
-              onChange={e => setData('is_savings_pot', e.target.checked)}
-              className="rounded"
-            />
-            <label htmlFor="is_savings_pot" className="text-sm text-gray-700 dark:text-gray-300">Savings pot</label>
           </div>
 
           <button
