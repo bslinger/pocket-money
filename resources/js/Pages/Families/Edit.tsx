@@ -7,6 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import { guessNameFromEmoji } from '@/lib/utils';
 import { useState, useRef, useEffect } from 'react';
 
 const CURRENCY_PRESETS = [
@@ -37,7 +38,7 @@ export default function FamilyEdit({ family }: { family: Family }) {
     }, [showPicker]);
 
     function onEmojiClick(emojiData: EmojiClickData) {
-        setData('currency_symbol', emojiData.emoji);
+        setData(d => ({ ...d, currency_symbol: emojiData.emoji, currency_name: guessNameFromEmoji(emojiData.names) }));
         setShowPicker(false);
     }
 

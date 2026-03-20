@@ -16,6 +16,15 @@ export function formatAmount(amount: number | string, symbol = '$'): string {
     return `${symbol}${num.toFixed(decimals)}`;
 }
 
+/**
+ * Suggest a currency name from the names array provided by emoji-picker-react's EmojiClickData.
+ * Takes the first name and title-cases it, e.g. ["star", "glowing star"] → "Star".
+ */
+export function guessNameFromEmoji(names: string[]): string {
+    const raw = names[0] ?? '';
+    return raw.replace(/\b\w/g, c => c.toUpperCase());
+}
+
 /** Resolve the effective currency symbol for a spender, falling back to their family's setting. */
 export function spenderCurrencySymbol(
     spender: { currency_symbol?: string | null; family?: { currency_symbol?: string } | null },

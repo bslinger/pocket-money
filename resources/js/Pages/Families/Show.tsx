@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
+import { guessNameFromEmoji } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
 import { PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon } from 'lucide-react';
@@ -62,7 +63,7 @@ function FamilyDetailsSection({ family }: { family: Family }) {
     }, [showPicker]);
 
     function onEmojiClick(emojiData: EmojiClickData) {
-        setData('currency_symbol', emojiData.emoji);
+        setData({ ...data, currency_symbol: emojiData.emoji, currency_name: guessNameFromEmoji(emojiData.names) });
         setShowPicker(false);
     }
 

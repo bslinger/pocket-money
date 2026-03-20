@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { cn } from '@/lib/utils';
+import { cn, guessNameFromEmoji } from '@/lib/utils';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { useState, useRef, useEffect } from 'react';
 
@@ -40,7 +40,7 @@ export default function SpenderEdit({ spender, family }: { spender: Spender; fam
     }, [showPicker]);
 
     function onEmojiClick(emojiData: EmojiClickData) {
-        setData('currency_symbol', emojiData.emoji);
+        setData(d => ({ ...d, currency_symbol: emojiData.emoji, currency_name: guessNameFromEmoji(emojiData.names) }));
         setShowPicker(false);
     }
 
