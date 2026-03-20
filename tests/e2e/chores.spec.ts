@@ -90,4 +90,40 @@ test.describe('Chores', () => {
         await choreRow.locator('button').last().click();
         await expect(page.getByText('Delete Me Chore')).not.toBeVisible();
     });
+
+    test('can filter chores by kid', async ({ page }) => {
+        // Create a chore assigned only to Emma
+        await page.goto('/chores/create');
+        await page.fill('#name', 'Emma Only Chore');
+        await page.click('button:has-text("Earns")');
+        await page.fill('#amount', '2.00');
+        await page.click('button:has-text("Emma")');
+        await page.click('button:has-text("Create Chore")');
+        await expect(page.getByText('Emma Only Chore')).toBeVisible();
+
+        // Create a chore assigned only to Jack
+        await page.goto('/chores/create');
+        await page.fill('#name', 'Jack Only Chore');
+        await page.click('button:has-text("Earns")');
+        await page.fill('#amount', '1.00');
+        await page.click('button:has-text("Jack")');
+        await page.click('button:has-text("Create Chore")');
+        await expect(page.getByText('Jack Only Chore')).toBeVisible();
+
+        // Filter by Emma — should see Emma's chore but not Jack's
+        await page.goto('/chores');
+        await page.selectOption('select[aria-label="Filter by kid"]', { label: 'Emma' });
+        await expect(page.getByText('Emma Only Chore')).toBeVisible();
+        await expect(page.getByText('Jack Only Chore')).not.toBeVisible();
+
+        // Filter by Jack — should see Jack's chore but not Emma's
+        await page.selectOption('select[aria-label="Filter by kid"]', { label: 'Jack' });
+        await expect(page.getByText('Jack Only Chore')).toBeVisible();
+        await expect(page.getByText('Emma Only Chore')).not.toBeVisible();
+
+        // Reset filter — both visible
+        await page.selectOption('select[aria-label="Filter by kid"]', { value: '' });
+        await expect(page.getByText('Emma Only Chore')).toBeVisible();
+        await expect(page.getByText('Jack Only Chore')).toBeVisible();
+    });
 });
