@@ -204,6 +204,50 @@ describe('chore completions', function () {
         });
     });
 
+    describe('bulk approve', function () {
+        it('approves multiple pending completions and credits earns chores', function () {
+            [$parent, $family, $spenders] = parentWithFamily(['Emma', 'Jack']);
+            [$emma, $jack] = [$spenders->first(), $spenders->last()];
+            $emmaAccount = Account::factory()->create(['spender_id' => $emma->id, 'balance' => 0]);
+            $jackAccount = Account::factory()->create(['spender_id' => $jack->id, 'balance' => 0]);
+
+            $chore = Chore::factory()->create([
+                'family_id'   => $family->id,
+                'created_by'  => $parent->id,
+                'reward_type' => ChoreRewardType::Earns,
+                'amount'      => '2.00',
+            ]);
+            $c1 = ChoreCompletion::factory()->create(['chore_id' => $chore->id, 'spender_id' => $emma->id, 'status' => CompletionStatus::Pending]);
+            $c2 = ChoreCompletion::factory()->create(['chore_id' => $chore->id, 'spender_id' => $jack->id, 'status' => CompletionStatus::Pending]);
+
+            $this->actingAs($parent)
+                ->post(route('chore-completions.bulk-approve'), ['ids' => [$c1->id, $c2->id]])
+                ->assertRedirect();
+
+            expect($c1->fresh()->status)->toBe(CompletionStatus::Approved);
+            expect($c2->fresh()->status)->toBe(CompletionStatus::Approved);
+            expect((float) $emmaAccount->fresh()->balance)->toBe(2.0);
+            expect((float) $jackAccount->fresh()->balance)->toBe(2.0);
+            expect(Transaction::count())->toBe(2);
+        });
+
+        it('ignores completions not in pending status', function () {
+            [$parent, $family, $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id, 'reward_type' => ChoreRewardType::Earns, 'amount' => '1.00']);
+            $already = ChoreCompletion::factory()->create(['chore_id' => $chore->id, 'spender_id' => $spender->id, 'status' => CompletionStatus::Approved]);
+
+            $this->actingAs($parent)
+                ->post(route('chore-completions.bulk-approve'), ['ids' => [$already->id]])
+                ->assertRedirect();
+
+            // Status unchanged, no extra transactions
+            expect($already->fresh()->status)->toBe(CompletionStatus::Approved);
+            expect(Transaction::count())->toBe(0);
+        });
+    });
+
     describe('decline', function () {
         it('declines a completion with an optional note', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);

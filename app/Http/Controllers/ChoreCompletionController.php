@@ -78,6 +78,46 @@ class ChoreCompletionController extends Controller
         return back()->with('success', 'Chore approved.');
     }
 
+    public function bulkApprove(Request $request)
+    {
+        $request->validate([
+            'ids'   => ['required', 'array', 'min:1'],
+            'ids.*' => ['uuid', 'exists:chore_completions,id'],
+        ]);
+
+        $completions = ChoreCompletion::with(['chore', 'spender'])
+            ->whereIn('id', $request->input('ids'))
+            ->where('status', CompletionStatus::Pending)
+            ->get();
+
+        DB::transaction(function () use ($completions) {
+            foreach ($completions as $completion) {
+                /** @var ChoreCompletion $completion */
+                $completion->update([
+                    'status'      => CompletionStatus::Approved,
+                    'reviewed_at' => now(),
+                    'reviewed_by' => auth()->id(),
+                ]);
+
+                if ($completion->chore->reward_type === ChoreRewardType::Earns) {
+                    $account = SpenderService::mainAccount($completion->spender);
+                    $transaction = Transaction::create([
+                        'account_id'  => $account->id,
+                        'type'        => 'credit',
+                        'amount'      => $completion->chore->amount,
+                        'description' => 'Chore reward: ' . $completion->chore->name,
+                        'occurred_at' => now(),
+                        'created_by'  => auth()->id(),
+                    ]);
+                    $account->increment('balance', (float) $completion->chore->amount);
+                    $completion->update(['transaction_id' => $transaction->id]);
+                }
+            }
+        });
+
+        return back()->with('success', 'All chores approved.');
+    }
+
     public function decline(ChoreCompletion $completion)
     {
         $request = request();

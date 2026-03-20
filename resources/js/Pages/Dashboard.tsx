@@ -7,7 +7,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { PlusCircle, Check, X, LogOut, TrendingUp, Plus, Minus } from 'lucide-react';
+import { PlusCircle, Check, CheckCheck, X, LogOut, TrendingUp, Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
@@ -428,6 +428,12 @@ function PendingApprovals({ initialPending }: {
     });
   }
 
+  function approveAll() {
+    router.post(route('chore-completions.bulk-approve'), { ids: pending.map(c => c.id) }, {
+      onSuccess: () => setPending([]),
+    });
+  }
+
   function decline(completion: ChoreCompletion) {
     router.patch(route('chore-completions.decline', completion.id), {}, {
       onSuccess: () => setPending(p => p.filter(c => c.id !== completion.id)),
@@ -437,10 +443,18 @@ function PendingApprovals({ initialPending }: {
   return (
     <Card className="border-amber-200">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          Needs your approval
-          <Badge className="bg-amber-100 text-amber-800 border-amber-200">{pending.length}</Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            Needs your approval
+            <Badge className="bg-amber-100 text-amber-800 border-amber-200">{pending.length}</Badge>
+          </CardTitle>
+          {pending.length > 1 && (
+            <Button size="sm" variant="outline" className="border-green-300 text-green-700 hover:bg-green-50 gap-1.5 h-7 text-xs" onClick={approveAll}>
+              <CheckCheck className="h-3.5 w-3.5" />
+              Approve all
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="divide-y">
         {pending.map(c => (

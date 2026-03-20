@@ -63,6 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('chores', ChoreController::class)->except('show');
         Route::patch('/chore-completions/{completion}/approve', [ChoreCompletionController::class, 'approve'])->name('chore-completions.approve');
         Route::patch('/chore-completions/{completion}/decline', [ChoreCompletionController::class, 'decline'])->name('chore-completions.decline');
+        Route::post('/chore-completions/bulk-approve', [ChoreCompletionController::class, 'bulkApprove'])->name('chore-completions.bulk-approve');
         Route::get('/pocket-money/release', [PocketMoneyReleaseController::class, 'index'])->name('pocket-money.release');
         Route::post('/pocket-money/release', [PocketMoneyReleaseController::class, 'pay'])->name('pocket-money.pay');
     });
