@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { Check, ChevronDown, CheckSquare, LayoutDashboard, LogOut, PlusCircle, Settings, Settings2, User, Wallet, Coins } from 'lucide-react';
+import { Check, ChevronDown, CheckSquare, LayoutDashboard, LogOut, PlusCircle, Settings, Settings2, Target, User, Wallet, Coins } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -201,6 +201,12 @@ export default function AuthenticatedLayout({
                                             <Link href={route('pocket-money.release')}>
                                                 <Coins className="h-4 w-4 mr-1.5" />
                                                 Pocket Money
+                                            </Link>
+                                        </Button>
+                                        <Button variant="ghost" size="sm" asChild>
+                                            <Link href={route('goals.index')}>
+                                                <Target className="h-4 w-4 mr-1.5" />
+                                                Goals
                                             </Link>
                                         </Button>
                                     </>
