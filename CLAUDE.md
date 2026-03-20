@@ -133,4 +133,5 @@ Tests use SQLite `:memory:`, array drivers for cache/mail/queue/session, and `Re
 # Workflow
 - Be sure to typecheck when you're done making a series of code changes
 - Prefer running single tests, and not the whole test suite, for performance
-- Write Pest and Playwright tests for all code changes
+- Write Pest and Playwright tests for all code changes, and ensure they pass
+- Run PHPStan after every feature is implemented and ensure it passes

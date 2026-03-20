@@ -3,8 +3,14 @@
 Organised by strategic area, with specific tasks nested under each.
 
 ---
+## Dashboard improvements
 
-## 🏠 Family Management ← next up
+ - [ ] Remove Dashboard title - it's already obvious
+ - [ ] Move kid carousel to top above totals
+ - [ ] Make the kid cards larger - left justify avatar, name at top
+ - [ ] Add quick add quick +/- transaction buttons to each kid card, with a modal that easily lets you add a transaction in minimal clicks
+
+## 🏠 Family Management
 
 **Goal:** Give parents full control over their family setup — members, kids, and settings.
 
@@ -69,7 +75,6 @@ Organised by strategic area, with specific tasks nested under each.
 
 - [ ] **Kid-facing app view** — dedicated child dashboard: balance hero, chore list, goal progress bar
 - [ ] **Push notifications** — notify kids when a chore is approved ('You now have 450 coins!')
-- [ ] **Age-appropriate money tips** nudged into the UI
 
 ---
 

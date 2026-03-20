@@ -61,7 +61,8 @@
       "Bash(grep -v \"^$\")",
       "Bash(grep bg-amber:*)",
       "Bash(echo 'No CSS files with amber' ls /home/ben/Dev/pocket-money/public/build/assets/*.css)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Skill(update-config)"
     ]
   }
 }
