@@ -40,9 +40,8 @@ export default function Dashboard({ isParent, families, spenders, pendingComplet
           />
         </AuthenticatedLayout>
       ) : isActualParent ? (
-        <AuthenticatedLayout>
-          <ChildDashboard spenders={spenders} />
-        </AuthenticatedLayout>
+        // Parent previewing child view — full screen, no nav
+        <ChildDashboard spenders={spenders} isParentPreview />
       ) : (
         <ChildDashboard spenders={spenders} />
       )}
@@ -512,20 +511,38 @@ function CreateFamilyWizard() {
 
 // ── Child ─────────────────────────────────────────────────────────────────────
 
-function ChildDashboard({ spenders }: { spenders: Spender[] }) {
+function ChildDashboard({ spenders, isParentPreview = false }: { spenders: Spender[]; isParentPreview?: boolean }) {
+  const kidName = spenders[0]?.name;
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <header className="flex items-center justify-between px-6 py-4">
-        <span className="font-serif text-xl font-bold tracking-tight text-white">Quiddo</span>
-        <Link
-          href={route('logout')}
-          method="post"
-          as="button"
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Log out
-        </Link>
+        {isParentPreview && kidName ? (
+          <span className="font-semibold text-white">{kidName}&apos;s view</span>
+        ) : (
+          <span className="font-serif text-xl font-bold tracking-tight text-white">Quiddo</span>
+        )}
+        {isParentPreview ? (
+          <Link
+            href={route('dashboard.exit-view-as')}
+            method="delete"
+            as="button"
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Back to parent view
+          </Link>
+        ) : (
+          <Link
+            href={route('logout')}
+            method="post"
+            as="button"
+            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Log out
+          </Link>
+        )}
       </header>
 
       <main className="px-6 pb-12 max-w-lg mx-auto space-y-8">

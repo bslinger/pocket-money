@@ -192,7 +192,7 @@ export default function AuthenticatedLayout({
                 <div className="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-between gap-3 text-sm font-medium">
                     <div className="flex items-center gap-2">
                         <Eye className="h-4 w-4 shrink-0" />
-                        <span>Viewing as <strong>{viewingAsSpender.name}</strong> — this is the child&apos;s view</span>
+                        <span><strong>{viewingAsSpender.name}&apos;s view</strong></span>
                     </div>
                     <Link
                         href={route('dashboard.exit-view-as')}
