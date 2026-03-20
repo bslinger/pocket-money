@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Spender;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -32,14 +33,37 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user'        => $request->user(),
-                'isParent'    => $request->user()?->isParent() ?? false,
-                'activeFamily'  => $this->resolveActiveFamily($request),
-                'userFamilies'  => fn() => $request->user()?->isParent()
+                'user'             => $request->user(),
+                'isParent'         => $request->user()?->isParent() ?? false,
+                'activeFamily'     => $this->resolveActiveFamily($request),
+                'userFamilies'     => fn() => $request->user()?->isParent()
                     ? $request->user()->families()->select(['families.id', 'families.name'])->get()
                     : [],
+                'viewingAsSpender' => $this->resolveViewingAsSpender($request),
             ],
         ];
+    }
+
+    /**
+     * Resolve the spender being previewed in child-view mode (parents only).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function resolveViewingAsSpender(Request $request): ?array
+    {
+        $user = $request->user();
+        if (!$user || !$user->isParent()) {
+            return null;
+        }
+
+        $spenderId = $request->session()->get('viewing_as_spender_id');
+        if (!$spenderId) {
+            return null;
+        }
+
+        $spender = Spender::find($spenderId);
+
+        return $spender ? ['id' => $spender->id, 'name' => $spender->name] : null;
     }
 
     /**

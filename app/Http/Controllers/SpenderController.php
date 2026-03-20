@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSpenderRequest;
 use App\Models\Spender;
+use App\Models\SpenderUser;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -27,8 +29,36 @@ class SpenderController extends Controller
                 'accounts.transactions' => fn($q) => $q->latest('occurred_at')->limit(20),
                 'savingsGoals',
                 'family',
+                'users',
             ]),
         ]);
+    }
+
+    public function linkChild(Request $request, Spender $spender)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'No user found with that email address.']);
+        }
+
+        SpenderUser::firstOrCreate([
+            'spender_id' => $spender->id,
+            'user_id'    => $user->id,
+        ]);
+
+        return back()->with('success', 'Child account linked.');
+    }
+
+    public function unlinkChild(Spender $spender, User $user)
+    {
+        SpenderUser::where('spender_id', $spender->id)
+            ->where('user_id', $user->id)
+            ->delete();
+
+        return back();
     }
 
     public function create()

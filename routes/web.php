@@ -24,6 +24,8 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/spenders/{spender}/view-as', [DashboardController::class, 'viewAs'])->name('dashboard.view-as');
+    Route::delete('/view-as', [DashboardController::class, 'exitViewAs'])->name('dashboard.exit-view-as');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
     Route::match(['put', 'patch'], '/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
     Route::delete('/settings/account', [SettingsController::class, 'deleteAccount'])->name('settings.account.destroy');
@@ -42,6 +44,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('require.parent')->group(function () {
         Route::resource('spenders', SpenderController::class)->except('show');
+        Route::post('/spenders/{spender}/link-child', [SpenderController::class, 'linkChild'])->name('spenders.link-child');
+        Route::delete('/spenders/{spender}/linked-children/{user}', [SpenderController::class, 'unlinkChild'])->name('spenders.unlink-child');
         Route::resource('accounts', AccountController::class)->except('show');
         Route::resource('accounts.transactions', TransactionController::class);
         Route::resource('accounts.recurring', RecurringTransactionController::class);
@@ -77,3 +81,4 @@ if (app()->environment('local')) {
         return redirect('/dashboard');
     })->middleware('auth');
 }
+

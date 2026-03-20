@@ -55,7 +55,13 @@
       "Bash(npx playwright:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(sail exec:*)",
+      "Bash(git reset:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep bg-amber:*)",
+      "Bash(echo 'No CSS files with amber' ls /home/ben/Dev/pocket-money/public/build/assets/*.css)",
+      "Bash(grep:*)"
     ]
   }
 }

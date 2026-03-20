@@ -44,6 +44,7 @@ export interface Spender {
   savings_goals?: SavingsGoal[];
   chores?: Chore[];
   chore_completions?: ChoreCompletion[];
+  users?: User[];
   created_at: string;
   updated_at: string;
 }

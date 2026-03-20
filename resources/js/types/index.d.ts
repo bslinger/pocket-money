@@ -22,5 +22,6 @@ export type PageProps<
         isParent: boolean;
         activeFamily: ActiveFamily | null;
         userFamilies: { id: string; name: string }[];
+        viewingAsSpender: { id: string; name: string } | null;
     };
 };

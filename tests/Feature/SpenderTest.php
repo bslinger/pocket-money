@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Spender;
+use App\Models\SpenderUser;
 use App\Models\User;
 
 describe('spenders', function () {
@@ -101,6 +102,92 @@ describe('spenders', function () {
                 ->assertRedirect();
 
             expect(Spender::find($spender->id))->toBeNull();
+        });
+    });
+
+    describe('link-child', function () {
+        it('links a user account to a spender by email', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $child = User::factory()->create(['email' => 'kid@example.com']);
+
+            $this->actingAs($user)
+                ->post(route('spenders.link-child', $spender), ['email' => 'kid@example.com'])
+                ->assertRedirect();
+
+            expect(SpenderUser::where('spender_id', $spender->id)
+                ->where('user_id', $child->id)->exists())->toBeTrue();
+        });
+
+        it('returns an error when no user has that email', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+
+            $this->actingAs($user)
+                ->post(route('spenders.link-child', $spenders->first()), ['email' => 'nobody@example.com'])
+                ->assertSessionHasErrors('email');
+        });
+
+        it('does not create duplicate links', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $child = User::factory()->create(['email' => 'kid2@example.com']);
+
+            $this->actingAs($user)
+                ->post(route('spenders.link-child', $spender), ['email' => 'kid2@example.com']);
+            $this->actingAs($user)
+                ->post(route('spenders.link-child', $spender), ['email' => 'kid2@example.com']);
+
+            expect(SpenderUser::where('spender_id', $spender->id)
+                ->where('user_id', $child->id)->count())->toBe(1);
+        });
+    });
+
+    describe('unlink-child', function () {
+        it('removes the spender-user link', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $child = childLinkedTo($spender);
+
+            $this->actingAs($user)
+                ->delete(route('spenders.unlink-child', [$spender, $child]))
+                ->assertRedirect();
+
+            expect(SpenderUser::where('spender_id', $spender->id)
+                ->where('user_id', $child->id)->exists())->toBeFalse();
+        });
+    });
+
+    describe('view-as', function () {
+        it('stores the spender id in session and redirects to dashboard', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+
+            $this->actingAs($user)
+                ->post(route('dashboard.view-as', $spender))
+                ->assertRedirect(route('dashboard'))
+                ->assertSessionHas('viewing_as_spender_id', $spender->id);
+        });
+
+        it('clears the session on exit', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+
+            $this->actingAs($user)
+                ->withSession(['viewing_as_spender_id' => $spender->id])
+                ->delete(route('dashboard.exit-view-as'))
+                ->assertRedirect(route('dashboard'));
+
+            expect(session('viewing_as_spender_id'))->toBeNull();
+        });
+
+        it('forbids a non-parent from activating view-as', function () {
+            [$_user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $child = childLinkedTo($spender);
+
+            $this->actingAs($child)
+                ->post(route('dashboard.view-as', $spender))
+                ->assertForbidden();
         });
     });
 });

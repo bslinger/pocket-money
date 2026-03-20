@@ -3,17 +3,70 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChoreCompletion;
+use App\Models\Spender;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    public function viewAs(Request $request, Spender $spender)
+    {
+        $user = $request->user();
+
+        abort_unless($user->isParent()
+            && $user->families()->where('families.id', $spender->family_id)->exists(), 403);
+
+        session(['viewing_as_spender_id' => $spender->id]);
+        session()->save();
+
+        return redirect()->route('dashboard');
+    }
+
+    public function exitViewAs()
+    {
+        session()->forget('viewing_as_spender_id');
+        session()->save();
+
+        return redirect()->route('dashboard');
+    }
+
     public function index(Request $request)
     {
         $user = $request->user();
 
         abort_if($user === null, 401);
+
+        // Parent viewing as a specific spender (child preview mode)
+        $viewingAsSpenderId = session('viewing_as_spender_id');
+        if ($user->isParent() && $viewingAsSpenderId) {
+            $spender = Spender::with([
+                'accounts',
+                'savingsGoals',
+                'family',
+                'chores' => fn($q) => $q->where('is_active', true),
+                'choreCompletions' => fn($q) => $q->whereBetween('completed_at', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ]),
+            ])->find($viewingAsSpenderId);
+
+            // Verify the parent still has access to this spender's family
+            if ($spender && $user->families()->where('families.id', $spender->family_id)->exists()) {
+                return Inertia::render('Dashboard', [
+                    'isParent'           => false,
+                    'families'           => [],
+                    'spenders'           => [$spender],
+                    'pendingCompletions' => [],
+                    'recentActivity'     => [],
+                    'totalBalance'       => '0.00',
+                    'paidThisMonth'      => '0.00',
+                ]);
+            }
+
+            // Stale session — clear it and fall through
+            session()->forget('viewing_as_spender_id');
+        }
 
         $isParent     = $user->isParent();
         $hasSpenders  = $user->spenderUsers()->exists();

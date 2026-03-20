@@ -23,6 +23,10 @@ interface Props {
 }
 
 export default function Dashboard({ isParent, families, spenders, pendingCompletions, recentActivity, totalBalance, paidThisMonth }: Props) {
+  const { auth } = usePage().props as any;
+  // A parent user may be previewing the child view — still wrap in layout so the exit banner shows
+  const isActualParent: boolean = auth.isParent ?? false;
+
   return (
     <>
       <Head title="Dashboard" />
@@ -35,6 +39,11 @@ export default function Dashboard({ isParent, families, spenders, pendingComplet
             totalBalance={totalBalance}
             paidThisMonth={paidThisMonth}
           />
+        </AuthenticatedLayout>
+      ) : isActualParent ? (
+        // Parent previewing child view — keep layout for the "exit view" banner
+        <AuthenticatedLayout>
+          <ChildDashboard spenders={spenders} />
         </AuthenticatedLayout>
       ) : (
         <ChildDashboard spenders={spenders} />

@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { Check, ChevronDown, CheckSquare, LayoutDashboard, LogOut, PlusCircle, Settings, Settings2, Target, User, Wallet, Coins } from 'lucide-react';
+import { Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, PlusCircle, Settings2, Target, User, Wallet, Coins, X } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -168,9 +168,27 @@ export default function AuthenticatedLayout({
     const isParent: boolean = auth.isParent ?? false;
     const activeFamily = auth.activeFamily ?? null;
     const userFamilies: { id: string; name: string }[] = auth.userFamilies ?? [];
+    const viewingAsSpender: { id: string; name: string } | null = auth.viewingAsSpender ?? null;
 
     return (
         <div className="min-h-screen bg-background">
+            {viewingAsSpender && (
+                <div className="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-between gap-3 text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4 shrink-0" />
+                        <span>Viewing as <strong>{viewingAsSpender.name}</strong> — this is the child&apos;s view</span>
+                    </div>
+                    <Link
+                        href={route('dashboard.exit-view-as')}
+                        method="delete"
+                        as="button"
+                        className="flex items-center gap-1.5 rounded px-2 py-0.5 hover:bg-amber-600/30 transition-colors"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                        Exit
+                    </Link>
+                </div>
+            )}
             <nav className="border-b bg-card">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-14 items-center justify-between">
