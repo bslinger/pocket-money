@@ -39,7 +39,8 @@ class FamilyController extends Controller
     public function show(Family $family)
     {
         return Inertia::render('Families/Show', [
-            'family' => $family->load(['users', 'spenders.accounts']),
+            'family'        => $family->load(['familyUsers.user', 'spenders.accounts']),
+            'authUserId'    => auth()->id(),
         ]);
     }
 
@@ -74,6 +75,37 @@ class FamilyController extends Controller
             ['role' => FamilyRole::Member]
         );
 
-        return redirect()->route('families.show', $family)->with('success', 'User invited successfully.');
+        return back()->with('success', 'User invited successfully.');
+    }
+
+    public function removeMember(Family $family, User $user)
+    {
+        // Prevent removing the last admin
+        $isLastAdmin = $family->familyUsers()
+            ->where('role', FamilyRole::Admin)
+            ->count() === 1
+            && $family->familyUsers()
+                ->where('user_id', $user->id)
+                ->where('role', FamilyRole::Admin)
+                ->exists();
+
+        if ($isLastAdmin) {
+            return back()->withErrors(['member' => 'Cannot remove the last admin of a family.']);
+        }
+
+        $family->familyUsers()->where('user_id', $user->id)->delete();
+
+        return back();
+    }
+
+    public function updateMemberRole(Request $request, Family $family, User $user)
+    {
+        $request->validate(['role' => 'required|in:admin,member']);
+
+        $family->familyUsers()
+            ->where('user_id', $user->id)
+            ->update(['role' => $request->role]);
+
+        return back();
     }
 }

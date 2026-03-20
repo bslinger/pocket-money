@@ -15,6 +15,8 @@ export interface Family {
   currency_name: string;
   currency_symbol: string;
   users?: User[];
+  /** Parents/carers linked to this family, with their role on the pivot */
+  family_users?: (FamilyUser & { user: User })[];
   spenders?: Spender[];
   created_at: string;
   updated_at: string;
