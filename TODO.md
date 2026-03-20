@@ -14,10 +14,10 @@ Organised by strategic area, with specific tasks nested under each.
 
 **Goal:** Give parents full control over their family setup — members, kids, and settings.
 
-- [ ] When creating a new family, allow multiple kids to be added at once, along with their colour. In this view, the colour selection should be a hovering dropdown or modal. Don't worry about submitting each one as they go, just submit all kids once they're done.
-- [ ] Add a menu item for Spenders that lists all kids in a rich table, with their balances, closest goal, and how many of today's jobs are complete
-- [ ] **Invite a second parent / carer** — email invite flow; invited user joins the family with Member role
-- [ ] **Manage family members** — list current parents/carers, remove a member, change role (Admin ↔ Member)
+- [x] When creating a new family, allow multiple kids to be added at once, along with their colour. In this view, the colour selection should be a hovering dropdown or modal. Don't worry about submitting each one as they go, just submit all kids once they're done.
+- [x] Add a menu item for Spenders that lists all kids in a rich table, with their balances, closest goal, and how many of today's jobs are complete
+- [x] **Invite a second parent / carer** — email invite flow; invited user joins the family with Member role
+- [x] **Manage family members** — list current parents/carers, remove a member, change role (Admin ↔ Member)
 - [x] **Edit kid profile** — update name, avatar, colour, and currency override from a single place (currently split across pages)
 - [x] **Archive / deactivate a kid** — soft-delete so history is preserved when a child ages out
 - [x] **Family settings page** — consolidate currency, pocket money day, and member management into one place
@@ -28,10 +28,10 @@ Organised by strategic area, with specific tasks nested under each.
 
 **Goal:** Make the core earn/spend loop fast and reliable for parents and kids.
 
-- [ ] **Integer amounts for non-dollar currencies** — when using coins/stars, forms should default to whole numbers
-- [ ] **Currency plural handling** — correctly pluralise currency names where possible (e.g. "1 Sheep / 2 Sheep", "1 Mouse / 2 Mice"); allow parents to specify an optional plural form
+- [x] **Integer amounts for non-dollar currencies** — when using coins/stars, forms should default to whole numbers
+- [x] **Currency plural handling** — correctly pluralise currency names where possible (e.g. "1 Sheep / 2 Sheep", "1 Mouse / 2 Mice"); allow parents to specify an optional plural form
 - [x] **Guess currency name from emoji** — when parent picks an emoji, auto-suggest the currency name (e.g. ⭐ → "Star", 🪙 → "Coin", 🍕 → "Pizza")
-- [ ] Change 'Take' to 'Spend' on the kid cards on the dashboard
+- [x] Change 'Take' to 'Spend' on the kid cards on the dashboard
 
 ## UI Improvements
 
@@ -45,8 +45,8 @@ Organised by strategic area, with specific tasks nested under each.
 **Goal:** Give kids a concrete target to save towards; give parents an easy way to see and encourage progress.
 
 - [x] **Basic CRUD** — create, list, update, delete a goal
-- [ ] **Goal detail page** — large progress bar, current vs target, days remaining
-- [ ] Show the closest goal on the dashboard
+- [x] **Goal detail page** — large progress bar, current vs target, days remaining
+- [x] Show the closest goal on the dashboard
 - [x] **Goal cover image** — upload an inspirational photo (e.g. photo of the bike the kid wants)
 - [x] **Savings pot link** — when linked to an account, offer to pull/sync current_amount from pot balance
 - [x] **Goal matching** — parents can optionally pledge to match kid contributions (e.g. "I'll match 50%")
@@ -58,10 +58,10 @@ Organised by strategic area, with specific tasks nested under each.
 
 **Goal:** Keep the chore approval loop fast enough that parents actually use it daily.
 
-- [ ] On the chores page, add filtering by which kid they're assigned to (including up for grabs), and sort by chronological order (and reverse)
+- [x] On the chores page, add filtering by which kid they're assigned to (including up for grabs), and sort by chronological order (and reverse)
 - [ ] **Approval flow speed** — one-tap approve from push notification; reachable in under 10 seconds
-- [ ] **Bulk approve** — approve multiple pending chores at once from the dashboard
-- [ ] **Chore history** — view past completions and approval decisions per chore
+- [x] **Bulk approve** — approve multiple pending chores at once from the dashboard
+- [x] **Chore history** — view past completions and approval decisions per chore
 
 ---
 
@@ -80,7 +80,7 @@ Organised by strategic area, with specific tasks nested under each.
 
 **Goal:** A dedicated view kids actually enjoy using.
 
-- [ ] **Kid-facing app view** — dedicated child dashboard: balance hero, chore list, goal progress bar
+- [x] **Kid-facing app view** — dedicated child dashboard: balance hero, chore list, goal progress bar
 - [ ] **Push notifications** — notify kids when a chore is approved ('You now have 450 coins!')
 
 ---
