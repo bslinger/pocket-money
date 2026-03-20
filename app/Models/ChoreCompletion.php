@@ -32,11 +32,13 @@ class ChoreCompletion extends Model
         'reviewed_at'  => 'datetime',
     ];
 
+    /** @return BelongsTo<Chore, $this> */
     public function chore(): BelongsTo
     {
         return $this->belongsTo(Chore::class);
     }
 
+    /** @return BelongsTo<Spender, $this> */
     public function spender(): BelongsTo
     {
         return $this->belongsTo(Spender::class);

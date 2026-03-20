@@ -4,12 +4,18 @@ namespace App\Models;
 
 use App\Enums\Frequency;
 use App\Enums\TxType;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property TxType   $type
+ * @property Frequency $frequency
+ * @property Carbon   $next_run_at
+ */
 class RecurringTransaction extends Model
 {
     use HasFactory, HasUuids;

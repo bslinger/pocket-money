@@ -13,9 +13,11 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $isParent  = $user->isParent();
-        $hasSpenders = $user->spenderUsers()->exists();
-        $showAsParent = $isParent || (!$isParent && !$hasSpenders);
+        abort_if($user === null, 401);
+
+        $isParent     = $user->isParent();
+        $hasSpenders  = $user->spenderUsers()->exists();
+        $showAsParent = $isParent || !$hasSpenders;
 
         if ($showAsParent) {
             $families = $user->families()

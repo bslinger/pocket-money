@@ -28,6 +28,7 @@ class Spender extends Model
         return $this->belongsTo(Family::class);
     }
 
+    /** @return HasMany<Account, $this> */
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);

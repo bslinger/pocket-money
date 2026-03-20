@@ -46,7 +46,7 @@ npm run test:e2e:ui       # Playwright interactive UI mode
 npm run test:e2e:headed   # Run with browser visible
 ```
 
-Playwright tests live in `tests/e2e/`. The `globalSetup` runs `sail artisan migrate:fresh --seed` before the suite. Auth state is stored in `tests/e2e/.auth/user.json` (gitignored).
+Playwright tests live in `tests/e2e/`. Each parallel worker creates its own isolated database (`pocket_money_test_{N}`) via `sail artisan test:db:prepare {N}`, which migrates and seeds it fresh. Auth state is stored per-worker in `tests/e2e/.auth/user_{N}.json` (gitignored). Tests import `test` and `expect` from `tests/e2e/fixtures.ts`, not from `@playwright/test` directly. Auth tests opt out of the shared auth state with `test.use({ storageStatePath: null })`.
 
 ### Database
 ```bash
@@ -54,6 +54,11 @@ sail artisan migrate              # Run migrations
 sail artisan migrate:fresh --seed # Fresh database with seed data
 sail artisan db:seed              # Seed only
 sail psql                         # Connect to Postgres via psql
+```
+
+### Static analysis
+```bash
+sail exec laravel.test ./vendor/bin/phpstan analyse   # Run PHPStan (level 5 via phpstan.neon)
 ```
 
 ### Build
@@ -70,7 +75,7 @@ sail composer <command>
 ## Architecture
 
 ### Stack
-- **Backend:** Laravel 13, PHP 8.3+
+- **Backend:** Laravel 13, PHP 8.4+
 - **Frontend:** Inertia.js 2.0 + React 18 + TypeScript
 - **Build:** Vite 7 + Tailwind CSS 3
 - **Auth:** Laravel Breeze (session-based, email verification required)

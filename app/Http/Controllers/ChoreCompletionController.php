@@ -70,7 +70,7 @@ class ChoreCompletionController extends Controller
                     'occurred_at' => now(),
                     'created_by'  => auth()->id(),
                 ]);
-                $account->increment('balance', $completion->chore->amount);
+                $account->increment('balance', (float) $completion->chore->amount);
                 $completion->update(['transaction_id' => $transaction->id]);
             }
         });

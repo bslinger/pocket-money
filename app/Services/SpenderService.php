@@ -9,9 +9,13 @@ class SpenderService
 {
     public static function mainAccount(Spender $spender): Account
     {
-        return $spender->accounts()
+        $account = $spender->accounts()
             ->where('is_savings_pot', false)
             ->orderBy('created_at')
-            ->firstOr(fn() => $spender->accounts()->orderBy('created_at')->firstOrFail());
+            ->first()
+            ?? $spender->accounts()->orderBy('created_at')->firstOrFail();
+
+        /** @var Account $account */
+        return $account;
     }
 }

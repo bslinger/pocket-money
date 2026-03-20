@@ -29,7 +29,9 @@ class TransferController extends Controller
 
         // Authorise: parent in same family OR child linked to source spender
         $sourceSpender = $account->spender;
-        $destSpender = $toAccount->spender;
+        $destSpender   = $toAccount->spender;
+
+        abort_if($sourceSpender === null || $destSpender === null, 404);
 
         $isParent = $user->isParent()
             && $user->families()->where('families.id', $sourceSpender->family_id)->exists()

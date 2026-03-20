@@ -13,6 +13,9 @@ class PocketMoneyReleaseController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+
+        abort_if($user === null, 401);
+
         $familyIds = $user->families()->pluck('families.id');
 
         $spenders = \App\Models\Spender::whereIn('family_id', $familyIds)
@@ -27,7 +30,7 @@ class PocketMoneyReleaseController extends Controller
             ->get();
 
         $spenderData = $spenders->map(function ($spender) {
-            $weeklyAmount = $spender->accounts->flatMap->recurringTransactions
+            $weeklyAmount = $spender->accounts->flatMap(fn($account) => $account->recurringTransactions)
                 ->where('frequency', 'weekly')
                 ->sum('amount');
 

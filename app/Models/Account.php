@@ -31,6 +31,7 @@ class Account extends Model
         ];
     }
 
+    /** @return BelongsTo<Spender, $this> */
     public function spender(): BelongsTo
     {
         return $this->belongsTo(Spender::class);

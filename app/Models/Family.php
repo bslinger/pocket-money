@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Cashier\Billable;
 
 class Family extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, Billable;
 
     public $incrementing = false;
     protected $keyType = 'string';
@@ -32,6 +33,7 @@ class Family extends Model
         return $this->hasMany(FamilyUser::class);
     }
 
+    /** @return HasMany<Spender, $this> */
     public function spenders(): HasMany
     {
         return $this->hasMany(Spender::class);
