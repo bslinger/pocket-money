@@ -11,8 +11,11 @@
         "laravel/breeze": "^2.4",
         "laravel/cashier": "^16.5",
         "laravel/framework": "^13.0",
+        "laravel/nightwatch": "^1.24",
+        "laravel/octane": "^2.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
