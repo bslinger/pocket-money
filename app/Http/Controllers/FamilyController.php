@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFamilyRequest;
+use App\Mail\FamilyInvitation;
 use App\Models\Account;
 use App\Models\Family;
 use App\Models\FamilyUser;
+use App\Models\Invitation;
 use App\Models\Spender;
 use App\Models\User;
 use App\Enums\FamilyRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class FamilyController extends Controller
@@ -95,13 +99,38 @@ class FamilyController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        $user = User::where('email', $request->email)->firstOrFail();
-        FamilyUser::firstOrCreate(
-            ['family_id' => $family->id, 'user_id' => $user->id],
-            ['role' => FamilyRole::Member]
-        );
+        $email = strtolower(trim($request->email));
+        $inviter = $request->user();
 
-        return back()->with('success', 'User invited successfully.');
+        // If the user already has an account, add them directly
+        $existingUser = User::where('email', $email)->first();
+        if ($existingUser) {
+            FamilyUser::firstOrCreate(
+                ['family_id' => $family->id, 'user_id' => $existingUser->id],
+                ['role' => FamilyRole::Member]
+            );
+            return back()->with('success', 'Member added to the family.');
+        }
+
+        // Otherwise create/refresh an invitation and send an email
+        /** @var Invitation $invitation */
+        $invitation = Invitation::updateOrCreate(
+            ['family_id' => $family->id, 'email' => $email],
+            [
+                'token'      => Str::random(64),
+                'role'       => 'member',
+                'expires_at' => now()->addDays(7),
+            ]
+        );
+        $invitation->load('family');
+
+        $inviterName = $inviter !== null
+            ? ($inviter->display_name ?? $inviter->name)
+            : 'A family member';
+
+        Mail::to($email)->send(new FamilyInvitation($invitation, $inviterName));
+
+        return back()->with('success', 'Invitation email sent to ' . $email . '.');
     }
 
     public function switchActive(Family $family): RedirectResponse

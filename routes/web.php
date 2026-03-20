@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     RecurringTransactionController, SavingsGoalController,
     BillingController, SettingsController, ImageUploadController,
     ChoreController, ChoreCompletionController, PocketMoneyReleaseController,
-    MarketingController
+    MarketingController, InvitationController
 };
 use App\Http\Controllers\ProfileController;
 
@@ -21,6 +21,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Invitation accept — works for both logged-in and guest users
+Route::get('/invitations/{token}/accept', [InvitationController::class, 'accept'])
+    ->middleware('auth')
+    ->name('invitations.accept');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
