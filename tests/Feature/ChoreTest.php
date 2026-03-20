@@ -162,6 +162,24 @@ describe('chore completions', function () {
                 ->post(route('chores.complete', $chore), ['spender_id' => $spender->id])
                 ->assertForbidden();
         });
+
+        it('allows a parent in view-as mode to mark a chore done', function () {
+            [$parent, $family, $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $chore   = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $chore->spenders()->sync([$spender->id]);
+
+            $this->actingAs($parent)
+                ->withSession(['viewing_as_spender_id' => $spender->id])
+                ->post(route('chores.complete', $chore), ['spender_id' => $spender->id])
+                ->assertRedirect();
+
+            expect(ChoreCompletion::where('chore_id', $chore->id)
+                ->where('spender_id', $spender->id)
+                ->where('status', CompletionStatus::Pending)
+                ->exists()
+            )->toBeTrue();
+        });
     });
 
     describe('approve', function () {

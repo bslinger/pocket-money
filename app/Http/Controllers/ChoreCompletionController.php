@@ -21,9 +21,21 @@ class ChoreCompletionController extends Controller
 
         $spenderId = $request->input('spender_id');
 
-        // Verify requesting user is linked to this spender
-        $linked = $request->user()->spenders()->where('spenders.id', $spenderId)->exists();
-        abort_unless($linked, 403);
+        // Verify requesting user is allowed to act for this spender.
+        // A child user must have a SpenderUser record.
+        // A parent in "view as" mode is also allowed (they're previewing as the child).
+        $user = $request->user();
+        $viewingAsSpenderId = session('viewing_as_spender_id');
+        $parentViewingAsThisSpender = $user->isParent()
+            && $viewingAsSpenderId === $spenderId
+            && $user->families()
+                ->whereHas('spenders', fn($q) => $q->where('spenders.id', $spenderId))
+                ->exists();
+
+        if (!$parentViewingAsThisSpender) {
+            $linked = $user->spenders()->where('spenders.id', $spenderId)->exists();
+            abort_unless($linked, 403);
+        }
 
         // Check up_for_grabs collision: if not up_for_grabs, spender must be assigned
         if (!$chore->up_for_grabs) {
