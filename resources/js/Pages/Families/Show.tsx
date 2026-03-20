@@ -8,7 +8,7 @@ import { Label } from '@/Components/ui/label';
 import { guessNameFromEmoji } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon, ArchiveRestore } from 'lucide-react';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { useState, useRef, useEffect } from 'react';
 
@@ -278,10 +278,76 @@ function ParentsSection({ family, authUserId }: {
 // ── Spenders ────────────────────────────────────────────────────────────────
 
 function SpendersSection({ family }: { family: Props['family'] }) {
-    function deleteSpender(spender: Spender) {
-        if (!confirm(`Remove ${spender.name}? This will delete all their accounts and transaction history.`)) return;
+    const active   = family.spenders.filter(s => !s.deleted_at);
+    const archived = family.spenders.filter(s => !!s.deleted_at);
+
+    function archiveSpender(spender: Spender) {
+        if (!confirm(`Archive ${spender.name}? Their history is preserved and they can be restored later.`)) return;
         router.delete(route('spenders.destroy', spender.id));
     }
+
+    function restoreSpender(spender: Spender) {
+        router.post(route('spenders.restore', spender.id));
+    }
+
+    const SpenderRow = ({ s, isArchived }: { s: Spender; isArchived: boolean }) => (
+        <li key={s.id} className={`flex items-center gap-3 py-3 ${isArchived ? 'opacity-60' : ''}`}>
+            <Avatar className="h-9 w-9 shrink-0">
+                <AvatarImage src={s.avatar_url ?? undefined} />
+                <AvatarFallback
+                    style={{ backgroundColor: s.color ?? '#6366f1' }}
+                    className="text-white font-semibold text-sm"
+                >
+                    {s.name[0].toUpperCase()}
+                </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{s.name}</p>
+                <p className="text-xs text-muted-foreground">
+                    {isArchived ? (
+                        <span className="italic">Archived</span>
+                    ) : (
+                        <>
+                            {(s.accounts?.length ?? 0)} account{(s.accounts?.length ?? 0) !== 1 ? 's' : ''}
+                            {s.currency_symbol && (
+                                <span className="ml-2">{s.currency_symbol} custom currency</span>
+                            )}
+                        </>
+                    )}
+                </p>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+                {isArchived ? (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        title="Restore"
+                        onClick={() => restoreSpender(s)}
+                    >
+                        <ArchiveRestore className="h-3.5 w-3.5" />
+                    </Button>
+                ) : (
+                    <>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                            <Link href={route('spenders.edit', s.id)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                            </Link>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            title="Archive"
+                            onClick={() => archiveSpender(s)}
+                        >
+                            <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                    </>
+                )}
+            </div>
+        </li>
+    );
 
     return (
         <Card>
@@ -299,43 +365,8 @@ function SpendersSection({ family }: { family: Props['family'] }) {
                     <p className="text-sm text-muted-foreground py-2">No spenders yet.</p>
                 ) : (
                     <ul className="divide-y">
-                        {family.spenders.map(s => (
-                            <li key={s.id} className="flex items-center gap-3 py-3">
-                                <Avatar className="h-9 w-9 shrink-0">
-                                    <AvatarImage src={s.avatar_url ?? undefined} />
-                                    <AvatarFallback
-                                        style={{ backgroundColor: s.color ?? '#6366f1' }}
-                                        className="text-white font-semibold text-sm"
-                                    >
-                                        {s.name[0].toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium">{s.name}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {(s.accounts?.length ?? 0)} account{(s.accounts?.length ?? 0) !== 1 ? 's' : ''}
-                                        {s.currency_symbol && (
-                                            <span className="ml-2 text-xs">{s.currency_symbol} custom currency</span>
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-1 shrink-0">
-                                    <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
-                                        <Link href={route('spenders.edit', s.id)}>
-                                            <Pencil className="h-3.5 w-3.5" />
-                                        </Link>
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-7 w-7 text-destructive hover:text-destructive"
-                                        onClick={() => deleteSpender(s)}
-                                    >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                    </Button>
-                                </div>
-                            </li>
-                        ))}
+                        {active.map(s => <SpenderRow key={s.id} s={s} isArchived={false} />)}
+                        {archived.map(s => <SpenderRow key={s.id} s={s} isArchived={true} />)}
                     </ul>
                 )}
             </CardContent>

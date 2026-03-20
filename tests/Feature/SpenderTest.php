@@ -92,16 +92,29 @@ describe('spenders', function () {
         });
     });
 
-    describe('destroy', function () {
-        it('deletes a spender and redirects to the family', function () {
+    describe('archive / restore', function () {
+        it('soft-deletes (archives) a spender and redirects to the family', function () {
             [$user, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
 
             $this->actingAs($user)
                 ->delete(route('spenders.destroy', $spender))
-                ->assertRedirect();
+                ->assertRedirect(route('families.show', $family->id));
 
             expect(Spender::find($spender->id))->toBeNull();
+            expect(Spender::withTrashed()->find($spender->id))->not->toBeNull();
+        });
+
+        it('restores an archived spender', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $spender->delete();
+
+            $this->actingAs($user)
+                ->post(route('spenders.restore', $spender->id))
+                ->assertRedirect();
+
+            expect(Spender::find($spender->id))->not->toBeNull();
         });
     });
 

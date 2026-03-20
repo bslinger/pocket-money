@@ -63,10 +63,12 @@ class SpenderController extends Controller
 
     public function create()
     {
+        $families = auth()->user()->families()
+            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->get();
+
         return Inertia::render('Spenders/Create', [
-            'families' => auth()->user()->families()
-                ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
-                ->get(),
+            'families' => $families,
         ]);
     }
 
@@ -94,7 +96,16 @@ class SpenderController extends Controller
 
     public function destroy(Spender $spender)
     {
-        $spender->delete();
+        $familyId = $spender->family_id;
+        $spender->delete(); // soft-delete (archive)
+
+        return redirect()->route('families.show', $familyId);
+    }
+
+    public function restore(string $id)
+    {
+        $spender = Spender::withTrashed()->findOrFail($id);
+        $spender->restore();
 
         return redirect()->route('families.show', $spender->family_id);
     }

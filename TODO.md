@@ -10,9 +10,9 @@ Organised by strategic area, with specific tasks nested under each.
 
 - [ ] **Invite a second parent / carer** — email invite flow; invited user joins the family with Member role
 - [ ] **Manage family members** — list current parents/carers, remove a member, change role (Admin ↔ Member)
-- [ ] **Edit kid profile** — update name, avatar, colour, and currency override from a single place (currently split across pages)
-- [ ] **Archive / deactivate a kid** — soft-delete so history is preserved when a child ages out
-- [ ] **Family settings page** — consolidate currency, pocket money day, and member management into one place
+- [x] **Edit kid profile** — update name, avatar, colour, and currency override from a single place (currently split across pages)
+- [x] **Archive / deactivate a kid** — soft-delete so history is preserved when a child ages out
+- [x] **Family settings page** — consolidate currency, pocket money day, and member management into one place
 
 ---
 
@@ -93,5 +93,5 @@ Organised by strategic area, with specific tasks nested under each.
 
 ## 🔧 Tech / Infrastructure
 
-- [ ] **Spender Create page** — add optional currency override (currently only on Edit)
+- [x] **Spender Create page** — add optional currency override (currently only on Edit)
 - [ ] **PHPStan** — keep at level 5; run after every PHP change

@@ -39,6 +39,7 @@ export interface Spender {
   color: string | null;
   currency_name: string | null;
   currency_symbol: string | null;
+  deleted_at: string | null;
   family?: Family;
   accounts?: Account[];
   savings_goals?: SavingsGoal[];

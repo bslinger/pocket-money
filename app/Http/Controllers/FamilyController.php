@@ -39,9 +39,14 @@ class FamilyController extends Controller
 
     public function show(Family $family)
     {
+        $family->load(['familyUsers.user']);
+        $family->setRelation('spenders',
+            $family->spenders()->withTrashed()->with('accounts')->get()
+        );
+
         return Inertia::render('Families/Show', [
-            'family'        => $family->load(['familyUsers.user', 'spenders.accounts']),
-            'authUserId'    => auth()->id(),
+            'family'     => $family,
+            'authUserId' => auth()->id(),
         ]);
     }
 

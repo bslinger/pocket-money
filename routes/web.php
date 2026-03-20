@@ -46,6 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('spenders', SpenderController::class)->except('show');
         Route::post('/spenders/{spender}/link-child', [SpenderController::class, 'linkChild'])->name('spenders.link-child');
         Route::delete('/spenders/{spender}/linked-children/{user}', [SpenderController::class, 'unlinkChild'])->name('spenders.unlink-child');
+        Route::post('/spenders/{id}/restore', [SpenderController::class, 'restore'])->name('spenders.restore');
         Route::resource('accounts', AccountController::class)->except('show');
         Route::resource('accounts.transactions', TransactionController::class);
         Route::resource('accounts.recurring', RecurringTransactionController::class);
