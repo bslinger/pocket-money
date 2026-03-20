@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Savings Goals', () => {
     test('can view the goals list', async ({ page }) => {
         await page.goto('/goals');
-        await expect(page.getByRole('heading', { name: /goals/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Savings Goals' })).toBeVisible();
     });
 
     test('can create a savings goal', async ({ page }) => {

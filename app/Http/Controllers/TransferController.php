@@ -9,6 +9,19 @@ use Illuminate\Support\Str;
 
 class TransferController extends Controller
 {
+    public function create(Account $account)
+    {
+        $user = auth()->user();
+        $accounts = \App\Models\Account::whereHas('spender', function ($q) use ($user) {
+            $q->whereIn('family_id', $user->families()->pluck('families.id'));
+        })->where('id', '!=', $account->id)->get();
+
+        return \Inertia\Inertia::render('Transfers/Create', [
+            'account'  => $account,
+            'accounts' => $accounts,
+        ]);
+    }
+
     public function store(StoreTransferRequest $request, Account $account)
     {
         $user = auth()->user();

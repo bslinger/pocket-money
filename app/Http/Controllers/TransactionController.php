@@ -38,7 +38,7 @@ class TransactionController extends Controller
             }
         });
 
-        return redirect()->route('accounts.transactions.index', $account);
+        return redirect()->route('accounts.show', $account);
     }
 
     public function edit(Account $account, Transaction $transaction)
@@ -69,7 +69,7 @@ class TransactionController extends Controller
             $transaction->update($request->validated());
         });
 
-        return redirect()->route('accounts.transactions.index', $account);
+        return redirect()->route('accounts.show', $account);
     }
 
     public function destroy(Account $account, Transaction $transaction)
@@ -85,6 +85,6 @@ class TransactionController extends Controller
             $transaction->delete();
         });
 
-        return redirect()->route('accounts.transactions.index', $account);
+        return redirect()->route('accounts.show', $account);
     }
 }

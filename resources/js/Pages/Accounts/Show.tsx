@@ -16,7 +16,7 @@ export default function AccountShow({ account }: Props) {
           <p className="text-4xl font-bold text-gray-900 dark:text-gray-100">${parseFloat(account.balance).toFixed(2)}</p>
           <div className="mt-4 flex gap-3">
             <Link href={route('accounts.transactions.create', account.id)} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">+ Transaction</Link>
-            <Link href={route('accounts.transfer', account.id)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Transfer</Link>
+            <Link href={route('accounts.transfer.create', account.id)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Transfer</Link>
           </div>
         </div>
         <div className="space-y-2">

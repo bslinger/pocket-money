@@ -58,7 +58,7 @@ test.describe('Register', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'differentpassword');
         await page.click('button[type=submit]');
-        await expect(page.getByText(/password/i)).toBeVisible();
+        await expect(page.getByText(/confirmation does not match|passwords.*not match/i)).toBeVisible();
     });
 });
 
@@ -88,8 +88,8 @@ test.describe('Forgot password', () => {
     test('accepts a valid email and shows confirmation', async ({ page }) => {
         await page.goto('/forgot-password');
         await page.fill('input[type=email]', 'ben@example.com');
-        await page.click('button[type=submit]');
+        await page.getByRole('button', { name: /email password reset link/i }).click();
         // Laravel shows a success status message after sending the reset link
-        await expect(page.getByText(/we have emailed|reset link|sent/i)).toBeVisible();
+        await expect(page.getByText(/we have emailed your password reset link/i)).toBeVisible();
     });
 });

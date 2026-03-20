@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
-    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::match(['put', 'patch'], '/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
     Route::delete('/settings/account', [SettingsController::class, 'deleteAccount'])->name('settings.account.destroy');
     Route::get('/settings/export', [SettingsController::class, 'exportData'])->name('settings.export');
     Route::post('/uploads/sign', [ImageUploadController::class, 'sign'])->name('uploads.sign');
@@ -57,6 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Wildcard show routes AFTER resource routes to avoid capturing /spenders/create etc.
     Route::get('/spenders/{spender}', [SpenderController::class, 'show'])->name('spenders.show');
     Route::get('/accounts/{account}', [AccountController::class, 'show'])->name('accounts.show');
+    Route::get('/accounts/{account}/transfer', [TransferController::class, 'create'])->name('accounts.transfer.create');
     Route::post('/accounts/{account}/transfer', [TransferController::class, 'store'])->name('accounts.transfer');
 });
 
