@@ -1,11 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Chore, ChoreCompletion, Spender } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
-import { CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Undo2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useState } from 'react';
 
 interface Paginated<T> {
   data: T[];
@@ -39,6 +41,15 @@ function statusBadge(status: ChoreCompletion['status']) {
 }
 
 export default function ChoreHistory({ chore, completions }: Props) {
+  const [unapproving, setUnapproving] = useState<string | null>(null);
+
+  function unapprove(completionId: string) {
+    setUnapproving(completionId);
+    router.patch(route('chore-completions.unapprove', completionId), {}, {
+      onFinish: () => setUnapproving(null),
+    });
+  }
+
   return (
     <AuthenticatedLayout header={
       <div className="flex items-center justify-between">
@@ -81,8 +92,20 @@ export default function ChoreHistory({ chore, completions }: Props) {
                         {c.note && <span className="ml-2 italic">"{c.note}"</span>}
                       </p>
                     </div>
-                    <div className="shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       {statusBadge(c.status)}
+                      {c.status === 'approved' && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-muted-foreground hover:text-amber-600"
+                          title="Undo approval"
+                          disabled={unapproving === c.id}
+                          onClick={() => unapprove(c.id)}
+                        >
+                          <Undo2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

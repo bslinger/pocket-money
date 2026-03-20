@@ -10,6 +10,7 @@ use App\Models\Transaction;
 use App\Services\SpenderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ChoreCompletionController extends Controller
 {
@@ -128,6 +129,51 @@ class ChoreCompletionController extends Controller
         });
 
         return back()->with('success', 'All chores approved.');
+    }
+
+    public function unapprove(ChoreCompletion $completion)
+    {
+        abort_unless($completion->status === CompletionStatus::Approved, 422);
+
+        $warning = null;
+
+        DB::transaction(function () use ($completion, &$warning) {
+            // Reverse any earned transaction
+            if ($completion->transaction_id) {
+                $transaction = Transaction::find($completion->transaction_id);
+                if ($transaction) {
+                    $transaction->account->decrement('balance', (float) $transaction->amount);
+                    $transaction->delete();
+                }
+                $completion->transaction_id = null;
+            }
+
+            // Check if unapproving a responsibility chore may affect pocket money
+            if ($completion->chore->reward_type === ChoreRewardType::Responsibility) {
+                $account = SpenderService::mainAccount($completion->spender);
+                $pocketMoneyThisWeek = Transaction::where('account_id', $account->id)
+                    ->where('type', 'credit')
+                    ->where('description', 'like', '%Pocket money%')
+                    ->whereBetween('occurred_at', [now()->startOfWeek(), now()->endOfWeek()])
+                    ->exists();
+
+                if ($pocketMoneyThisWeek) {
+                    $warning = 'Pocket money was already paid this week for ' . $completion->spender->name . '. Check if it should be reversed.';
+                }
+            }
+
+            $completion->update([
+                'status'      => CompletionStatus::Pending,
+                'reviewed_at' => null,
+                'reviewed_by' => null,
+            ]);
+        });
+
+        $flash = 'Approval undone — chore is back to pending.';
+        if ($warning) {
+            return back()->with('warning', $flash . ' ' . $warning);
+        }
+        return back()->with('success', $flash);
     }
 
     public function decline(ChoreCompletion $completion)

@@ -266,6 +266,65 @@ describe('chore completions', function () {
         });
     });
 
+    describe('unapprove', function () {
+        it('reverses an earns completion and sets status back to pending', function () {
+            [$parent, $family, $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $account = Account::factory()->withBalance(5)->create(['spender_id' => $spender->id]);
+            $chore   = Chore::factory()->earns(2.50)->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $tx      = Transaction::factory()->create(['account_id' => $account->id, 'type' => 'credit', 'amount' => '2.50']);
+            $completion = ChoreCompletion::factory()->create([
+                'chore_id'       => $chore->id,
+                'spender_id'     => $spender->id,
+                'status'         => CompletionStatus::Approved,
+                'transaction_id' => $tx->id,
+            ]);
+
+            $this->actingAs($parent)
+                ->patch(route('chore-completions.unapprove', $completion))
+                ->assertRedirect();
+
+            expect($completion->fresh()->status)->toBe(CompletionStatus::Pending);
+            expect($completion->fresh()->transaction_id)->toBeNull();
+            expect(Transaction::find($tx->id))->toBeNull();
+            expect((float) $account->fresh()->balance)->toBe(2.5); // 5 - 2.50
+        });
+
+        it('sets responsibility completion back to pending without transaction reversal', function () {
+            [$parent, $family, $spenders] = parentWithFamily(['Emma']);
+            $spender    = $spenders->first();
+            Account::factory()->create(['spender_id' => $spender->id]);
+            $chore      = Chore::factory()->responsibility()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $completion = ChoreCompletion::factory()->create([
+                'chore_id'   => $chore->id,
+                'spender_id' => $spender->id,
+                'status'     => CompletionStatus::Approved,
+            ]);
+
+            $this->actingAs($parent)
+                ->patch(route('chore-completions.unapprove', $completion))
+                ->assertRedirect();
+
+            expect($completion->fresh()->status)->toBe(CompletionStatus::Pending);
+            expect(Transaction::count())->toBe(0);
+        });
+
+        it('returns 422 when trying to unapprove a non-approved completion', function () {
+            [$parent, $family, $spenders] = parentWithFamily(['Emma']);
+            $spender    = $spenders->first();
+            $chore      = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $completion = ChoreCompletion::factory()->create([
+                'chore_id'   => $chore->id,
+                'spender_id' => $spender->id,
+                'status'     => CompletionStatus::Pending,
+            ]);
+
+            $this->actingAs($parent)
+                ->patch(route('chore-completions.unapprove', $completion))
+                ->assertStatus(422);
+        });
+    });
+
     describe('history', function () {
         it('returns the history page for a chore', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);
