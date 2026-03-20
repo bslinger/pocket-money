@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, Menu, PlusCircle, Settings2, Target, User, Wallet, Coins, X } from 'lucide-react';
+import { Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, Menu, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -237,6 +237,12 @@ export default function AuthenticatedLayout({
                                 {isParent && (
                                     <>
                                         <Button variant="ghost" size="sm" asChild>
+                                            <Link href={route('spenders.index')}>
+                                                <Users className="h-4 w-4 mr-1.5" />
+                                                Kids
+                                            </Link>
+                                        </Button>
+                                        <Button variant="ghost" size="sm" asChild>
                                             <Link href={route('chores.index')}>
                                                 <CheckSquare className="h-4 w-4 mr-1.5" />
                                                 Chores
@@ -347,6 +353,12 @@ export default function AuthenticatedLayout({
                             </Button>
                             {isParent && (
                                 <>
+                                    <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
+                                        <Link href={route('spenders.index')}>
+                                            <Users className="h-4 w-4 mr-2" />
+                                            Kids
+                                        </Link>
+                                    </Button>
                                     <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
                                         <Link href={route('chores.index')}>
                                             <CheckSquare className="h-4 w-4 mr-2" />

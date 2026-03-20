@@ -63,7 +63,9 @@
       "Bash(echo 'No CSS files with amber' ls /home/ben/Dev/pocket-money/public/build/assets/*.css)",
       "Bash(grep:*)",
       "Skill(update-config)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(head -5 grep -n \"useState\\(\" /home/ben/Dev/pocket-money/resources/js/Pages/Spenders/Create.tsx)",
+      "Bash(head -5 grep -n \"useState\\(\" /home/ben/Dev/pocket-money/resources/js/Pages/Spenders/Edit.tsx)"
     ]
   }
 }

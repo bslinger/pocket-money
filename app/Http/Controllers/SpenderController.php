@@ -8,9 +8,52 @@ use App\Models\SpenderUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Carbon;
 
 class SpenderController extends Controller
 {
+    public function index(Request $request)
+    {
+        $family = $request->user()->families()
+            ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
+            ->first();
+
+        if (!$family) {
+            return redirect()->route('families.create');
+        }
+
+        $today = Carbon::today();
+
+        $spenders = $family->spenders()
+            ->with(['accounts', 'savingsGoals.account'])
+            ->withCount(['choreCompletions as today_completions_count' => function ($q) use ($today) {
+                $q->whereDate('completed_at', $today);
+            }])
+            ->orderBy('name')
+            ->get()
+            ->map(function (Spender $spender) {
+                $spender->setAttribute('total_balance', $spender->accounts->sum('balance'));
+                $closestGoal = $spender->savingsGoals
+                    ->where('is_completed', false)
+                    ->map(function ($goal) {
+                        /** @var \App\Models\SavingsGoal $goal */
+                        $account = $goal->account instanceof \App\Models\Account ? $goal->account : null;
+                        $current = $account !== null ? (float) $account->balance : 0.0;
+                        $target  = max((float) $goal->target_amount, 0.01);
+                        return ['goal' => $goal, 'pct' => $current / $target];
+                    })
+                    ->sortByDesc('pct')
+                    ->first()['goal'] ?? null;
+                $spender->setRelation('closest_goal', $closestGoal);
+                return $spender;
+            });
+
+        return Inertia::render('Spenders/Index', [
+            'family'   => $family,
+            'spenders' => $spenders,
+        ]);
+    }
+
     public function show(Spender $spender)
     {
         $user = auth()->user();

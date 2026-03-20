@@ -1,5 +1,28 @@
 import { test, expect } from './fixtures';
 
+test.describe('Spenders index', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test('shows kids index page via nav link', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByRole('link', { name: 'Kids' }).first().click();
+        await expect(page).toHaveURL('/spenders');
+        await expect(page.getByRole('heading', { name: 'Kids' })).toBeVisible();
+    });
+
+    test('lists seeded spenders with balance', async ({ page }) => {
+        await page.goto('/spenders');
+        await expect(page.getByText('Emma')).toBeVisible();
+        await expect(page.getByText('Jack')).toBeVisible();
+    });
+
+    test('spender name links to their profile', async ({ page }) => {
+        await page.goto('/spenders');
+        await page.getByRole('link', { name: 'Emma' }).first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+    });
+});
+
 test.describe('Spenders', () => {
     test('can view a spender from the dashboard', async ({ page }) => {
         await page.goto('/dashboard');
@@ -64,13 +87,12 @@ test.describe('Spenders', () => {
 
         await page.getByRole('button', { name: /View as Emma/i }).click();
         await expect(page).toHaveURL(/\/dashboard/);
-        // Banner should appear with the child's name
-        await expect(page.getByText("this is the child's view")).toBeVisible();
-        await expect(page.getByText('Emma').first()).toBeVisible();
+        // Dashboard shows Emma's kid view with the back button
+        await expect(page.getByText("Emma's view")).toBeVisible();
 
-        // Exit child view
-        await page.getByRole('button', { name: /Exit/i }).click();
+        // Return to parent view
+        await page.getByRole('button', { name: /Back to parent view/i }).click();
         await expect(page).toHaveURL(/\/dashboard/);
-        await expect(page.getByText("this is the child's view")).not.toBeVisible();
+        await expect(page.getByText("Emma's view")).not.toBeVisible();
     });
 });
