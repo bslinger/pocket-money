@@ -30,16 +30,22 @@ class SavingsGoal extends Model
         'image_key',
         'target_date',
         'is_completed',
+        'completed_at',
+        'abandoned_at',
+        'abandoned_allocated_amount',
         'sort_order',
     ];
 
     protected function casts(): array
     {
         return [
-            'target_amount' => 'decimal:2',
-            'target_date'   => 'date',
-            'is_completed'  => 'boolean',
-            'sort_order'    => 'integer',
+            'target_amount'              => 'decimal:2',
+            'abandoned_allocated_amount' => 'decimal:2',
+            'target_date'                => 'date',
+            'is_completed'               => 'boolean',
+            'completed_at'               => 'datetime',
+            'abandoned_at'               => 'datetime',
+            'sort_order'                 => 'integer',
         ];
     }
 

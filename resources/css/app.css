@@ -4,6 +4,71 @@
 
 @layer base {
   :root {
+    /* Amber Glow — warm orange, primary brand */
+    --color-amber-glow-50:  #fff4ea;
+    --color-amber-glow-100: #ffe9d4;
+    --color-amber-glow-200: #ffd3a9;
+    --color-amber-glow-300: #ffbc7e;
+    --color-amber-glow-400: #ffa653;
+    --color-amber-glow-500: #f08c2a;
+    --color-amber-glow-600: #c46b10;
+    --color-amber-glow-700: #985000;
+    --color-amber-glow-800: #6c3800;
+    --color-amber-glow-900: #402200;
+    --color-amber-glow-950: #2b1600;
+
+    /* Forest Ink — deep forest green, the "edge" dark anchor */
+    --color-forest-ink-50:  #eaf0eb;
+    --color-forest-ink-100: #d5e1d7;
+    --color-forest-ink-200: #abc3af;
+    --color-forest-ink-300: #80a587;
+    --color-forest-ink-400: #56875f;
+    --color-forest-ink-500: #2c6937;
+    --color-forest-ink-600: #23542c;
+    --color-forest-ink-700: #1a3f21;
+    --color-forest-ink-800: #112a16;
+    --color-forest-ink-900: #08150b;
+    --color-forest-ink-950: #050e07;
+
+    /* Marigold — vibrant golden yellow, highlight accent */
+    --color-marigold-50:  #fffaeb;
+    --color-marigold-100: #fff5d6;
+    --color-marigold-200: #ffe9ad;
+    --color-marigold-300: #ffdd85;
+    --color-marigold-400: #ffd15c;
+    --color-marigold-500: #ffc533;
+    --color-marigold-600: #e0a000;
+    --color-marigold-700: #b07c00;
+    --color-marigold-800: #805800;
+    --color-marigold-900: #503500;
+    --color-marigold-950: #362400;
+
+    /* Warm Cream — soft neutral surfaces */
+    --color-warm-cream-50:  #fbf8f3;
+    --color-warm-cream-100: #f7f1e7;
+    --color-warm-cream-200: #efe3cf;
+    --color-warm-cream-300: #e7d5b7;
+    --color-warm-cream-400: #dfc79f;
+    --color-warm-cream-500: #d7b987;
+    --color-warm-cream-600: #ae9469;
+    --color-warm-cream-700: #836f4b;
+    --color-warm-cream-800: #584a2e;
+    --color-warm-cream-900: #2d2517;
+    --color-warm-cream-950: #1e190f;
+
+    /* Fired Clay — warm red-orange, negative indicators */
+    --color-fired-clay-50:  #fceee9;
+    --color-fired-clay-100: #f9ddd3;
+    --color-fired-clay-200: #f3bba6;
+    --color-fired-clay-300: #ed9979;
+    --color-fired-clay-400: #e7774d;
+    --color-fired-clay-500: #e15520;
+    --color-fired-clay-600: #b84015;
+    --color-fired-clay-700: #8e2f0d;
+    --color-fired-clay-800: #641f07;
+    --color-fired-clay-900: #3a1003;
+    --color-fired-clay-950: #280a02;
+
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;

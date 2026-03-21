@@ -181,6 +181,11 @@ export interface SavingsGoal {
   image_url: string | null;
   target_date: string | null;
   is_completed: boolean;
+  completed_at: string | null;
+  abandoned_at: string | null;
+  abandoned_allocated_amount: string | null;
   spender?: Spender;
   account?: Account | null;
+  created_at: string;
+  updated_at: string;
 }

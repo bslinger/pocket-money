@@ -19,7 +19,13 @@ class SavingsGoalController extends Controller
                     ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
                     ->pluck('families.id')
             )
-            ->with(['savingsGoals' => fn($q) => $q->orderBy('sort_order'), 'savingsGoals.account', 'family'])
+            ->with([
+                'savingsGoals' => fn($q) => $q
+                    ->whereNull('abandoned_at')
+                    ->orderBy('sort_order'),
+                'savingsGoals.account',
+                'family',
+            ])
             ->get();
 
         // Compute cascade allocations per account
@@ -27,9 +33,79 @@ class SavingsGoalController extends Controller
             SavingsGoal::applyAccountAllocations($spender->savingsGoals);
         }
 
+        $recentlyCompleted = now()->subWeek();
+
         return Inertia::render('Goals/Index', [
             'spenders' => $spenders,
+            'recentCompletedCutoff' => $recentlyCompleted->toIso8601String(),
         ]);
+    }
+
+    public function abandoned()
+    {
+        $user     = auth()->user();
+        $spenders = \App\Models\Spender::whereIn('family_id',
+                $user->families()
+                    ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+                    ->pluck('families.id')
+            )
+            ->with([
+                'savingsGoals' => fn($q) => $q
+                    ->whereNotNull('abandoned_at')
+                    ->orderByDesc('abandoned_at'),
+                'family',
+            ])
+            ->get()
+            ->filter(fn($s) => $s->savingsGoals->isNotEmpty())
+            ->values();
+
+        if ($spenders->isEmpty()) {
+            return redirect()->route('goals.index');
+        }
+
+        return Inertia::render('Goals/Abandoned', [
+            'spenders' => $spenders,
+        ]);
+    }
+
+    public function abandon(Request $request, SavingsGoal $goal)
+    {
+        if ($goal->abandoned_at !== null) {
+            return back();
+        }
+
+        // Get the current allocated amount before abandoning
+        $allocatedAmount = $goal->allocated_amount;
+        if ($goal->account !== null) {
+            $siblings = SavingsGoal::where('account_id', $goal->account_id)
+                ->whereNull('abandoned_at')
+                ->orderBy('sort_order')
+                ->get();
+            SavingsGoal::applyAccountAllocations($siblings);
+            $sibling = $siblings->firstWhere('id', $goal->id);
+            $allocatedAmount = $sibling instanceof SavingsGoal ? $sibling->allocated_amount : '0.00';
+        }
+
+        // Goals created in the past 24 hours: hard delete
+        if ($goal->created_at !== null && $goal->created_at->gt(now()->subDay())) {
+            $goal->delete();
+            return redirect()->route('goals.index');
+        }
+
+        // Otherwise: mark as abandoned
+        $goal->update([
+            'abandoned_at'               => now(),
+            'abandoned_allocated_amount' => $allocatedAmount,
+        ]);
+
+        return redirect()->route('goals.index');
+    }
+
+    public function destroyAbandoned(SavingsGoal $goal)
+    {
+        abort_unless($goal->abandoned_at !== null, 403);
+        $goal->delete();
+        return redirect()->route('goals.abandoned');
     }
 
     public function create()

@@ -51,10 +51,10 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Savings pot link** — when linked to an account, offer to pull/sync current_amount from pot balance
 - [x] **Goal matching** — parents can optionally pledge to match kid contributions (e.g. "I'll match 50%")
 - [x] **Kid-facing goal view** — kids see all their goals with progress bars and cover images on the child dashboard
-- [ ] Split goals page into Active Goals and Completed Goals. Goals that have been reached in the last week should stay on the Active page.
-- [ ] Add the ability to abandon a Savings Goal. Savings goals that were created in the past 24 hours can be fully destroyed rather than becoming and abandoned goal.
-- [ ] Add an Abandoned Goals page that is only visible if there are any abandoned goals. It should list any goals that have been removed before being reached, and should show the date they were originally created, the date they were abandoned, and how much money was attributed to them at the time of being abandoned.
-- [ ] Give parents the ability to completely destroy an abandoned goal.
+- [x] Split goals page into Active Goals and Completed Goals. Goals that have been reached in the last week should stay on the Active page.
+- [x] Add the ability to abandon a Savings Goal. Savings goals that were created in the past 24 hours can be fully destroyed rather than becoming and abandoned goal.
+- [x] Add an Abandoned Goals page that is only visible if there are any abandoned goals. It should list any goals that have been removed before being reached, and should show the date they were originally created, the date they were abandoned, and how much money was attributed to them at the time of being abandoned.
+- [x] Give parents the ability to completely destroy an abandoned goal.
 
 ---
 

@@ -69,6 +69,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('accounts.transactions', TransactionController::class);
         Route::resource('accounts.recurring', RecurringTransactionController::class);
         Route::post('/goals/reorder', [SavingsGoalController::class, 'reorder'])->name('goals.reorder');
+        Route::get('/goals/abandoned', [SavingsGoalController::class, 'abandoned'])->name('goals.abandoned');
+        Route::patch('/goals/{goal}/abandon', [SavingsGoalController::class, 'abandon'])->name('goals.abandon');
+        Route::delete('/goals/{goal}/destroy-abandoned', [SavingsGoalController::class, 'destroyAbandoned'])->name('goals.destroy-abandoned');
         Route::resource('goals', SavingsGoalController::class);
         Route::get('/billing', [BillingController::class, 'index'])->name('billing');
         Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');

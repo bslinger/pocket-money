@@ -184,4 +184,81 @@ describe('savings goals', function () {
             expect(SavingsGoal::find($goal->id))->toBeNull();
         });
     });
+
+    describe('abandon', function () {
+        it('hard-deletes a goal created less than 24 hours ago', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id' => $spenders->first()->id,
+                'created_at' => now()->subHours(2),
+            ]);
+
+            $this->actingAs($user)
+                ->patch(route('goals.abandon', $goal))
+                ->assertRedirect(route('goals.index'));
+
+            expect(SavingsGoal::find($goal->id))->toBeNull();
+        });
+
+        it('marks a goal as abandoned when older than 24 hours', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id' => $spenders->first()->id,
+                'created_at' => now()->subDays(2),
+            ]);
+
+            $this->actingAs($user)
+                ->patch(route('goals.abandon', $goal))
+                ->assertRedirect(route('goals.index'));
+
+            $fresh = SavingsGoal::find($goal->id);
+            expect($fresh)->not->toBeNull();
+            expect($fresh->abandoned_at)->not->toBeNull();
+        });
+
+        it('stores allocated amount at time of abandonment', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create([
+                'spender_id' => $spenders->first()->id,
+                'balance'    => '50.00',
+            ]);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'    => $spenders->first()->id,
+                'account_id'    => $account->id,
+                'target_amount' => '100.00',
+                'sort_order'    => 0,
+                'created_at'    => now()->subDays(2),
+            ]);
+
+            $this->actingAs($user)->patch(route('goals.abandon', $goal));
+
+            $fresh = SavingsGoal::find($goal->id);
+            expect((float) $fresh->abandoned_allocated_amount)->toBe(50.0);
+        });
+    });
+
+    describe('destroy-abandoned', function () {
+        it('permanently deletes an abandoned goal', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'  => $spenders->first()->id,
+                'abandoned_at' => now()->subDay(),
+            ]);
+
+            $this->actingAs($user)
+                ->delete(route('goals.destroy-abandoned', $goal))
+                ->assertRedirect(route('goals.abandoned'));
+
+            expect(SavingsGoal::find($goal->id))->toBeNull();
+        });
+
+        it('forbids destroying a non-abandoned goal via destroy-abandoned', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $goal = SavingsGoal::factory()->create(['spender_id' => $spenders->first()->id]);
+
+            $this->actingAs($user)
+                ->delete(route('goals.destroy-abandoned', $goal))
+                ->assertForbidden();
+        });
+    });
 });

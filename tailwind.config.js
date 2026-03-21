@@ -24,71 +24,30 @@ export default {
                 serif: ['"Fraunces"', ...defaultTheme.fontFamily.serif],
             },
             colors: {
-                'dark-amaranth': {
-                    50:  '#fde7ee',
-                    100: '#fbd0dd',
-                    200: '#f7a1bb',
-                    300: '#f47198',
-                    400: '#f04276',
-                    500: '#ec1354',
-                    600: '#bd0f43',
-                    700: '#8e0b32',
-                    800: '#5e0822',
-                    900: '#2f0411',
-                    950: '#21030c',
+                // Semantic design tokens — use these in components, not palette names
+                brand: {
+                    DEFAULT:  'var(--color-amber-glow-500)', // primary CTAs, active states
+                    emphasis: 'var(--color-amber-glow-600)', // hover/pressed
+                    subtle:   'var(--color-amber-glow-50)',  // light tint, badge backgrounds
+                    inverse:  'var(--color-amber-glow-300)', // brand on dark surfaces
                 },
-                'baltic-blue': {
-                    50:  '#ecf3f8',
-                    100: '#dae7f1',
-                    200: '#b5cfe3',
-                    300: '#8fb7d6',
-                    400: '#6a9fc8',
-                    500: '#4587ba',
-                    600: '#376c95',
-                    700: '#295170',
-                    800: '#1c364a',
-                    900: '#0e1b25',
-                    950: '#0a131a',
+                heading:  'var(--color-forest-ink-900)',     // headings and primary text
+                surface: {
+                    DEFAULT: '#ffffff',                              // card and panel backgrounds
+                    muted:   'var(--color-warm-cream-50)',          // section backgrounds
+                    alt:     'var(--color-warm-cream-100)',         // secondary surfaces
+                    border:  'var(--color-warm-cream-200)',         // card borders
+                    dark:    'var(--color-forest-ink-900)',         // dark section backgrounds
                 },
-                'charcoal-blue': {
-                    50:  '#eef3f6',
-                    100: '#dee7ed',
-                    200: '#bdd0db',
-                    300: '#9cb8c9',
-                    400: '#7aa0b8',
-                    500: '#5988a6',
-                    600: '#476d85',
-                    700: '#365263',
-                    800: '#243742',
-                    900: '#121b21',
-                    950: '#0c1317',
+                copy: {
+                    secondary: 'var(--color-warm-cream-700)',       // muted body text
                 },
-                'blazing-flame': {
-                    50:  '#ffece5',
-                    100: '#ffd9cc',
-                    200: '#ffb399',
-                    300: '#ff8c66',
-                    400: '#ff6633',
-                    500: '#ff4000',
-                    600: '#cc3300',
-                    700: '#992600',
-                    800: '#661a00',
-                    900: '#330d00',
-                    950: '#240900',
+                highlight: {
+                    DEFAULT: 'var(--color-marigold-500)',           // energetic accent (step numbers)
+                    subtle:  'var(--color-marigold-50)',            // light accent tint
                 },
-                'soft-linen': {
-                    50:  '#f3f4f1',
-                    100: '#e7e8e3',
-                    200: '#ced2c6',
-                    300: '#b6bbaa',
-                    400: '#9ea48e',
-                    500: '#868e71',
-                    600: '#6b715b',
-                    700: '#505544',
-                    800: '#35392d',
-                    900: '#1b1c17',
-                    950: '#131410',
-                },
+                negative: 'var(--color-fired-clay-500)',            // negative indicators (✗ icons)
+
                 border: 'hsl(var(--border))',
                 input: 'hsl(var(--input))',
                 ring: 'hsl(var(--ring))',
