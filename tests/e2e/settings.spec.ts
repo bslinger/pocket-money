@@ -54,8 +54,8 @@ test.describe('Pocket Money Release', () => {
         await page.goto('/pocket-money/release');
         await expect(page.getByText(/release pocket money/i)).toBeVisible();
         // Spenders are listed
-        await expect(page.getByText('Emma')).toBeVisible();
-        await expect(page.getByText('Jack')).toBeVisible();
+        await expect(page.getByText('Emma', { exact: true }).first()).toBeVisible();
+        await expect(page.getByText('Jack', { exact: true }).first()).toBeVisible();
     });
 
     test('can pay pocket money to a spender', async ({ page }) => {
