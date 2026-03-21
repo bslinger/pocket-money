@@ -19,7 +19,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: pdo, pdo_sqlite, sqlite3
-          coverage: none
+          coverage: xdebug
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -30,8 +30,18 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate
 
-      - name: Run Pest tests
-        run: php artisan test
+      - name: Run Pest tests with coverage
+        run: php artisan test --coverage-html storage/coverage/pest/html --coverage-clover storage/coverage/pest/clover.xml
+        env:
+          XDEBUG_MODE: coverage
+
+      - name: Upload Pest coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pest-coverage
+          path: storage/coverage/pest/
+          retention-days: 14
 
   e2e:
     name: E2E tests
@@ -60,7 +70,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: pdo, pdo_pgsql
-          coverage: none
+          coverage: xdebug
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -92,6 +102,9 @@ jobs:
 
       - name: Start application server
         run: php artisan serve --host=127.0.0.1 --port=8000 &
+        env:
+          XDEBUG_MODE: coverage
+          COLLECT_COVERAGE: true
 
       - name: Wait for server to be ready
         run: |
@@ -106,6 +119,12 @@ jobs:
           APP_URL: http://127.0.0.1:8000
           LARAVEL_SAIL: 1
 
+      - name: Generate E2E PHP coverage report
+        if: always()
+        run: php artisan coverage:generate
+        env:
+          XDEBUG_MODE: coverage
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
@@ -113,6 +132,14 @@ jobs:
           name: playwright-report
           path: /tmp/pw-test-results/
           retention-days: 7
+
+      - name: Upload E2E coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-coverage
+          path: storage/coverage/e2e/
+          retention-days: 14
 
   deploy:
     name: Deploy to Laravel Cloud

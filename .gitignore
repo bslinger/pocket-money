@@ -50,3 +50,4 @@ frankenphp-worker.php
 
 # Claude Code local settings
 .claude/settings.local.json
+/storage/coverage/
