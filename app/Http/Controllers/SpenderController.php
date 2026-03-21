@@ -9,11 +9,13 @@ use App\Models\PocketMoneySchedule;
 use App\Models\Spender;
 use App\Models\SpenderUser;
 use App\Models\User;
+use Bentonow\BentoLaravel\DataTransferObjects\EventData;
+use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Illuminate\Support\Carbon;
 
 class SpenderController extends Controller
 {
@@ -154,6 +156,16 @@ class SpenderController extends Controller
     public function store(StoreSpenderRequest $request)
     {
         $spender = Spender::create($request->validated());
+
+        rescue(function () use ($request, $spender): void {
+            Bento::trackEvent(collect([
+                new EventData(
+                    type: '$added_child',
+                    email: $request->user()->email,
+                    fields: ['child_name' => $spender->name],
+                ),
+            ]));
+        });
 
         return redirect()->route('spenders.show', $spender);
     }

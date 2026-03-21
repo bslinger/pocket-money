@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSavingsGoalRequest;
 use App\Models\SavingsGoal;
+use Bentonow\BentoLaravel\DataTransferObjects\EventData;
+use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -55,10 +57,23 @@ class SavingsGoalController extends Controller
         // Place the new goal at the end of the account's list
         $maxOrder = SavingsGoal::where('account_id', $request->account_id)->max('sort_order') ?? -1;
 
-        SavingsGoal::create(array_merge(
+        $goal = SavingsGoal::create(array_merge(
             $request->validated(),
             ['spender_id' => $request->spender_id, 'sort_order' => $maxOrder + 1]
         ));
+
+        rescue(function () use ($request, $goal): void {
+            Bento::trackEvent(collect([
+                new EventData(
+                    type: '$created_goal',
+                    email: $request->user()->email,
+                    fields: [
+                        'goal_name'     => $goal->name,
+                        'target_amount' => $goal->target_amount,
+                    ],
+                ),
+            ]));
+        });
 
         return redirect()->route('goals.index');
     }
