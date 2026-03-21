@@ -276,7 +276,7 @@ export default function OnboardingIndex() {
                                                     Whole numbers only (e.g. 1 {currencyNameSingular}, not 0.50 {currencyNamePlural})
                                                 </span>
                                             </label>
-                                            {data.currency_symbol && data.currency_name && (
+                                            {data.currency_name && (
                                                 <p className="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded">
                                                     Preview: {data.currency_symbol}1 {currencyNameSingular} · {data.currency_symbol}25 {currencyNamePlural}
                                                 </p>

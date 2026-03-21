@@ -102,7 +102,10 @@ require __DIR__.'/auth.php';
 // Local dev only: auto-verify email without needing SES
 if (app()->environment('local')) {
     Route::get('/dev/verify-email', function () {
-        auth()->user()?->update(['email_verified_at' => now()]);
+        $user = auth()->user();
+        if ($user && ! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
         return redirect('/dashboard');
     })->middleware('auth');
 }

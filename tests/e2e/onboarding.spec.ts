@@ -12,6 +12,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
 
         // New users without email verification land on verify-email
         // For local dev, we can hit the dev verify-email shortcut
@@ -27,11 +28,12 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await expect(page).toHaveURL('/onboarding');
         await expect(page.getByText('Welcome to Pocket Money')).toBeVisible();
-        await expect(page.getByText('Your family')).toBeVisible();
+        await expect(page.locator('h2:has-text("Your family")')).toBeVisible();
 
         // Continue button should be disabled with empty name
         await expect(page.getByRole('button', { name: /continue/i })).toBeDisabled();
@@ -54,6 +56,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await page.fill('#family-name', 'The Testers');
@@ -78,6 +81,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await page.fill('#family-name', 'The Testers');
@@ -105,6 +109,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         // Step 1: family name
@@ -136,6 +141,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await page.fill('#family-name', 'The Testers');
@@ -161,6 +167,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await page.fill('#family-name', 'The Testers');
@@ -194,6 +201,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await page.fill('#family-name', 'The Testers');
@@ -210,6 +218,7 @@ test.describe('Onboarding wizard', () => {
         await expect(page.getByText('Add some chores')).toBeVisible();
         await page.click('button:has-text("Add a chore")');
         await page.locator('input[placeholder="Tidy bedroom"]').fill('Wash dishes');
+        await page.locator('input[placeholder="2.00"]').fill('2.00');
 
         await page.click('button:has-text("Continue")');
 
@@ -225,6 +234,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await page.fill('#family-name', 'The Testers');
@@ -258,6 +268,7 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
+        await page.waitForURL(/verify-email/);
         await page.goto('/dev/verify-email');
 
         await page.fill('#family-name', 'The Testers');

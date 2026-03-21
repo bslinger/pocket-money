@@ -22,6 +22,11 @@ class SwitchTestDatabase
 
             config(['database.connections.pgsql.database' => $database]);
             DB::purge('pgsql');
+
+            // When a test DB is active, use the log mail driver so no real emails are sent
+            if ($workerIndex !== null && ctype_digit((string) $workerIndex)) {
+                config(['mail.default' => 'log']);
+            }
         }
 
         return $next($request);
