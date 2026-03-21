@@ -192,7 +192,7 @@ describe('spenders', function () {
                 ->assertSessionHas('viewing_as_spender_id', $spender->id);
         });
 
-        it('clears the session on exit', function () {
+        it('clears the session on exit and redirects to dashboard by default', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
 
@@ -202,6 +202,20 @@ describe('spenders', function () {
                 ->assertRedirect(route('dashboard'));
 
             expect(session('viewing_as_spender_id'))->toBeNull();
+        });
+
+        it('redirects back to the originating page on exit', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $returnUrl = route('spenders.show', $spender);
+
+            $this->actingAs($user)
+                ->withSession([
+                    'viewing_as_spender_id' => $spender->id,
+                    'view_as_return_url'    => $returnUrl,
+                ])
+                ->delete(route('dashboard.exit-view-as'))
+                ->assertRedirect($returnUrl);
         });
 
         it('forbids a non-parent from activating view-as', function () {

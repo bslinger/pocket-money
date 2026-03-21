@@ -18,7 +18,16 @@ class DashboardController extends Controller
         abort_unless($user->isParent()
             && $user->families()->where('families.id', $spender->family_id)->exists(), 403);
 
-        session(['viewing_as_spender_id' => $spender->id]);
+        $returnUrl = url()->previous(route('dashboard'));
+        // Ensure we only redirect to an internal URL
+        if (!str_starts_with($returnUrl, config('app.url'))) {
+            $returnUrl = route('dashboard');
+        }
+
+        session([
+            'viewing_as_spender_id'  => $spender->id,
+            'view_as_return_url'     => $returnUrl,
+        ]);
         session()->save();
 
         return redirect()->route('dashboard');
@@ -26,10 +35,12 @@ class DashboardController extends Controller
 
     public function exitViewAs()
     {
-        session()->forget('viewing_as_spender_id');
+        $returnUrl = session('view_as_return_url', route('dashboard'));
+
+        session()->forget(['viewing_as_spender_id', 'view_as_return_url']);
         session()->save();
 
-        return redirect()->route('dashboard');
+        return redirect($returnUrl);
     }
 
     public function index(Request $request)
