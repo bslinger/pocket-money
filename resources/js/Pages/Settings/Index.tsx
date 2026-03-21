@@ -1,17 +1,46 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import { User } from '@/types/models';
+
+const PARENT_TITLE_OPTIONS = ['Mum', 'Mom', 'Dad', 'Papa', 'Pop', 'Nana', 'Grandma', 'Grandpa', 'Carer'];
+
+function deriveDropdownValue(title: string | null): string {
+  if (!title) return '';
+  if (PARENT_TITLE_OPTIONS.includes(title)) return title;
+  return '__custom__';
+}
 
 interface Props {
   user: User;
 }
 
 export default function SettingsIndex({ user }: Props) {
+  const [parentTitleDropdown, setParentTitleDropdown] = useState(deriveDropdownValue(user.parent_title));
+  const [customTitle, setCustomTitle] = useState(
+    user.parent_title && !PARENT_TITLE_OPTIONS.includes(user.parent_title) ? user.parent_title : ''
+  );
+
   const profileForm = useForm({
     display_name: user.display_name ?? '',
+    parent_title: user.parent_title ?? '',
     email: user.email,
     avatar_url: user.avatar_url ?? '',
   });
+
+  function handleDropdownChange(value: string) {
+    setParentTitleDropdown(value);
+    if (value !== '__custom__') {
+      profileForm.setData('parent_title', value);
+    } else {
+      profileForm.setData('parent_title', customTitle);
+    }
+  }
+
+  function handleCustomTitleChange(value: string) {
+    setCustomTitle(value);
+    profileForm.setData('parent_title', value);
+  }
 
   const deleteForm = useForm({ password: '' });
 
@@ -55,6 +84,35 @@ export default function SettingsIndex({ user }: Props) {
               />
               {profileForm.errors.display_name && (
                 <p className="text-red-500 text-xs mt-1">{profileForm.errors.display_name}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                What do your kids call you? <span className="text-gray-400">(shown on kid pages)</span>
+              </label>
+              <select
+                value={parentTitleDropdown}
+                onChange={e => handleDropdownChange(e.target.value)}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">— not set —</option>
+                {PARENT_TITLE_OPTIONS.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+                <option value="__custom__">Custom…</option>
+              </select>
+              {parentTitleDropdown === '__custom__' && (
+                <input
+                  type="text"
+                  value={customTitle}
+                  onChange={e => handleCustomTitleChange(e.target.value)}
+                  placeholder="e.g. Oma, Père, Baba…"
+                  className="mt-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+                />
+              )}
+              {profileForm.errors.parent_title && (
+                <p className="text-red-500 text-xs mt-1">{profileForm.errors.parent_title}</p>
               )}
             </div>
 

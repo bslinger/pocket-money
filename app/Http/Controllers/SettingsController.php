@@ -19,6 +19,7 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'display_name' => 'nullable|string|max:255',
+            'parent_title' => 'nullable|string|max:100',
             'email'        => 'required|email|max:255|unique:users,email,' . auth()->id(),
             'avatar_url'   => 'nullable|url|max:255',
         ]);

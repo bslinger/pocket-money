@@ -732,7 +732,7 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
 function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: {
   chore: Chore;
   spenderId: string;
-  weekCompletions: { chore_id: string; status: string; reviewer?: { name: string } | null }[];
+  weekCompletions: { chore_id: string; status: string; reviewer?: { name: string; parent_title: string | null } | null }[];
   currencySymbol?: string;
 }) {
   // weekCompletions is ordered most-recent-first; take the latest for this chore
@@ -749,7 +749,8 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
   const status = localStatus ?? thisCompletion?.status ?? null;
   const isDeclined = status === 'declined';
 
-  const reviewerName = thisCompletion?.reviewer?.name ?? 'Your parent';
+  const reviewer = thisCompletion?.reviewer;
+  const reviewerName = reviewer?.parent_title ?? reviewer?.name ?? 'Your parent';
 
   return (
     <div className="bg-gray-900 rounded-2xl p-4 flex flex-col gap-3">

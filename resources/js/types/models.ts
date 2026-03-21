@@ -2,6 +2,7 @@ export interface User {
   id: string;
   name: string;
   display_name: string | null;
+  parent_title: string | null;
   email: string;
   avatar_url: string | null;
   stripe_customer_id: string | null;

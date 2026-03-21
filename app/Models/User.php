@@ -24,6 +24,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'display_name',
+        'parent_title',
         'avatar_url',
         'stripe_customer_id',
     ];
