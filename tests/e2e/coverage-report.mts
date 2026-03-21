@@ -69,6 +69,7 @@ const context = libReport.createContext({
 
 (reports.create('html') as any).execute(context);
 (reports.create('json-summary') as any).execute(context);
+(reports.create('lcovonly') as any).execute(context);
 (reports.create('text-summary') as any).execute(context);
 
 console.log('Coverage report written to', OUTPUT_DIR);

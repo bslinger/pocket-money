@@ -35,6 +35,14 @@ jobs:
         env:
           XDEBUG_MODE: coverage
 
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: storage/coverage/pest/clover.xml
+          flags: pest
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Upload Pest coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -127,6 +135,14 @@ jobs:
           name: playwright-report
           path: /tmp/pw-test-results/
           retention-days: 7
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: storage/coverage/e2e/html/lcov.info
+          flags: e2e
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload E2E coverage report
         if: always()
