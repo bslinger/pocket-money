@@ -13,8 +13,25 @@ interface Props {
   family?: Family | null;
 }
 
+const CURRENCY_SYMBOLS = [
+    { symbol: '$',  name: 'Dollar',  plural: 'Dollars'  },
+    { symbol: '£',  name: 'Pound',   plural: 'Pounds'   },
+    { symbol: '€',  name: 'Euro',    plural: 'Euros'    },
+    { symbol: '¥',  name: 'Yen',     plural: 'Yen'      },
+    { symbol: '₹',  name: 'Rupee',   plural: 'Rupees'   },
+    { symbol: 'kr', name: 'Krone',   plural: 'Kroner'   },
+    { symbol: 'Fr', name: 'Franc',   plural: 'Francs'   },
+    { symbol: 'R',  name: 'Rand',    plural: 'Rand'     },
+    { symbol: '₩',  name: 'Won',     plural: 'Won'      },
+    { symbol: '₪',  name: 'Shekel',  plural: 'Shekels'  },
+    { symbol: '₺',  name: 'Lira',    plural: 'Lira'     },
+    { symbol: '₿',  name: 'Bitcoin', plural: 'Bitcoin'  },
+] as const;
+
 export default function AccountCreate({ spenders, preselectedSpenderId, family }: Props) {
   const [overrideCurrency, setOverrideCurrency] = useState(false);
+  const [overrideType, setOverrideType] = useState<'real' | 'custom'>('real');
+  const [selectedSymbolIdx, setSelectedSymbolIdx] = useState(0);
 
   const { data, setData, post, processing, errors } = useForm({
     spender_id:            preselectedSpenderId ?? spenders[0]?.id ?? '',
@@ -29,7 +46,27 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
     setOverrideCurrency(checked);
     if (!checked) {
       setData(d => ({ ...d, currency_name: '', currency_name_plural: '', currency_symbol: '', use_integer_amounts: false }));
+    } else {
+      // Default to first real symbol
+      const p = CURRENCY_SYMBOLS[0];
+      setData(d => ({ ...d, currency_symbol: p.symbol, currency_name: p.name, currency_name_plural: p.plural }));
     }
+  }
+
+  function switchOverrideType(type: 'real' | 'custom') {
+    setOverrideType(type);
+    if (type === 'real') {
+      const p = CURRENCY_SYMBOLS[selectedSymbolIdx];
+      setData(d => ({ ...d, currency_symbol: p.symbol, currency_name: p.name, currency_name_plural: p.plural, use_integer_amounts: false }));
+    } else {
+      setData(d => ({ ...d, currency_symbol: '', currency_name: '', currency_name_plural: '', use_integer_amounts: false }));
+    }
+  }
+
+  function selectSymbol(idx: number) {
+    setSelectedSymbolIdx(idx);
+    const p = CURRENCY_SYMBOLS[idx];
+    setData(d => ({ ...d, currency_symbol: p.symbol, currency_name: p.name, currency_name_plural: p.plural }));
   }
 
   function submit(e: React.FormEvent) {
@@ -39,6 +76,8 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
 
   const familySymbol = family?.currency_symbol ?? '$';
   const familyName = family?.currency_name ?? 'Dollar';
+  const currencyNameSingular = data.currency_name || 'unit';
+  const currencyNamePlural   = data.currency_name_plural || (currencyNameSingular + 's');
 
   return (
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Add Account</h2>}>
@@ -93,49 +132,102 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
 
             {overrideCurrency && (
               <div className="pl-6 space-y-3 border-l-2 border-gray-200 dark:border-border">
-                <div className="flex items-center gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Emoji symbol</Label>
-                    <EmojiPickerField
-                      value={data.currency_symbol}
-                      defaultEmoji="💰"
-                      onChange={e => setData(d => ({ ...d, currency_symbol: e }))}
-                      onPickerChange={d => setData(prev => ({ ...prev, currency_symbol: d.emoji, currency_name: guessNameFromEmoji(d.names) }))}
-                      pickerAlign="left"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <Label htmlFor="currency_name" className="text-xs">Singular name</Label>
-                    <Input
-                      id="currency_name"
-                      value={data.currency_name}
-                      onChange={e => setData('currency_name', e.target.value)}
-                      placeholder="e.g. Star, Gem"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <Label htmlFor="currency_name_plural" className="text-xs">Plural (optional)</Label>
-                    <Input
-                      id="currency_name_plural"
-                      value={data.currency_name_plural}
-                      onChange={e => setData('currency_name_plural', e.target.value)}
-                      placeholder={data.currency_name ? data.currency_name + 's' : 'Stars'}
-                    />
-                  </div>
+                {/* Real / Custom toggle */}
+                <div className="grid grid-cols-2 gap-2">
+                  {(['real', 'custom'] as const).map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => switchOverrideType(type)}
+                      className={cn(
+                        'px-3 py-2 rounded-lg border text-left transition-colors text-sm',
+                        overrideType === type
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/40'
+                      )}
+                    >
+                      <span className={cn('font-medium', overrideType === type ? 'text-primary' : '')}>
+                        {type === 'real' ? '💵 Real money' : '⭐ Custom'}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="use_integer_amounts"
-                    checked={data.use_integer_amounts}
-                    onChange={e => setData('use_integer_amounts', e.target.checked)}
-                    className="rounded accent-primary"
-                  />
-                  <Label htmlFor="use_integer_amounts" className="text-xs cursor-pointer">Whole numbers only (e.g. 5 Stars, not 5.50)</Label>
-                </div>
-                {data.currency_symbol && (
+
+                {overrideType === 'real' && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {CURRENCY_SYMBOLS.map((p, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => selectSymbol(i)}
+                        className={cn(
+                          'flex items-center justify-center px-3 py-2 rounded-md border text-sm font-mono transition-colors',
+                          selectedSymbolIdx === i
+                            ? 'border-primary bg-primary/5 text-primary font-bold'
+                            : 'border-border hover:border-primary/40'
+                        )}
+                      >
+                        {p.symbol}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {overrideType === 'custom' && (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Emoji symbol</Label>
+                        <EmojiPickerField
+                          value={data.currency_symbol}
+                          defaultEmoji="💰"
+                          onChange={e => setData(d => ({ ...d, currency_symbol: e }))}
+                          onPickerChange={d => setData(prev => ({
+                            ...prev,
+                            currency_symbol: d.emoji,
+                            currency_name: guessNameFromEmoji(d.names),
+                            currency_name_plural: guessNameFromEmoji(d.names) + 's',
+                          }))}
+                          pickerAlign="left"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="currency_name" className="text-xs">Singular name</Label>
+                        <Input
+                          id="currency_name"
+                          value={data.currency_name}
+                          onChange={e => setData('currency_name', e.target.value)}
+                          placeholder="e.g. Star, Gem"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="currency_name_plural" className="text-xs">Plural (optional)</Label>
+                        <Input
+                          id="currency_name_plural"
+                          value={data.currency_name_plural}
+                          onChange={e => setData('currency_name_plural', e.target.value)}
+                          placeholder={data.currency_name ? data.currency_name + 's' : 'Stars'}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="use_integer_amounts"
+                        checked={data.use_integer_amounts}
+                        onChange={e => setData('use_integer_amounts', e.target.checked)}
+                        className="rounded accent-primary"
+                      />
+                      <Label htmlFor="use_integer_amounts" className="text-xs cursor-pointer">
+                        Whole numbers only (e.g. 1 {currencyNameSingular}, not 0.50 {currencyNamePlural})
+                      </Label>
+                    </div>
+                  </>
+                )}
+
+                {data.currency_symbol && data.currency_name && (
                   <p className="text-xs text-gray-500">
-                    Preview: {data.currency_symbol}1 {data.currency_name || 'unit'} · {data.currency_symbol}25 {data.currency_name_plural || (data.currency_name ? data.currency_name + 's' : 'units')}
+                    Preview: {data.currency_symbol}1 {currencyNameSingular} · {data.currency_symbol}25 {currencyNamePlural}
                   </p>
                 )}
               </div>
