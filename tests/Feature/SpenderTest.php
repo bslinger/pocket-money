@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\ChildInvitation;
 use App\Models\Spender;
 use App\Models\SpenderUser;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 describe('spenders', function () {
 
@@ -132,12 +134,21 @@ describe('spenders', function () {
                 ->where('user_id', $child->id)->exists())->toBeTrue();
         });
 
-        it('returns an error when no user has that email', function () {
+        it('sends a child invitation email for an unknown email address', function () {
+            Mail::fake();
             [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
 
             $this->actingAs($user)
-                ->post(route('spenders.link-child', $spenders->first()), ['email' => 'nobody@example.com'])
-                ->assertSessionHasErrors('email');
+                ->post(route('spenders.link-child', $spender), ['email' => 'nobody@example.com'])
+                ->assertRedirect();
+
+            expect(ChildInvitation::where('spender_id', $spender->id)
+                ->where('email', 'nobody@example.com')
+                ->exists()
+            )->toBeTrue();
+
+            Mail::assertSent(\App\Mail\ChildInvitationMail::class);
         });
 
         it('does not create duplicate links', function () {

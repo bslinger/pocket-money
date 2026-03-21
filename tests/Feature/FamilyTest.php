@@ -2,8 +2,10 @@
 
 use App\Models\Family;
 use App\Models\FamilyUser;
+use App\Models\Invitation;
 use App\Models\User;
 use App\Enums\FamilyRole;
+use Illuminate\Support\Facades\Mail;
 
 describe('families', function () {
 
@@ -213,12 +215,20 @@ describe('families', function () {
             )->toBeTrue();
         });
 
-        it('returns 404 for unknown email', function () {
+        it('sends an invitation email for an unknown email address', function () {
+            Mail::fake();
             [$user, $family] = parentWithFamily();
 
             $this->actingAs($user)
                 ->post(route('families.invite', $family), ['email' => 'nobody@example.com'])
-                ->assertNotFound();
+                ->assertRedirect();
+
+            expect(Invitation::where('family_id', $family->id)
+                ->where('email', 'nobody@example.com')
+                ->exists()
+            )->toBeTrue();
+
+            Mail::assertSent(\App\Mail\FamilyInvitation::class);
         });
 
         it('does not duplicate an existing member', function () {
