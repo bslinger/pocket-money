@@ -39,3 +39,14 @@ playwright-report
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# SSR build output
+/bootstrap/ssr/
+
+# Octane/FrankenPHP runtime data
+/data/
+/config/psysh/
+/config/composer/
+
+# Claude Code local settings
+.claude/settings.local.json

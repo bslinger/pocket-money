@@ -127,4 +127,4 @@ Organised by strategic area, with specific tasks nested under each.
 
 ## Next Steps
  - [ ] Instead of requiring a child account to already have an existing user, send an email to invite a user as a child account
- - [ ] ]
+ - [ ] 
