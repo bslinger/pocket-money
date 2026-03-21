@@ -82,11 +82,11 @@ describe('dashboard', function () {
         $this->get(route('dashboard'))->assertRedirect(route('login'));
     });
 
-    it('is accessible to unverified users (no email gate on this route)', function () {
+    it('redirects unverified users to email verification', function () {
         $user = User::factory()->unverified()->create();
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertOk();
+            ->assertRedirect(route('verification.notice'));
     });
 });

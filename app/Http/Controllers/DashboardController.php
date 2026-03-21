@@ -38,6 +38,11 @@ class DashboardController extends Controller
 
         abort_if($user === null, 401);
 
+        // Verified user with no family and no child links → guide through onboarding
+        if ($user->hasVerifiedEmail() && !$user->isParent() && !$user->spenderUsers()->exists()) {
+            return redirect()->route('onboarding');
+        }
+
         // Parent viewing as a specific spender (child preview mode)
         $viewingAsSpenderId = session('viewing_as_spender_id');
         if ($user->isParent() && $viewingAsSpenderId) {

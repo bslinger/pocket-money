@@ -9,7 +9,8 @@ use App\Http\Controllers\{
     BillingController, SettingsController, ImageUploadController,
     ChoreController, ChoreCompletionController, PocketMoneyReleaseController,
     PocketMoneyScheduleController, ChoreRewardController,
-    MarketingController, InvitationController, ChildInvitationController
+    MarketingController, InvitationController, ChildInvitationController,
+    OnboardingController
 };
 use App\Http\Controllers\ProfileController;
 
@@ -33,6 +34,12 @@ Route::get('/child-invitations/{token}/accept', [ChildInvitationController::clas
     ->name('child-invitations.accept');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+    Route::get('/onboarding/{family}/continue', [OnboardingController::class, 'showContinue'])->name('onboarding.continue');
+    Route::post('/onboarding/{family}/pocket-money', [OnboardingController::class, 'storePocketMoney'])->name('onboarding.pocket-money');
+    Route::post('/onboarding/{family}/chores', [OnboardingController::class, 'storeChores'])->name('onboarding.chores');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/spenders/{spender}/view-as', [DashboardController::class, 'viewAs'])->name('dashboard.view-as');
     Route::delete('/view-as', [DashboardController::class, 'exitViewAs'])->name('dashboard.exit-view-as');
