@@ -8,24 +8,24 @@ test.describe('Chores', () => {
 
     test('can create an earns chore', async ({ page }) => {
         await page.goto('/chores/create');
-        await page.fill('#name', 'Wash the dishes');
+        await page.fill('#name', 'Test Earns Chore');
         // "Earns" is the default — click it to be explicit
         await page.click('button:has-text("Earns")');
         await page.fill('#amount', '1.50');
         await page.selectOption('select', 'weekly');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
-        await expect(page.getByText('Wash the dishes')).toBeVisible();
+        await expect(page.getByText('Test Earns Chore')).toBeVisible();
     });
 
     test('can create a responsibility chore', async ({ page }) => {
         await page.goto('/chores/create');
-        await page.fill('#name', 'Make bed');
+        await page.fill('#name', 'Test Responsibility Chore');
         await page.click('button:has-text("Responsibility")');
         await page.selectOption('select', 'daily');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
-        await expect(page.getByText('Make bed')).toBeVisible();
+        await expect(page.getByText('Test Responsibility Chore')).toBeVisible();
     });
 
     test('can create a one-off chore', async ({ page }) => {
@@ -118,11 +118,11 @@ test.describe('Chores', () => {
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
 
-        // Switch to Schedule tab
-        await page.goto('/chores');
+        // Wait for redirect to chores list, then switch to Schedule tab
+        await page.waitForURL('/chores');
         await page.click('button:has-text("Schedule")');
         await expect(page.getByText('Today')).toBeVisible();
-        await expect(page.getByText('Daily Schedule Chore')).toBeVisible();
+        await expect(page.getByText('Daily Schedule Chore').first()).toBeVisible();
     });
 
     test('can filter chores by kid', async ({ page }) => {

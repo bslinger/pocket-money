@@ -38,8 +38,8 @@ test.describe('Dashboard', () => {
         await page.goto('/dashboard');
         await expect(page.getByText(/dashboard/i).first()).toBeVisible();
         // Parent sees spender cards
-        await expect(page.getByText('Emma')).toBeVisible();
-        await expect(page.getByText('Jack')).toBeVisible();
+        await expect(page.getByText('Emma').first()).toBeVisible();
+        await expect(page.getByText('Jack').first()).toBeVisible();
     });
 
     test('shows total balance summary', async ({ page }) => {

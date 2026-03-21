@@ -19,7 +19,6 @@ const plans = [
       'Chore system with approvals',
       'Savings goals',
       'Kid-friendly dashboard',
-      'Family leaderboard',
     ],
     cta: 'Get started',
     href: 'register',
@@ -33,7 +32,6 @@ const plans = [
     features: [
       'Everything in Monthly',
       'Save A$8.88 vs monthly',
-      'Early access to new features',
       'Priority support',
     ],
     cta: 'Get started',

@@ -32,7 +32,7 @@ test.describe('Onboarding wizard', () => {
         await page.goto('/dev/verify-email');
 
         await expect(page).toHaveURL('/onboarding');
-        await expect(page.getByText('Welcome to Pocket Money')).toBeVisible();
+        await expect(page.getByText('Welcome to Quiddo')).toBeVisible();
         await expect(page.locator('h2:has-text("Your family")')).toBeVisible();
 
         // Continue button should be disabled with empty name

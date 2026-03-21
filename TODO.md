@@ -51,6 +51,10 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Savings pot link** — when linked to an account, offer to pull/sync current_amount from pot balance
 - [x] **Goal matching** — parents can optionally pledge to match kid contributions (e.g. "I'll match 50%")
 - [x] **Kid-facing goal view** — kids see all their goals with progress bars and cover images on the child dashboard
+- [ ] Split goals page into Active Goals and Completed Goals. Goals that have been reached in the last week should stay on the Active page.
+- [ ] Add the ability to abandon a Savings Goal. Savings goals that were created in the past 24 hours can be fully destroyed rather than becoming and abandoned goal.
+- [ ] Add an Abandoned Goals page that is only visible if there are any abandoned goals. It should list any goals that have been removed before being reached, and should show the date they were originally created, the date they were abandoned, and how much money was attributed to them at the time of being abandoned.
+- [ ] Give parents the ability to completely destroy an abandoned goal.
 
 ---
 
@@ -132,8 +136,8 @@ Organised by strategic area, with specific tasks nested under each.
  - [x] Enable Asset Prefetching through Vite
  - [x] Add Inertia link prefetching everywhere it makes sense
  - [x] Set up a Github action using https://github.com/marketplace/actions/deploy-to-laravel-cloud to deploy to Laravel Cloud only when all Pest and E2E tests pass. Do everything you can yourself, then add items to this TODO section for any additional configuration.
-   - [ ] Add `LARAVEL_CLOUD_API_TOKEN` secret to the GitHub repo (Settings → Secrets → Actions)
-   - [ ] Add `LARAVEL_CLOUD_APP_NAME` variable to the GitHub repo (Settings → Variables → Actions) with the exact application name from Laravel Cloud
+   - [x] Add `LARAVEL_CLOUD_API_TOKEN` secret to the GitHub repo (Settings → Secrets → Actions)
+   - [x] Add `LARAVEL_CLOUD_APP_NAME` variable to the GitHub repo (Settings → Variables → Actions) with the exact application name from Laravel Cloud
 
 ## App Identity and Marketing
  - [x] The app is now named "Quiddo" - a combination of "Quid" and "Kiddo". Replace all uses of "Pocket Money" as an app name with "Quiddo". Make sure not to replace elements where pocket money is referring to the general concept rather than the name of the app.

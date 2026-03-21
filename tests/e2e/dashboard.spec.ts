@@ -56,15 +56,16 @@ test.describe('Dashboard', () => {
         await expect(page.getByLabel(/Amount/)).toBeVisible();
     });
 
-    test('clicking - opens modal with Take away selected', async ({ page }) => {
+    test('clicking - opens modal with Spend selected', async ({ page }) => {
         await page.goto('/dashboard');
 
         const firstCard = page.locator('.rounded-xl.border.bg-card').first();
         await firstCard.getByRole('button', { name: /Subtract from/ }).click();
 
-        await expect(page.getByRole('button', { name: /Take away/ })).toBeVisible();
+        await expect(page.getByRole('button', { name: /^Spend$/ })).toBeVisible();
         // Debit button should be highlighted (has bg-red-500 class)
-        const debitBtn = page.locator('button:has-text("Take away")');
+        // Use getByRole to avoid matching the card's "Subtract from" button which also contains "Spend" text
+        const debitBtn = page.getByRole('button', { name: /^Spend$/ });
         await expect(debitBtn).toHaveClass(/bg-red-500/);
     });
 

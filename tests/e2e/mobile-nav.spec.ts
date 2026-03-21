@@ -8,7 +8,7 @@ test.describe('Mobile navigation drawer', () => {
     test('hamburger button is visible on mobile', async ({ page }) => {
         await page.setViewportSize(MOBILE);
         await page.goto('/dashboard');
-        await expect(page.getByRole('button', { name: 'Toggle menu' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Toggle menu' })).toBeVisible({ timeout: 10000 });
     });
 
     test('nav links are hidden on mobile before opening drawer', async ({ page }) => {

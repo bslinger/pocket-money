@@ -5,6 +5,7 @@ test.describe('Accounts', () => {
         // Navigate to Emma's spender page before each test
         await page.goto('/dashboard');
         await page.getByText('Emma').first().click();
+        await page.waitForURL(/\/spenders\//);
     });
 
     test('can create an account for a spender', async ({ page }) => {
