@@ -732,7 +732,7 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
 function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: {
   chore: Chore;
   spenderId: string;
-  weekCompletions: { chore_id: string; status: string }[];
+  weekCompletions: { chore_id: string; status: string; reviewer?: { name: string } | null }[];
   currencySymbol?: string;
 }) {
   // weekCompletions is ordered most-recent-first; take the latest for this chore
@@ -749,21 +749,27 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
   const status = localStatus ?? thisCompletion?.status ?? null;
   const isDeclined = status === 'declined';
 
+  const reviewerName = thisCompletion?.reviewer?.name ?? 'Your parent';
+
   return (
-    <div className="bg-gray-900 rounded-2xl p-4 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <span className="text-2xl">{chore.emoji ?? '📋'}</span>
-        <div>
-          <p className="font-medium text-sm">{chore.name}</p>
-          {chore.reward_type === 'earns' && chore.amount && (
-            <p className="text-xs text-amber-400">{formatAmount(chore.amount, currencySymbol)}</p>
-          )}
+    <div className="bg-gray-900 rounded-2xl p-4 flex flex-col gap-3">
+      {isDeclined && (
+        <div className="flex items-center justify-center gap-1.5 text-red-400 text-xs font-medium">
+          <Undo2 className="h-3.5 w-3.5 shrink-0" />
+          <span>{reviewerName} sent this back</span>
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        {isDeclined && (
-          <span title="Your parent sent this back"><Undo2 className="h-4 w-4 text-red-400 shrink-0" /></span>
-        )}
+      )}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{chore.emoji ?? '📋'}</span>
+          <div>
+            <p className="font-medium text-sm">{chore.name}</p>
+            {chore.reward_type === 'earns' && chore.amount && (
+              <p className="text-xs text-amber-400">{formatAmount(chore.amount, currencySymbol)}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
         {(status === null || isDeclined) && (
           <button
             onClick={markDone}
@@ -771,7 +777,7 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
             className="flex items-center gap-1.5 bg-white text-gray-900 text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-60"
           >
             <Check className="h-3.5 w-3.5" />
-            {isDeclined ? 'This time I really did it' : 'I did it!'}
+            {isDeclined ? 'This time I really did it!' : 'I did it!'}
           </button>
         )}
         {status === 'pending' && (
@@ -784,6 +790,7 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
             <Check className="h-3.5 w-3.5" /> Done
           </span>
         )}
+        </div>
       </div>
     </div>
   );
