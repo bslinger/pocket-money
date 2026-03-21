@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { Spender, Family } from '@/types/models';
 import { cn, guessNameFromEmoji } from '@/lib/utils';
+import pluralize from 'pluralize';
 import EmojiPickerField from '@/Components/EmojiPickerField';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
@@ -182,12 +183,15 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
                           value={data.currency_symbol}
                           defaultEmoji="💰"
                           onChange={e => setData(d => ({ ...d, currency_symbol: e }))}
-                          onPickerChange={d => setData(prev => ({
-                            ...prev,
-                            currency_symbol: d.emoji,
-                            currency_name: guessNameFromEmoji(d.names),
-                            currency_name_plural: guessNameFromEmoji(d.names) + 's',
-                          }))}
+                          onPickerChange={d => {
+                            const name = guessNameFromEmoji(d.names);
+                            setData(prev => ({
+                              ...prev,
+                              currency_symbol: d.emoji,
+                              currency_name: name,
+                              currency_name_plural: pluralize(name),
+                            }));
+                          }}
                           pickerAlign="left"
                         />
                       </div>

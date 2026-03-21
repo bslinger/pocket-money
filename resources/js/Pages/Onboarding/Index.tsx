@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/Components/ui/card';
 import EmojiPickerField from '@/Components/EmojiPickerField';
 import ColorPicker, { COLOURS } from '@/Components/ColorPicker';
 import { cn, guessNameFromEmoji } from '@/lib/utils';
+import pluralize from 'pluralize';
 import { PlusCircle, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 
@@ -232,12 +233,15 @@ export default function OnboardingIndex() {
                                                         value={data.currency_symbol}
                                                         defaultEmoji="💰"
                                                         onChange={e => setData('currency_symbol', e)}
-                                                        onPickerChange={d => setData(prev => ({
-                                                            ...prev,
-                                                            currency_symbol: d.emoji,
-                                                            currency_name: guessNameFromEmoji(d.names),
-                                                            currency_name_plural: guessNameFromEmoji(d.names) + 's',
-                                                        }))}
+                                                        onPickerChange={d => {
+                                                            const name = guessNameFromEmoji(d.names);
+                                                            setData(prev => ({
+                                                                ...prev,
+                                                                currency_symbol: d.emoji,
+                                                                currency_name: name,
+                                                                currency_name_plural: pluralize(name),
+                                                            }));
+                                                        }}
                                                         pickerAlign="left"
                                                     />
                                                 </div>
