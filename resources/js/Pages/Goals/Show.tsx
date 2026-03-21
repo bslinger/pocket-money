@@ -17,7 +17,7 @@ interface Props {
 
 export default function GoalShow({ goal }: Props) {
     const symbol = spenderCurrencySymbol(goal.spender);
-    const current = goal.account ? parseFloat(goal.account.balance) : 0;
+    const current = parseFloat(goal.allocated_amount);
     const target  = parseFloat(goal.target_amount);
     const pct     = target > 0 ? Math.min(100, (current / target) * 100) : 0;
     const remaining = target - current;

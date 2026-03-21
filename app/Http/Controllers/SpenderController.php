@@ -76,13 +76,19 @@ class SpenderController extends Controller
             ? $spender->childInvitations()->where('expires_at', '>', now())->get()
             : collect();
 
+        $spender->load([
+            'accounts.transactions' => fn($q) => $q->latest('occurred_at')->limit(20),
+            'savingsGoals'          => fn($q) => $q->orderBy('sort_order'),
+            'savingsGoals.account',
+            'family',
+            'users',
+        ]);
+
+        // Compute cascade allocations per account
+        \App\Models\SavingsGoal::applyAccountAllocations($spender->savingsGoals);
+
         return Inertia::render('Spenders/Show', [
-            'spender'            => $spender->load([
-                'accounts.transactions' => fn($q) => $q->latest('occurred_at')->limit(20),
-                'savingsGoals.account',
-                'family',
-                'users',
-            ]),
+            'spender'            => $spender,
             'pendingInvitations' => $pendingInvitations,
         ]);
     }

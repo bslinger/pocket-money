@@ -220,13 +220,11 @@ function KidCard({
   const goal = spender.savings_goals
     ?.filter(g => !g.is_completed)
     .sort((a, b) => {
-      const pctA = a.account ? parseFloat(String(a.account.balance)) / Math.max(parseFloat(String(a.target_amount)), 0.01) : 0;
-      const pctB = b.account ? parseFloat(String(b.account.balance)) / Math.max(parseFloat(String(b.target_amount)), 0.01) : 0;
+      const pctA = parseFloat(String(a.allocated_amount)) / Math.max(parseFloat(String(a.target_amount)), 0.01);
+      const pctB = parseFloat(String(b.allocated_amount)) / Math.max(parseFloat(String(b.target_amount)), 0.01);
       return pctB - pctA;
     })[0] ?? null;
-  const goalCurrent = goal
-    ? (goal.account ? parseFloat(String(goal.account.balance)) : 0)
-    : 0;
+  const goalCurrent = goal ? parseFloat(String(goal.allocated_amount)) : 0;
   const goalProgress = goal
     ? Math.min(100, (goalCurrent / parseFloat(String(goal.target_amount))) * 100)
     : null;
@@ -579,7 +577,7 @@ function ChildDashboard({ spenders, isParentPreview = false }: { spenders: Spend
 }
 
 function GoalProgressCard({ goal, currencySymbol }: { goal: SavingsGoal; currencySymbol: string }) {
-  const current = goal.account ? parseFloat(String(goal.account.balance)) : 0;
+  const current = parseFloat(String(goal.allocated_amount));
   const target  = parseFloat(String(goal.target_amount));
   const pct     = Math.min(100, target > 0 ? (current / target) * 100 : 0);
 

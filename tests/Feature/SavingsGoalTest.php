@@ -5,6 +5,101 @@ use App\Models\SavingsGoal;
 
 describe('savings goals', function () {
 
+    describe('allocations', function () {
+        it('allocates account balance to goals in priority order', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id, 'balance' => '15.00']);
+
+            $goal1 = SavingsGoal::factory()->create([
+                'spender_id'    => $spenders->first()->id,
+                'account_id'    => $account->id,
+                'target_amount' => '10.00',
+                'sort_order'    => 0,
+            ]);
+            $goal2 = SavingsGoal::factory()->create([
+                'spender_id'    => $spenders->first()->id,
+                'account_id'    => $account->id,
+                'target_amount' => '20.00',
+                'sort_order'    => 1,
+            ]);
+
+            $goals = SavingsGoal::where('account_id', $account->id)->orderBy('sort_order')->get();
+            $goals->load('account');
+            SavingsGoal::applyAccountAllocations($goals);
+
+            $fresh1 = $goals->firstWhere('id', $goal1->id);
+            $fresh2 = $goals->firstWhere('id', $goal2->id);
+
+            expect((float) $fresh1->allocated_amount)->toBe(10.0);
+            expect((float) $fresh2->allocated_amount)->toBe(5.0);
+        });
+
+        it('fills first goal fully before spilling to next', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id, 'balance' => '8.00']);
+
+            $goal1 = SavingsGoal::factory()->create([
+                'spender_id'    => $spenders->first()->id,
+                'account_id'    => $account->id,
+                'target_amount' => '10.00',
+                'sort_order'    => 0,
+            ]);
+            $goal2 = SavingsGoal::factory()->create([
+                'spender_id'    => $spenders->first()->id,
+                'account_id'    => $account->id,
+                'target_amount' => '20.00',
+                'sort_order'    => 1,
+            ]);
+
+            $goals = SavingsGoal::where('account_id', $account->id)->orderBy('sort_order')->get();
+            $goals->load('account');
+            SavingsGoal::applyAccountAllocations($goals);
+
+            $fresh1 = $goals->firstWhere('id', $goal1->id);
+            $fresh2 = $goals->firstWhere('id', $goal2->id);
+
+            expect((float) $fresh1->allocated_amount)->toBe(8.0);
+            expect((float) $fresh2->allocated_amount)->toBe(0.0);
+        });
+    });
+
+    describe('reorder', function () {
+        it('reorders goals within an account', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+
+            $goal1 = SavingsGoal::factory()->create([
+                'spender_id' => $spenders->first()->id,
+                'account_id' => $account->id,
+                'sort_order' => 0,
+            ]);
+            $goal2 = SavingsGoal::factory()->create([
+                'spender_id' => $spenders->first()->id,
+                'account_id' => $account->id,
+                'sort_order' => 1,
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('goals.reorder'), ['goal_ids' => [$goal2->id, $goal1->id]])
+                ->assertRedirect();
+
+            expect($goal1->fresh()->sort_order)->toBe(1);
+            expect($goal2->fresh()->sort_order)->toBe(0);
+        });
+
+        it('requires parent role to reorder', function () {
+            [$_parent, , $spenders] = parentWithFamily(['Emma']);
+            $child = childLinkedTo($spenders->first());
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            $goal = SavingsGoal::factory()->create(['spender_id' => $spenders->first()->id, 'account_id' => $account->id]);
+
+            $this->actingAs($child)
+                ->post(route('goals.reorder'), ['goal_ids' => [$goal->id]])
+                ->assertForbidden();
+        });
+    });
+
+
     describe('store', function () {
         it('creates a savings goal for a spender linked to an account', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);

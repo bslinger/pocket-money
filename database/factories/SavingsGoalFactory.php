@@ -16,6 +16,7 @@ class SavingsGoalFactory extends Factory
             'name'          => fake()->words(2, true),
             'target_amount' => fake()->randomFloat(2, 10, 500),
             'is_completed'  => false,
+            'sort_order'    => 0,
         ];
     }
 

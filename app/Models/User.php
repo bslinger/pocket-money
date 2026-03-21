@@ -59,6 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(SpenderUser::class);
     }
 
+    /** @return BelongsToMany<Spender, $this> */
     public function spenders(): BelongsToMany
     {
         return $this->belongsToMany(Spender::class, 'spender_users')

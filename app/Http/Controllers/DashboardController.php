@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChoreCompletion;
+use App\Models\SavingsGoal;
 use App\Models\Spender;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -42,6 +43,7 @@ class DashboardController extends Controller
         if ($user->isParent() && $viewingAsSpenderId) {
             $spender = Spender::with([
                 'accounts',
+                'savingsGoals'         => fn($q) => $q->orderBy('sort_order'),
                 'savingsGoals.account',
                 'family',
                 'chores' => fn($q) => $q->where('is_active', true),
@@ -50,6 +52,10 @@ class DashboardController extends Controller
                     now()->endOfWeek(),
                 ]),
             ])->find($viewingAsSpenderId);
+
+            if ($spender !== null) {
+                SavingsGoal::applyAccountAllocations($spender->savingsGoals);
+            }
 
             // Verify the parent still has access to this spender's family
             if ($spender && $user->families()->where('families.id', $spender->family_id)->exists()) {
@@ -75,8 +81,18 @@ class DashboardController extends Controller
         if ($showAsParent) {
             $families = $user->families()
                 ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
-                ->with(['spenders.accounts', 'spenders.savingsGoals'])
+                ->with([
+                    'spenders.accounts',
+                    'spenders.savingsGoals'         => fn($q) => $q->orderBy('sort_order'),
+                    'spenders.savingsGoals.account',
+                ])
                 ->get();
+
+            foreach ($families as $family) {
+                foreach ($family->spenders as $spender) {
+                    SavingsGoal::applyAccountAllocations($spender->savingsGoals);
+                }
+            }
 
             $familyIds = $families->pluck('id');
 
@@ -117,6 +133,7 @@ class DashboardController extends Controller
 
         $spenders = $user->spenders()->with([
             'accounts',
+            'savingsGoals'         => fn($q) => $q->orderBy('sort_order'),
             'savingsGoals.account',
             'family',
             'chores' => fn($q) => $q->where('is_active', true),
@@ -125,6 +142,10 @@ class DashboardController extends Controller
                 now()->endOfWeek(),
             ]),
         ])->get();
+
+        foreach ($spenders as $spender) {
+            SavingsGoal::applyAccountAllocations($spender->savingsGoals);
+        }
 
         return Inertia::render('Dashboard', [
             'isParent'           => false,

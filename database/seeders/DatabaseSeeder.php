@@ -73,7 +73,7 @@ class DatabaseSeeder extends Seeder
         $jackAccount   = Account::where('spender_id', $jack->id)->first();
         $theoAccount   = Account::where('spender_id', $theodore->id)->first();
 
-        // Emma: two goals on her account — one reached, one not yet
+        // Emma: two goals on her account — one reached, one not yet (priority order: headphones first)
         SavingsGoal::firstOrCreate(
             ['spender_id' => $emma->id, 'name' => 'New headphones'],
             [
@@ -81,6 +81,7 @@ class DatabaseSeeder extends Seeder
                 'target_amount' => '10.00',
                 'target_date'   => null,
                 'is_completed'  => true,
+                'sort_order'    => 0,
             ]
         );
 
@@ -91,6 +92,7 @@ class DatabaseSeeder extends Seeder
                 'target_amount' => '45.00',
                 'target_date'   => now()->addMonths(3)->toDateString(),
                 'is_completed'  => false,
+                'sort_order'    => 1,
             ]
         );
 
@@ -102,6 +104,7 @@ class DatabaseSeeder extends Seeder
                 'target_amount' => '30.00',
                 'target_date'   => now()->addMonths(2)->toDateString(),
                 'is_completed'  => false,
+                'sort_order'    => 0,
             ]
         );
 
@@ -113,6 +116,7 @@ class DatabaseSeeder extends Seeder
                 'target_amount' => '60.00',
                 'target_date'   => null,
                 'is_completed'  => false,
+                'sort_order'    => 0,
             ]
         );
 

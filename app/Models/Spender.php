@@ -65,6 +65,7 @@ class Spender extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<SavingsGoal, $this> */
     public function savingsGoals(): HasMany
     {
         return $this->hasMany(SavingsGoal::class);

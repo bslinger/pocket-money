@@ -167,6 +167,8 @@ export interface SavingsGoal {
   account_id: string | null;
   name: string;
   target_amount: string;
+  allocated_amount: string;
+  sort_order: number;
   image_key: string | null;
   image_url: string | null;
   target_date: string | null;

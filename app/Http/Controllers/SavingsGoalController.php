@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSavingsGoalRequest;
 use App\Models\SavingsGoal;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SavingsGoalController extends Controller
@@ -16,8 +17,13 @@ class SavingsGoalController extends Controller
                     ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
                     ->pluck('families.id')
             )
-            ->with(['savingsGoals.account', 'family'])
+            ->with(['savingsGoals' => fn($q) => $q->orderBy('sort_order'), 'savingsGoals.account', 'family'])
             ->get();
+
+        // Compute cascade allocations per account
+        foreach ($spenders as $spender) {
+            SavingsGoal::applyAccountAllocations($spender->savingsGoals);
+        }
 
         return Inertia::render('Goals/Index', [
             'spenders' => $spenders,
@@ -46,9 +52,12 @@ class SavingsGoalController extends Controller
     {
         $request->validate(['spender_id' => 'required|uuid|exists:spenders,id']);
 
+        // Place the new goal at the end of the account's list
+        $maxOrder = SavingsGoal::where('account_id', $request->account_id)->max('sort_order') ?? -1;
+
         SavingsGoal::create(array_merge(
             $request->validated(),
-            ['spender_id' => $request->spender_id]
+            ['spender_id' => $request->spender_id, 'sort_order' => $maxOrder + 1]
         ));
 
         return redirect()->route('goals.index');
@@ -56,8 +65,19 @@ class SavingsGoalController extends Controller
 
     public function show(SavingsGoal $goal)
     {
+        $goal->load(['spender.family', 'account']);
+
+        if ($goal->account !== null) {
+            $siblingsInOrder = SavingsGoal::where('account_id', $goal->account_id)
+                ->orderBy('sort_order')
+                ->get();
+            SavingsGoal::computeAllocations($siblingsInOrder, (float) $goal->account->balance);
+            $sibling = $siblingsInOrder->firstWhere('id', $goal->id);
+            $goal->setAttribute('allocated_amount', $sibling instanceof SavingsGoal ? $sibling->allocated_amount : '0.00');
+        }
+
         return Inertia::render('Goals/Show', [
-            'goal' => $goal->load(['spender.family', 'account']),
+            'goal' => $goal,
         ]);
     }
 
@@ -84,5 +104,19 @@ class SavingsGoalController extends Controller
         $goal->delete();
 
         return redirect()->route('goals.index');
+    }
+
+    public function reorder(Request $request)
+    {
+        $validated = $request->validate([
+            'goal_ids'   => 'required|array|min:1',
+            'goal_ids.*' => 'uuid|exists:savings_goals,id',
+        ]);
+
+        foreach ($validated['goal_ids'] as $index => $goalId) {
+            SavingsGoal::where('id', $goalId)->update(['sort_order' => $index]);
+        }
+
+        return back();
     }
 }

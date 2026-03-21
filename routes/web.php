@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('accounts', AccountController::class)->except('show');
         Route::resource('accounts.transactions', TransactionController::class);
         Route::resource('accounts.recurring', RecurringTransactionController::class);
+        Route::post('/goals/reorder', [SavingsGoalController::class, 'reorder'])->name('goals.reorder');
         Route::resource('goals', SavingsGoalController::class);
         Route::get('/billing', [BillingController::class, 'index'])->name('billing');
         Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');

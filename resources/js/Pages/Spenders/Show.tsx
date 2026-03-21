@@ -1,102 +1,186 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { Spender, ChildInvitation } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { Eye, PlusCircle, Link2, Unlink, User, Mail, X } from 'lucide-react';
+import { Eye, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2, Smartphone } from 'lucide-react';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
+
+function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processing }: {
+    email: string;
+    spenderName: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+    processing: boolean;
+}) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
+            <div className="relative bg-background rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
+                <div className="flex items-start justify-between">
+                    <h3 className="text-base font-semibold">Invite child account</h3>
+                    <button onClick={onCancel} className="text-muted-foreground hover:text-foreground -mt-1">
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                    You're about to invite <span className="font-medium text-foreground">{email}</span> to view{' '}
+                    <span className="font-medium text-foreground">{spenderName}</span>'s account.
+                </p>
+
+                <div className="rounded-lg bg-muted/50 p-4 space-y-3 text-sm">
+                    <p className="font-medium text-xs uppercase tracking-wide text-muted-foreground">What they'll get access to</p>
+                    <ul className="space-y-2">
+                        <li className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            View account balances and transactions
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            Track savings goals progress
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            Mark chores as complete
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-3 space-y-1 text-sm">
+                    <p className="font-medium flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                        <Smartphone className="h-3.5 w-3.5" />
+                        What the child needs to do
+                    </p>
+                    <p className="text-amber-700/80 dark:text-amber-500 text-xs">
+                        They'll receive an email with a link. They'll need to create a Pocket Money account (or log in) using this email address to accept the invitation.
+                    </p>
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                    <Button onClick={onConfirm} disabled={processing} className="flex-1">
+                        Send invitation
+                    </Button>
+                    <Button variant="outline" onClick={onCancel} disabled={processing}>
+                        Cancel
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 function ChildLoginCard({ spender, pendingInvitations }: { spender: Spender; pendingInvitations: ChildInvitation[] }) {
     const { auth } = usePage().props as any;
     const isParent: boolean = auth.isParent ?? false;
     const { data, setData, post, processing, errors, reset } = useForm({ email: '' });
+    const [showModal, setShowModal] = useState(false);
 
     if (!isParent) return null;
 
     const linkedUsers = spender.users ?? [];
     const hasAny = linkedUsers.length > 0 || pendingInvitations.length > 0;
 
+    function handleInviteClick(e: React.FormEvent) {
+        e.preventDefault();
+        if (!data.email) return;
+        setShowModal(true);
+    }
+
+    function handleConfirm() {
+        post(route('spenders.link-child', spender.id), {
+            onSuccess: () => { reset(); setShowModal(false); },
+            onError: () => setShowModal(false),
+        });
+    }
+
     return (
-        <Card>
-            <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Child Login Accounts
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                {!hasAny && (
-                    <p className="text-sm text-muted-foreground">No login account linked yet.</p>
-                )}
+        <>
+            {showModal && (
+                <InviteConfirmModal
+                    email={data.email}
+                    spenderName={spender.name}
+                    onConfirm={handleConfirm}
+                    onCancel={() => setShowModal(false)}
+                    processing={processing}
+                />
+            )}
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Child Login Accounts
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {!hasAny && (
+                        <p className="text-sm text-muted-foreground">No login account linked yet.</p>
+                    )}
 
-                {linkedUsers.length > 0 && (
-                    <div className="space-y-2">
-                        {linkedUsers.map(user => (
-                            <div key={user.id} className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                    <span className="text-sm truncate">{user.email}</span>
+                    {linkedUsers.length > 0 && (
+                        <div className="space-y-2">
+                            {linkedUsers.map(user => (
+                                <div key={user.id} className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <Link2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                        <span className="text-sm truncate">{user.email}</span>
+                                    </div>
+                                    <Link
+                                        href={route('spenders.unlink-child', { spender: spender.id, user: user.id })}
+                                        method="delete"
+                                        as="button"
+                                        className="text-destructive hover:text-destructive/80 shrink-0"
+                                    >
+                                        <Unlink className="h-3.5 w-3.5" />
+                                    </Link>
                                 </div>
-                                <Link
-                                    href={route('spenders.unlink-child', { spender: spender.id, user: user.id })}
-                                    method="delete"
-                                    as="button"
-                                    className="text-destructive hover:text-destructive/80 shrink-0"
-                                >
-                                    <Unlink className="h-3.5 w-3.5" />
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
 
-                {pendingInvitations.length > 0 && (
-                    <div className="space-y-2">
-                        {pendingInvitations.map(inv => (
-                            <div key={inv.id} className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <Mail className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                                    <span className="text-sm truncate text-muted-foreground">{inv.email}</span>
-                                    <Badge variant="outline" className="text-xs shrink-0">Pending</Badge>
+                    {pendingInvitations.length > 0 && (
+                        <div className="space-y-2">
+                            {pendingInvitations.map(inv => (
+                                <div key={inv.id} className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <Mail className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                                        <span className="text-sm truncate text-muted-foreground">{inv.email}</span>
+                                        <Badge variant="outline" className="text-xs shrink-0">Pending</Badge>
+                                    </div>
+                                    <Link
+                                        href={route('child-invitations.cancel', inv.id)}
+                                        method="delete"
+                                        as="button"
+                                        className="text-muted-foreground hover:text-destructive shrink-0"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </Link>
                                 </div>
-                                <Link
-                                    href={route('child-invitations.cancel', inv.id)}
-                                    method="delete"
-                                    as="button"
-                                    className="text-muted-foreground hover:text-destructive shrink-0"
-                                >
-                                    <X className="h-3.5 w-3.5" />
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
 
-                <form
-                    onSubmit={e => {
-                        e.preventDefault();
-                        post(route('spenders.link-child', spender.id), { onSuccess: () => reset() });
-                    }}
-                    className="flex gap-2 pt-1"
-                >
-                    <Input
-                        type="email"
-                        placeholder="Child's email address"
-                        value={data.email}
-                        onChange={e => setData('email', e.target.value)}
-                        className="h-8 text-sm"
-                    />
-                    <Button type="submit" size="sm" disabled={processing} className="shrink-0">
-                        <PlusCircle className="h-3.5 w-3.5 mr-1" />
-                        Invite
-                    </Button>
-                </form>
-                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-            </CardContent>
-        </Card>
+                    <form onSubmit={handleInviteClick} className="flex gap-2 pt-1">
+                        <Input
+                            type="email"
+                            placeholder="Child's email address"
+                            value={data.email}
+                            onChange={e => setData('email', e.target.value)}
+                            className="h-8 text-sm"
+                        />
+                        <Button type="submit" size="sm" disabled={processing} className="shrink-0">
+                            <PlusCircle className="h-3.5 w-3.5 mr-1" />
+                            Invite
+                        </Button>
+                    </form>
+                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                </CardContent>
+            </Card>
+        </>
     );
 }
 
@@ -187,7 +271,7 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                         <Card>
                             <CardContent className="pt-4 space-y-4">
                                 {spender.savings_goals?.map(goal => {
-                                    const current = goal.account ? parseFloat(goal.account.balance) : 0;
+                                    const current = parseFloat(goal.allocated_amount);
                                     const pct = Math.min(100, (current / parseFloat(goal.target_amount)) * 100);
                                     return (
                                         <div key={goal.id}>

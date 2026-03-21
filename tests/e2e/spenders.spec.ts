@@ -88,6 +88,14 @@ test.describe('Spenders', () => {
         await page.fill('input[type="email"]', 'newchild@example.com');
         await page.getByRole('button', { name: 'Invite' }).click();
 
+        // Confirmation modal should appear
+        await expect(page.getByText('Invite child account')).toBeVisible();
+        await expect(page.getByText('newchild@example.com')).toBeVisible();
+        await expect(page.getByText("What they'll get access to")).toBeVisible();
+
+        // Confirm the invitation
+        await page.getByRole('button', { name: 'Send invitation' }).click();
+
         await expect(page.getByText('newchild@example.com')).toBeVisible();
         await expect(page.getByText('Pending')).toBeVisible();
     });
