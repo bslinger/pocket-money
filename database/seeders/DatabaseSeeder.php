@@ -11,6 +11,7 @@ use App\Models\Chore;
 use App\Models\ChoreCompletion;
 use App\Models\Family;
 use App\Models\FamilyUser;
+use App\Models\SavingsGoal;
 use App\Models\Spender;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -64,6 +65,55 @@ class DatabaseSeeder extends Seeder
         Account::firstOrCreate(
             ['spender_id' => $theodore->id, 'name' => 'Savings'],
             ['balance' => '27.80', ]
+        );
+
+        // ── Savings Goals ────────────────────────────────────────────────────
+
+        $emmaAccount   = Account::where('spender_id', $emma->id)->first();
+        $jackAccount   = Account::where('spender_id', $jack->id)->first();
+        $theoAccount   = Account::where('spender_id', $theodore->id)->first();
+
+        // Emma: two goals on her account — one reached, one not yet
+        SavingsGoal::firstOrCreate(
+            ['spender_id' => $emma->id, 'name' => 'New headphones'],
+            [
+                'account_id'    => $emmaAccount?->id,
+                'target_amount' => '10.00',
+                'target_date'   => null,
+                'is_completed'  => true,
+            ]
+        );
+
+        SavingsGoal::firstOrCreate(
+            ['spender_id' => $emma->id, 'name' => 'Roller skates'],
+            [
+                'account_id'    => $emmaAccount?->id,
+                'target_amount' => '45.00',
+                'target_date'   => now()->addMonths(3)->toDateString(),
+                'is_completed'  => false,
+            ]
+        );
+
+        // Jack: one in-progress goal
+        SavingsGoal::firstOrCreate(
+            ['spender_id' => $jack->id, 'name' => 'LEGO set'],
+            [
+                'account_id'    => $jackAccount?->id,
+                'target_amount' => '30.00',
+                'target_date'   => now()->addMonths(2)->toDateString(),
+                'is_completed'  => false,
+            ]
+        );
+
+        // Theodore: one goal with no target date
+        SavingsGoal::firstOrCreate(
+            ['spender_id' => $theodore->id, 'name' => 'Nintendo game'],
+            [
+                'account_id'    => $theoAccount?->id,
+                'target_amount' => '60.00',
+                'target_date'   => null,
+                'is_completed'  => false,
+            ]
         );
 
         // ── Chores ──────────────────────────────────────────────────────────

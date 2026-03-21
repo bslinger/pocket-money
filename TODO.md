@@ -107,3 +107,24 @@ Organised by strategic area, with specific tasks nested under each.
 
 - [x] **Spender Create page** — add optional currency override (currently only on Edit)
 - [ ] **PHPStan** — keep at level 5; run after every PHP change
+
+## Chore Improvements v1
+- [x] Ticking off a chore from the kids view (parent logged in) is throwing an error
+- [x] It needs to be clearer which day a particular chore is for. There should be separate sections for setting up chores (often recurring) and a calendar of chores for today and future days.
+- [x] The calendar view should be grouped by child.
+- [x] The chore type (Responsibility, etc) should not have the hover effect on the chore list, but instead should have a tooltip that appears after a moment giving more information about that chore type. Refactor the text that defines each chore type into a file and make sure it's used wherever it's needed.
+- [x] Parent should be able to unapprove chores that they've already approved. If undoing the chore approval would invalidate a payment that had already been made (eg. their pocket money responsibilities are no longer met, but pocket money has been paid) then the parent should get a notification about that payment and an option to cancel it.
+
+## Pocket Money Improvements v1
+- [x] We need to be able to set the recurring amount a child gets. It should be weekly or monthly, and be able to be any day of the week or month that actually triggers it. It can vary per kid.
+- [x] We will need a background job that runs hourly to check whether pocket money is due, and if so , creates a transaction for it (as long as all responsibilities have been filled)
+- [x] The parent should still be able to release pocket money that hasn't met responsibilities, but continues to be a manual action.
+- [x] We should add a new type of payment - a reward that is based on a specific set of chores being completed. It's can optionally have a date that it will be paid out (in which case, if the responsibilities are completed, the transaction should be made automatically). If no date is set, it is paid out when the responsibilities are completed and approved.
+
+## Miscellaneous Bugs v1
+ - [x] The emoji picker on the family edit page should match the dark/light mode of the page. It's currently in dark mode.
+ - [x] The pluralisation of the currency needs to be better - find and install a pluralisation library that will help.
+
+## Next Steps
+ - [ ] Instead of requiring a child account to already have an existing user, send an email to invite a user as a child account
+ - [ ] ]

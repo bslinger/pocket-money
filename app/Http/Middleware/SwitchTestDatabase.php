@@ -13,10 +13,12 @@ class SwitchTestDatabase
         if (app()->isLocal()) {
             $workerIndex = $request->header('X-Test-DB');
 
-            if ($workerIndex !== null && ctype_digit((string) $workerIndex)) {
-                config(['database.connections.pgsql.database' => "pocket_money_test_{$workerIndex}"]);
-                DB::purge('pgsql');
-            }
+            $database = ($workerIndex !== null && ctype_digit((string) $workerIndex))
+                ? "pocket_money_test_{$workerIndex}"
+                : env('DB_DATABASE', 'pocket_money');
+
+            config(['database.connections.pgsql.database' => $database]);
+            DB::purge('pgsql');
         }
 
         return $next($request);
