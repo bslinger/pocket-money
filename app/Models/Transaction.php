@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Enums\TxType;
+use App\Http\Controllers\ImageUploadController;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @property TxType $type
@@ -17,6 +17,7 @@ class Transaction extends Model
     use HasFactory, HasUuids;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -55,6 +56,6 @@ class Transaction extends Model
             return null;
         }
 
-        return Storage::temporaryUrl($this->image_key, now()->addMinutes(60));
+        return ImageUploadController::url($this->image_key);
     }
 }

@@ -1,18 +1,28 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\{
-    DashboardController, FamilyController, SpenderController,
-    AccountController, TransactionController, TransferController,
-    RecurringTransactionController, SavingsGoalController,
-    BillingController, SettingsController, ImageUploadController,
-    ChoreController, ChoreCompletionController, PocketMoneyReleaseController,
-    PocketMoneyScheduleController, ChoreRewardController,
-    MarketingController, InvitationController, ChildInvitationController,
-    OnboardingController
-};
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\BillingController;
+use App\Http\Controllers\ChildInvitationController;
+use App\Http\Controllers\ChoreCompletionController;
+use App\Http\Controllers\ChoreController;
+use App\Http\Controllers\ChoreRewardController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\ImageUploadController;
+use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PocketMoneyReleaseController;
+use App\Http\Controllers\PocketMoneyScheduleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RecurringTransactionController;
+use App\Http\Controllers\SavingsGoalController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SpenderController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransferController;
+use Illuminate\Support\Facades\Route;
+use Laravel\Cashier\Http\Controllers\WebhookController;
 
 Route::get('/', [MarketingController::class, 'home'])->name('home');
 Route::get('/how-it-works', [MarketingController::class, 'howItWorks'])->name('marketing.how');
@@ -47,7 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['put', 'patch'], '/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
     Route::delete('/settings/account', [SettingsController::class, 'deleteAccount'])->name('settings.account.destroy');
     Route::get('/settings/export', [SettingsController::class, 'exportData'])->name('settings.export');
-    Route::post('/uploads/sign', [ImageUploadController::class, 'sign'])->name('uploads.sign');
+    Route::post('/uploads', [ImageUploadController::class, 'store'])->name('uploads.store');
 
     // Family routes available to any authenticated user (creating a family establishes parent status)
     Route::resource('families', FamilyController::class);
@@ -98,7 +108,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/accounts/{account}/transfer', [TransferController::class, 'store'])->name('accounts.transfer');
 });
 
-Route::post('/webhooks/stripe', [\Laravel\Cashier\Http\Controllers\WebhookController::class, 'handleWebhook']);
+Route::post('/webhooks/stripe', [WebhookController::class, 'handleWebhook']);
 
 require __DIR__.'/auth.php';
 
@@ -109,7 +119,7 @@ if (app()->environment('local')) {
         if ($user && ! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
+
         return redirect('/dashboard');
     })->middleware('auth');
 }
-

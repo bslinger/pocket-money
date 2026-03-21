@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\ImageUploadController;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,13 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 
 class Spender extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -37,8 +38,8 @@ class Spender extends Model
     protected function avatarUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->avatar_key
-                ? Storage::temporaryUrl($this->avatar_key, now()->addMinutes(60))
+            get: fn () => $this->avatar_key
+                ? ImageUploadController::url($this->avatar_key)
                 : ($this->attributes['avatar_url'] ?? null),
         );
     }

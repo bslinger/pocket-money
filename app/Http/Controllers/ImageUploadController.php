@@ -2,21 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ImageUploadController extends Controller
 {
-    public function sign(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'filename' => 'required|string|max:255',
+            'file' => 'required|image|max:5120',
         ]);
 
-        $key = 'uploads/' . auth()->id() . '/' . Str::uuid() . '/' . $request->filename;
-        $url = Storage::temporaryUploadUrl($key, now()->addMinutes(5));
+        $key = $request->file('file')->store(
+            'uploads/'.auth()->id(),
+            config('filesystems.default'),
+        );
 
-        return response()->json(['url' => $url, 'key' => $key]);
+        return response()->json([
+            'key' => $key,
+            'url' => self::url($key),
+        ]);
+    }
+
+    /**
+     * Generate a public URL for the given storage key.
+     * Uses temporaryUrl on S3 (signed, 60-min expiry) or url() on local disk.
+     */
+    public static function url(?string $key): ?string
+    {
+        if ($key === null) {
+            return null;
+        }
+
+        $disk = Storage::getDefaultDriver();
+
+        if ($disk === 'local' || $disk === 'public') {
+            return Storage::url($key);
+        }
+
+        return Storage::temporaryUrl($key, now()->addMinutes(60));
     }
 }

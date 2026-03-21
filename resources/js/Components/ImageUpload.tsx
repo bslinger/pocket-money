@@ -9,10 +9,9 @@ interface Props {
 }
 
 /**
- * Image upload component that uses S3 presigned URLs.
- * 1. Calls POST /uploads/sign to get a presigned URL + storage key.
- * 2. PUTs the file directly to S3.
- * 3. Calls onUpload(key) so the parent form can store the key.
+ * Image upload component.
+ * POSTs the file to the backend, which stores it on the configured disk.
+ * Calls onUpload(key) so the parent form can store the storage key.
  */
 export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Upload image' }: Props) {
     const [preview, setPreview] = useState<string | null>(currentUrl ?? null);
@@ -25,28 +24,20 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
         setError(null);
 
         try {
-            // Get presigned URL from the backend
-            const signRes = await fetch(route('uploads.sign'), {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch(route('uploads.store'), {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '',
                 },
-                body: JSON.stringify({ filename: file.name }),
+                body: formData,
             });
 
-            if (!signRes.ok) throw new Error('Failed to get upload URL');
+            if (!res.ok) throw new Error('Upload failed');
 
-            const { url, key } = await signRes.json();
-
-            // Upload directly to S3
-            const uploadRes = await fetch(url, {
-                method: 'PUT',
-                body: file,
-                headers: { 'Content-Type': file.type },
-            });
-
-            if (!uploadRes.ok) throw new Error('Upload failed');
+            const { key } = await res.json();
 
             setPreview(URL.createObjectURL(file));
             onUpload(key);
