@@ -156,8 +156,10 @@ function ParentDashboard({
 
       {/* Recent activity — transactions + approved chore completions merged */}
       {(recentActivity.length > 0 || recentApprovedCompletions.length > 0) && (() => {
+        // Suppress chore-reward transactions — their amount is shown on the completion row
+        const choreRewardTxIds = new Set(recentApprovedCompletions.map(c => c.transaction_id).filter(Boolean));
         const feed: ActivityItem[] = [
-          ...recentActivity.map(tx => ({ kind: 'transaction' as const, data: tx, sortKey: tx.occurred_at })),
+          ...recentActivity.filter(tx => !choreRewardTxIds.has(tx.id)).map(tx => ({ kind: 'transaction' as const, data: tx, sortKey: tx.occurred_at })),
           ...recentApprovedCompletions.map(c => ({ kind: 'completion' as const, data: c, sortKey: c.reviewed_at ?? c.completed_at })),
         ].sort((a, b) => b.sortKey.localeCompare(a.sortKey)).slice(0, 15);
 
@@ -200,6 +202,7 @@ function ParentDashboard({
                 }
 
                 const completion = item.data;
+                const hasReward = completion.chore?.reward_type === 'earns' && completion.chore?.amount;
                 return (
                   <div key={`cc-${completion.id}`} className="flex items-center justify-between py-2.5 gap-3">
                     <div className="flex items-center gap-3 min-w-0">
@@ -214,15 +217,22 @@ function ParentDashboard({
                         <p className="text-xs text-muted-foreground">{completion.spender?.name} · approved</p>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="shrink-0 text-xs text-muted-foreground gap-1.5"
-                      onClick={() => router.patch(route('chore-completions.unapprove', completion.id), {}, { preserveScroll: true })}
-                    >
-                      <Undo2 className="h-3.5 w-3.5" />
-                      Unapprove
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {hasReward && (
+                        <p className="text-sm font-medium tabular-nums text-green-600">
+                          +{formatAmount(completion.chore!.amount!, spenderCurrencySymbol(completion.spender ?? { currency_symbol: null }))}
+                        </p>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-muted-foreground gap-1.5"
+                        onClick={() => router.patch(route('chore-completions.unapprove', completion.id), {}, { preserveScroll: true })}
+                      >
+                        <Undo2 className="h-3.5 w-3.5" />
+                        Unapprove
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
