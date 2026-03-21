@@ -41,10 +41,10 @@ export default function Home({ canLogin, canRegister }: Props) {
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-24 text-center">
-        <p className="inline-block bg-[#E1F5EE] text-[#0F6E56] text-xs font-semibold px-3 py-1 rounded-full mb-6 tracking-wide uppercase">
+        <p className="inline-block bg-dark-amaranth-50 text-dark-amaranth-500 text-xs font-semibold px-3 py-1 rounded-full mb-6 tracking-wide uppercase">
           Smart pocket money for families
         </p>
-        <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight text-[#1C1A18] max-w-3xl mx-auto">
+        <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight text-charcoal-blue-900 max-w-3xl mx-auto">
           Raise money-smart kids.
         </h1>
         <p className="mt-6 text-lg text-stone-500 max-w-xl mx-auto leading-relaxed">
@@ -54,14 +54,14 @@ export default function Home({ canLogin, canRegister }: Props) {
           {canRegister && (
             <Link
               href={route('register')}
-              className="bg-[#0F6E56] text-white font-semibold px-8 py-3.5 rounded-full text-base hover:bg-[#1D9E75] transition-colors"
+              className="bg-dark-amaranth-500 text-white font-semibold px-8 py-3.5 rounded-full text-base hover:bg-dark-amaranth-600 transition-colors"
             >
               Get started
             </Link>
           )}
           <Link
             href={route('marketing.how')}
-            className="border border-stone-300 text-[#1C1A18] font-semibold px-8 py-3.5 rounded-full text-base hover:border-stone-400 transition-colors"
+            className="border border-stone-300 text-charcoal-blue-900 font-semibold px-8 py-3.5 rounded-full text-base hover:border-stone-400 transition-colors"
           >
             How it works
           </Link>
@@ -76,23 +76,23 @@ export default function Home({ canLogin, canRegister }: Props) {
           ].map(stat => (
             <div key={stat.label} className="bg-white px-6 py-5">
               <p className="text-xs text-stone-400 uppercase tracking-wide">{stat.label}</p>
-              <p className="text-2xl font-bold text-[#1C1A18] mt-1">{stat.value}</p>
+              <p className="text-2xl font-bold text-charcoal-blue-900 mt-1">{stat.value}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Features grid */}
-      <section className="bg-[#FAEEDA] py-20">
+      <section className="bg-soft-linen-50 py-20">
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="font-serif text-4xl font-bold text-center text-[#1C1A18] mb-12">
+          <h2 className="font-serif text-4xl font-bold text-center text-charcoal-blue-900 mb-12">
             Why families love Quiddo
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map(f => (
               <div key={f.title} className="bg-white rounded-2xl p-6">
                 <span className="text-3xl">{f.emoji}</span>
-                <h3 className="font-semibold text-[#1C1A18] mt-3 mb-1">{f.title}</h3>
+                <h3 className="font-semibold text-charcoal-blue-900 mt-3 mb-1">{f.title}</h3>
                 <p className="text-sm text-stone-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
@@ -103,7 +103,7 @@ export default function Home({ canLogin, canRegister }: Props) {
       {/* Comparison section */}
       <section className="py-20 mx-auto max-w-6xl px-6">
         <div className="text-center mb-12">
-          <h2 className="font-serif text-4xl font-bold text-[#1C1A18]">A simpler approach</h2>
+          <h2 className="font-serif text-4xl font-bold text-charcoal-blue-900">A simpler approach</h2>
           <p className="mt-4 text-stone-500 max-w-md mx-auto">
             Other apps give kids their own debit cards and accounts. Quiddo keeps it simple — parents stay in control, kids learn the value of money.
           </p>
@@ -111,11 +111,11 @@ export default function Home({ canLogin, canRegister }: Props) {
         <div className="max-w-2xl mx-auto space-y-4">
           {comparisons.map((c, i) => (
             <div key={i} className="grid grid-cols-2 gap-4">
-              <div className="bg-stone-100 rounded-xl p-4 text-sm text-stone-500 flex items-start gap-3">
-                <span className="text-stone-400 mt-0.5">✗</span>
+              <div className="bg-soft-linen-100 rounded-xl p-4 text-sm text-soft-linen-700 flex items-start gap-3">
+                <span className="text-blazing-flame-400 mt-0.5">✗</span>
                 {c.them}
               </div>
-              <div className="bg-[#E1F5EE] rounded-xl p-4 text-sm text-[#0F6E56] font-medium flex items-start gap-3">
+              <div className="bg-dark-amaranth-50 rounded-xl p-4 text-sm text-dark-amaranth-500 font-medium flex items-start gap-3">
                 <span className="mt-0.5">✓</span>
                 {c.us}
               </div>
@@ -125,13 +125,13 @@ export default function Home({ canLogin, canRegister }: Props) {
       </section>
 
       {/* CTA banner */}
-      <section className="bg-[#1C1A18] py-20 text-center px-6">
+      <section className="bg-charcoal-blue-900 py-20 text-center px-6">
         <h2 className="font-serif text-4xl font-bold text-white mb-4">Ready to get started?</h2>
         <p className="text-stone-400 mb-8 text-lg">Set up in under 5 minutes. From A$1.99/month for your whole family.</p>
         {canRegister && (
           <Link
             href={route('register')}
-            className="bg-[#FAC775] text-[#1C1A18] font-bold px-8 py-3.5 rounded-full text-base hover:bg-[#FAEEDA] transition-colors"
+            className="bg-dark-amaranth-300 text-charcoal-blue-900 font-bold px-8 py-3.5 rounded-full text-base hover:bg-dark-amaranth-50 transition-colors"
           >
             Create your family account
           </Link>

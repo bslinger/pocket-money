@@ -47,7 +47,7 @@ export default function Pricing({ canLogin, canRegister }: Props) {
 
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-24">
         <div className="text-center mb-14">
-          <h1 className="font-serif text-5xl font-bold text-[#1C1A18]">Simple pricing</h1>
+          <h1 className="font-serif text-5xl font-bold text-charcoal-blue-900">Simple pricing</h1>
           <p className="mt-4 text-lg text-stone-500 max-w-md mx-auto">
             One plan, everything included. Pay monthly or save 37% with annual billing.
           </p>
@@ -59,24 +59,24 @@ export default function Pricing({ canLogin, canRegister }: Props) {
               key={plan.name}
               className={`rounded-2xl p-8 flex flex-col ${
                 plan.dark
-                  ? 'bg-[#1C1A18] text-white'
-                  : 'bg-white border border-stone-200'
+                  ? 'bg-charcoal-blue-900 text-white'
+                  : 'bg-soft-linen-50 border border-soft-linen-200'
               }`}
             >
               <div>
-                <p className={`text-sm font-semibold uppercase tracking-wide mb-3 ${plan.dark ? 'text-[#FAC775]' : 'text-[#0F6E56]'}`}>
+                <p className={`text-sm font-semibold uppercase tracking-wide mb-3 ${plan.dark ? 'text-dark-amaranth-300' : 'text-dark-amaranth-500'}`}>
                   {plan.name}
                 </p>
                 <div className="flex items-end gap-1 mb-1">
-                  <span className={`text-4xl font-bold ${plan.dark ? 'text-white' : 'text-[#1C1A18]'}`}>{plan.price}</span>
-                  <span className={`text-sm mb-1 ${plan.dark ? 'text-stone-400' : 'text-stone-400'}`}>/{plan.period}</span>
+                  <span className={`text-4xl font-bold ${plan.dark ? 'text-white' : 'text-charcoal-blue-900'}`}>{plan.price}</span>
+                  <span className="text-sm mb-1 text-stone-400">/{plan.period}</span>
                 </div>
                 <p className={`text-sm mb-6 ${plan.dark ? 'text-stone-400' : 'text-stone-500'}`}>{plan.description}</p>
 
                 <ul className="space-y-3 mb-8">
                   {plan.features.map(f => (
                     <li key={f} className="flex items-center gap-3 text-sm">
-                      <Check className={`h-4 w-4 shrink-0 ${plan.dark ? 'text-[#FAC775]' : 'text-[#0F6E56]'}`} />
+                      <Check className={`h-4 w-4 shrink-0 ${plan.dark ? 'text-dark-amaranth-300' : 'text-dark-amaranth-500'}`} />
                       <span className={plan.dark ? 'text-stone-300' : 'text-stone-600'}>{f}</span>
                     </li>
                   ))}
@@ -89,8 +89,8 @@ export default function Pricing({ canLogin, canRegister }: Props) {
                     href={route(plan.href as any)}
                     className={`block text-center font-semibold px-6 py-3 rounded-full transition-colors ${
                       plan.dark
-                        ? 'bg-[#FAC775] text-[#1C1A18] hover:bg-[#FAEEDA]'
-                        : 'bg-[#0F6E56] text-white hover:bg-[#1D9E75]'
+                        ? 'bg-dark-amaranth-300 text-charcoal-blue-900 hover:bg-dark-amaranth-50'
+                        : 'bg-dark-amaranth-500 text-white hover:bg-dark-amaranth-600'
                     }`}
                   >
                     {plan.cta}

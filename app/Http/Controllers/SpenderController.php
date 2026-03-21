@@ -40,18 +40,11 @@ class SpenderController extends Controller
             ->get()
             ->map(function (Spender $spender) {
                 $spender->setAttribute('total_balance', $spender->accounts->sum('balance'));
-                $closestGoal = $spender->savingsGoals
+                $topGoal = $spender->savingsGoals
                     ->where('is_completed', false)
-                    ->map(function ($goal) {
-                        /** @var \App\Models\SavingsGoal $goal */
-                        $account = $goal->account instanceof \App\Models\Account ? $goal->account : null;
-                        $current = $account !== null ? (float) $account->balance : 0.0;
-                        $target  = max((float) $goal->target_amount, 0.01);
-                        return ['goal' => $goal, 'pct' => $current / $target];
-                    })
-                    ->sortByDesc('pct')
-                    ->first()['goal'] ?? null;
-                $spender->setRelation('closest_goal', $closestGoal);
+                    ->sortBy('sort_order')
+                    ->first();
+                $spender->setRelation('closest_goal', $topGoal);
                 return $spender;
             });
 

@@ -85,12 +85,12 @@ Organised by strategic area, with specific tasks nested under each.
 **Goal:** A dedicated view kids actually enjoy using.
 
 - [x] **Kid-facing app view** — dedicated child dashboard: balance hero, chore list, goal progress bar
-- [ ] Add button to go to kid-view for each kid on the Kids page
-- [ ] Anywhere we were previously showing the goal that was closest to completion, we should now show the goal that is at the top of their prioritised goal list.
-- [ ] On the kids page, if a kids has multiple accounts, show a card for each account with the amount in each and the current top prioritized goal for that account, with the progress bar, title and amount complete.
-- [ ] Wherever we are currently showing the amount complete for a savings goal, add the contributed and total currency for that goal as well. So "$5 of $10 (50%)" or "(star emoji)5 of (star emoji)20 (25%)"
-- [ ] On the kids page, make the goals clickable and have them take the user to the page for that goal
-- [ ] Everywhere we can, have the kid's name link to their page
+- [x] Add button to go to kid-view for each kid on the Kids page
+- [x] Anywhere we were previously showing the goal that was closest to completion, we should now show the goal that is at the top of their prioritised goal list.
+- [x] On the kids page, if a kids has multiple accounts, show a card for each account with the amount in each and the current top prioritized goal for that account, with the progress bar, title and amount complete.
+- [x] Wherever we are currently showing the amount complete for a savings goal, add the contributed and total currency for that goal as well. So "$5 of $10 (50%)" or "(star emoji)5 of (star emoji)20 (25%)"
+- [x] On the kids page, make the goals clickable and have them take the user to the page for that goal
+- [x] Everywhere we can, have the kid's name link to their page
 
 ---
 

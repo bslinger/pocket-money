@@ -272,13 +272,15 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                             <CardContent className="pt-4 space-y-4">
                                 {spender.savings_goals?.map(goal => {
                                     const current = parseFloat(goal.allocated_amount);
-                                    const pct = Math.min(100, (current / parseFloat(goal.target_amount)) * 100);
+                                    const target = parseFloat(goal.target_amount);
+                                    const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
+                                    const pctRounded = Math.round(pct);
                                     return (
-                                        <div key={goal.id}>
+                                        <Link key={goal.id} href={route('goals.show', goal.id)} className="block group">
                                             <div className="flex justify-between text-sm mb-1.5">
-                                                <span className="font-medium">{goal.name}</span>
+                                                <span className="font-medium group-hover:underline">{goal.name}</span>
                                                 <span className="text-muted-foreground tabular-nums">
-                                                    {formatAmount(current, currencySymbol)} / {formatAmount(goal.target_amount, currencySymbol)}
+                                                    {formatAmount(current, currencySymbol)} of {formatAmount(target, currencySymbol)} ({pctRounded}%)
                                                 </span>
                                             </div>
                                             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -292,7 +294,7 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                                                     Target: {new Date(goal.target_date).toLocaleDateString()}
                                                 </p>
                                             )}
-                                        </div>
+                                        </Link>
                                     );
                                 })}
                             </CardContent>

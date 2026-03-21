@@ -260,14 +260,10 @@ function KidCard({
   const mainBalance = spender.accounts
     ?.reduce((sum, a) => sum + parseFloat(String(a.balance)), 0) ?? 0;
 
-  // Pick the goal closest to completion (highest progress %)
+  // Pick the top-priority goal (lowest sort_order)
   const goal = spender.savings_goals
     ?.filter(g => !g.is_completed)
-    .sort((a, b) => {
-      const pctA = parseFloat(String(a.allocated_amount)) / Math.max(parseFloat(String(a.target_amount)), 0.01);
-      const pctB = parseFloat(String(b.allocated_amount)) / Math.max(parseFloat(String(b.target_amount)), 0.01);
-      return pctB - pctA;
-    })[0] ?? null;
+    .sort((a, b) => a.sort_order - b.sort_order)[0] ?? null;
   const goalCurrent = goal ? parseFloat(String(goal.allocated_amount)) : 0;
   const goalProgress = goal
     ? Math.min(100, (goalCurrent / parseFloat(String(goal.target_amount))) * 100)
@@ -674,9 +670,8 @@ function GoalProgressCard({ goal, currencySymbol }: { goal: SavingsGoal; currenc
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="flex justify-between mt-1.5 text-xs text-gray-500">
-          <span>{formatAmount(current, currencySymbol)}</span>
-          <span>{formatAmount(target, currencySymbol)}</span>
+        <div className="mt-1.5 text-xs text-gray-500 text-center">
+          <span>{formatAmount(current, currencySymbol)} of {formatAmount(target, currencySymbol)} ({pct.toFixed(0)}%)</span>
         </div>
       </div>
     </div>
