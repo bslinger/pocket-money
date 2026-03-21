@@ -126,4 +126,5 @@ jobs:
         with:
           api_token: ${{ secrets.LARAVEL_CLOUD_API_TOKEN }}
           application_name: ${{ vars.LARAVEL_CLOUD_APP_NAME }}
-          environment_name: production
+          environment_name: ${{ vars.LARAVEL_CLOUD_ENVIRONMENT_NAME }}
+
