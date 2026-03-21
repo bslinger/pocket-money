@@ -237,6 +237,88 @@ describe('savings goals', function () {
         });
     });
 
+    describe('index', function () {
+        it('renders the goals index page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id, 'balance' => '20.00']);
+            SavingsGoal::factory()->create(['spender_id' => $spenders->first()->id, 'account_id' => $account->id]);
+
+            $this->actingAs($user)
+                ->get(route('goals.index'))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Goals/Index'));
+        });
+    });
+
+    describe('abandoned', function () {
+        it('renders the abandoned goals page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            SavingsGoal::factory()->create([
+                'spender_id'  => $spenders->first()->id,
+                'abandoned_at' => now()->subDay(),
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('goals.abandoned'))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Goals/Abandoned'));
+        });
+
+        it('redirects to goals index when there are no abandoned goals', function () {
+            [$user] = parentWithFamily(['Emma']);
+
+            $this->actingAs($user)
+                ->get(route('goals.abandoned'))
+                ->assertRedirect(route('goals.index'));
+        });
+    });
+
+    describe('create', function () {
+        it('renders the create goal page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            Account::factory()->create(['spender_id' => $spenders->first()->id]);
+
+            $this->actingAs($user)
+                ->get(route('goals.create'))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Goals/Create'));
+        });
+    });
+
+    describe('show', function () {
+        it('renders a single goal with computed allocation', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id, 'balance' => '30.00']);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id'    => $spenders->first()->id,
+                'account_id'    => $account->id,
+                'target_amount' => '50.00',
+                'sort_order'    => 0,
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('goals.show', $goal))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Goals/Show'));
+        });
+    });
+
+    describe('edit', function () {
+        it('renders the edit goal page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            $goal = SavingsGoal::factory()->create([
+                'spender_id' => $spenders->first()->id,
+                'account_id' => $account->id,
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('goals.edit', $goal))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Goals/Edit'));
+        });
+    });
+
     describe('destroy-abandoned', function () {
         it('permanently deletes an abandoned goal', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);

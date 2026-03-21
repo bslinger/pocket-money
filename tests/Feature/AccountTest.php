@@ -73,6 +73,28 @@ describe('accounts', function () {
         });
     });
 
+    describe('create page', function () {
+        it('renders the create account page', function () {
+            [$user] = parentWithFamily(['Emma']);
+
+            $this->actingAs($user)
+                ->get(route('accounts.create'))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Accounts/Create'));
+        });
+    });
+
+    describe('edit page', function () {
+        it('renders the edit account page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+
+            $this->actingAs($user)
+                ->get(route('accounts.edit', $account))
+                ->assertOk();
+        });
+    });
+
     describe('update', function () {
         it('renames an account', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);

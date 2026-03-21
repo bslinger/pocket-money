@@ -32,7 +32,7 @@ class RunRecurringTransactions extends Command
 
             // Check for skip
             $isSkipped = RecurringTransactionSkip::where('recurring_transaction_id', $recurring->id)
-                ->where('skipped_date', $today)
+                ->whereDate('skipped_date', $today)
                 ->exists();
 
             if (!$isSkipped) {

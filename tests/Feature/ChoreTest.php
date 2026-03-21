@@ -367,4 +367,60 @@ describe('chore completions', function () {
             expect($fresh->note)->toBe('Not done properly');
         });
     });
+
+    describe('index', function () {
+        it('renders the chores index page', function () {
+            [$user, $family] = parentWithFamily(['Emma']);
+            Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
+
+            $this->actingAs($user)
+                ->get(route('chores.index'))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Chores/Index'));
+        });
+    });
+
+    describe('create page', function () {
+        it('renders the create chore page', function () {
+            [$user] = parentWithFamily(['Emma']);
+
+            $this->actingAs($user)
+                ->get(route('chores.create'))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Chores/Create'));
+        });
+    });
+
+    describe('edit page', function () {
+        it('renders the edit chore page', function () {
+            [$user, $family] = parentWithFamily(['Emma']);
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
+
+            $this->actingAs($user)
+                ->get(route('chores.edit', $chore))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Chores/Edit'));
+        });
+    });
+
+    describe('history', function () {
+        it('renders the chore history page with completions', function () {
+            [$user, $family, $spenders] = parentWithFamily(['Emma']);
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
+            ChoreCompletion::factory()->create([
+                'chore_id'     => $chore->id,
+                'spender_id'   => $spenders->first()->id,
+                'completed_at' => now(),
+                'status'       => CompletionStatus::Approved,
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('chores.history', $chore))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page
+                    ->component('Chores/History')
+                    ->has('completions')
+                );
+        });
+    });
 });

@@ -98,6 +98,42 @@ describe('transactions', function () {
         });
     });
 
+    describe('index', function () {
+        it('renders the transactions index page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            Transaction::factory()->credit()->create(['account_id' => $account->id]);
+
+            $this->actingAs($user)
+                ->get(route('accounts.transactions.index', $account))
+                ->assertOk();
+        });
+    });
+
+    describe('create page', function () {
+        it('renders the create transaction page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+
+            $this->actingAs($user)
+                ->get(route('accounts.transactions.create', $account))
+                ->assertOk()
+                ->assertInertia(fn($page) => $page->component('Transactions/Create'));
+        });
+    });
+
+    describe('edit page', function () {
+        it('renders the edit transaction page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            $tx = Transaction::factory()->credit()->create(['account_id' => $account->id]);
+
+            $this->actingAs($user)
+                ->get(route('accounts.transactions.edit', [$account, $tx]))
+                ->assertOk();
+        });
+    });
+
     describe('destroy', function () {
         it('deletes a credit transaction and decrements balance', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
