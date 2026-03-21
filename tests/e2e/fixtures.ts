@@ -1,4 +1,4 @@
-import { test as base, BrowserContext } from '@playwright/test';
+import { test as base, BrowserContext, Page } from '@playwright/test';
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
@@ -9,6 +9,8 @@ type WorkerFixtures = {
     workerStorageState: string;
 };
 
+const COVERAGE_DIR = path.join(process.cwd(), 'storage/coverage/e2e/raw');
+
 type TestFixtures = {
     /**
      * Path to a storage-state file, null for no auth, or undefined (default)
@@ -16,6 +18,7 @@ type TestFixtures = {
      */
     storageStatePath: string | null | undefined;
     context: BrowserContext;
+    page: Page;
 };
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
@@ -68,6 +71,26 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         });
         await use(context);
         await context.close();
+    },
+
+    page: async ({ context }, use, testInfo) => {
+        const page = await context.newPage();
+
+        if (process.env.COLLECT_COVERAGE) {
+            await page.coverage.startJSCoverage({ resetOnNavigation: false });
+        }
+
+        await use(page);
+
+        if (process.env.COLLECT_COVERAGE) {
+            const coverage = await page.coverage.stopJSCoverage();
+            fs.mkdirSync(COVERAGE_DIR, { recursive: true });
+            const slug = testInfo.title.replace(/[^a-z0-9]+/gi, '_').slice(0, 60);
+            fs.writeFileSync(
+                path.join(COVERAGE_DIR, `${slug}_${testInfo.workerIndex}_${Date.now()}.json`),
+                JSON.stringify(coverage),
+            );
+        }
     },
 });
 
