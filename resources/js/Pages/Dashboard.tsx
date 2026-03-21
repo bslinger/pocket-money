@@ -231,7 +231,7 @@ function KidCard({
   return (
     <div className="shrink-0 w-40 rounded-xl border bg-card hover:border-primary/40 transition-colors flex flex-col">
       {/* Clickable top area */}
-      <Link href={route('spenders.show', spender.id)} className="flex flex-col gap-3 p-3 flex-1">
+      <Link href={route('spenders.show', spender.id)} prefetch className="flex flex-col gap-3 p-3 flex-1">
         {/* Avatar + name row */}
         <div className="flex items-center gap-2.5">
           <Avatar className="h-10 w-10 shrink-0">

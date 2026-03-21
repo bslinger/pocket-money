@@ -36,7 +36,7 @@ Organised by strategic area, with specific tasks nested under each.
 ## UI Improvements
 
 - [x] **Native emoji picker on mobile** — use system emoji keyboard on touch devices; JS picker on desktop; input can't be emptied (reverts to default)
-- [ ] **Onboarding flow** — smoother setup wizard: create family → choose currency → add kids → set pocket money → create first chore
+- [x] **Onboarding flow** — smoother setup wizard: create family → choose currency → add kids → set pocket money → create first chore
 
 ---
 
@@ -114,7 +114,8 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] The calendar view should be grouped by child.
 - [x] The chore type (Responsibility, etc) should not have the hover effect on the chore list, but instead should have a tooltip that appears after a moment giving more information about that chore type. Refactor the text that defines each chore type into a file and make sure it's used wherever it's needed.
 - [x] Parent should be able to unapprove chores that they've already approved. If undoing the chore approval would invalidate a payment that had already been made (eg. their pocket money responsibilities are no longer met, but pocket money has been paid) then the parent should get a notification about that payment and an option to cancel it.
-- The Schedule tab of Chores should show which tasks have been marked as completed and/or approved for the current week.
+-[ ] The Schedule tab of Chores should show which tasks have been marked as completed and/or approved for the current week.
+- [ ] The Recent Activity section in the dashboard should give the option to unapprove the chores, as long as they were completed and approved in the current week.
 
 
 ## Pocket Money Improvements v1
@@ -128,6 +129,8 @@ Organised by strategic area, with specific tasks nested under each.
  - [x] The pluralisation of the currency needs to be better - find and install a pluralisation library that will help.
 
 ## Infrastructure Stuff v1
- - [ ] Enable Asset Prefetching through Vite
- - [ ] Add Inertia link prefetching everywhere it makes sense
- - [ ] Set up a Github action using https://github.com/marketplace/actions/deploy-to-laravel-cloud to deploy to Laravel Cloud only when all Pest and E2E tests pass. Do everything you can yourself, then add items to this TODO section for any additional configuration.
+ - [x] Enable Asset Prefetching through Vite
+ - [x] Add Inertia link prefetching everywhere it makes sense
+ - [x] Set up a Github action using https://github.com/marketplace/actions/deploy-to-laravel-cloud to deploy to Laravel Cloud only when all Pest and E2E tests pass. Do everything you can yourself, then add items to this TODO section for any additional configuration.
+   - [ ] Add `LARAVEL_CLOUD_API_TOKEN` secret to the GitHub repo (Settings → Secrets → Actions)
+   - [ ] Add `LARAVEL_CLOUD_APP_NAME` variable to the GitHub repo (Settings → Variables → Actions) with the exact application name from Laravel Cloud

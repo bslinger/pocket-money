@@ -241,7 +241,7 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {spender.accounts?.map(account => (
-                                <Link key={account.id} href={route('accounts.show', account.id)}>
+                                <Link key={account.id} href={route('accounts.show', account.id)} prefetch>
                                     <Card className="hover:border-primary/50 transition-colors cursor-pointer">
                                         <CardContent className="pt-4">
                                             <div className="flex items-center justify-between mb-1">

@@ -10,7 +10,7 @@ export default defineConfig({
     reporter: 'html',
     timeout: 30000,
     use: {
-        baseURL: 'http://localhost',
+        baseURL: process.env.APP_URL ?? 'http://localhost',
         trace: 'on-first-retry',
     },
 

@@ -267,12 +267,12 @@ export default function ChoresIndex({ families }: Props) {
                                 ))}
                               </div>
                               <Button variant="ghost" size="icon" asChild className="h-7 w-7" title="History">
-                                <Link href={route('chores.history', chore.id)}>
+                                <Link href={route('chores.history', chore.id)} prefetch>
                                   <History className="h-3.5 w-3.5" />
                                 </Link>
                               </Button>
                               <Button variant="ghost" size="icon" asChild className="h-7 w-7">
-                                <Link href={route('chores.edit', chore.id)}>
+                                <Link href={route('chores.edit', chore.id)} prefetch>
                                   <Pencil className="h-3.5 w-3.5" />
                                 </Link>
                               </Button>

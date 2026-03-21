@@ -81,13 +81,13 @@ function FamilyAccountMenu({
                     </div>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" className="flex-1 gap-1.5" asChild>
-                            <Link href={route('families.show', activeFamily.id)}>
+                            <Link href={route('families.show', activeFamily.id)} prefetch>
                                 <Settings2 className="h-3.5 w-3.5" />
                                 Settings
                             </Link>
                         </Button>
                         <Button variant="outline" size="sm" className="flex-1 gap-1.5" asChild>
-                            <Link href={route('families.show', activeFamily.id) + '#parents'}>
+                            <Link href={route('families.show', activeFamily.id) + '#parents'} prefetch>
                                 <User className="h-3.5 w-3.5" />
                                 Invite
                             </Link>
@@ -134,7 +134,7 @@ function FamilyAccountMenu({
                 {/* ── Account actions ── */}
                 <div className="py-2">
                     <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 cursor-pointer">
-                        <Link href={route('profile.edit')}>
+                        <Link href={route('profile.edit')} prefetch>
                             <User className="h-3.5 w-3.5 shrink-0" />
                             <span className="text-sm">Profile settings</span>
                         </Link>
@@ -222,14 +222,14 @@ export default function AuthenticatedLayout({
                                 <Menu className="h-5 w-5" />
                             </Button>
 
-                            <Link href={route('dashboard')} className="flex items-center gap-2 font-semibold text-foreground">
+                            <Link href={route('dashboard')} prefetch className="flex items-center gap-2 font-semibold text-foreground">
                                 <Wallet className="h-5 w-5 text-primary" />
                                 <span className="hidden sm:inline">Pocket Money</span>
                             </Link>
                             <Separator orientation="vertical" className="h-5 hidden sm:block" />
                             <div className="hidden sm:flex items-center gap-1">
                                 <Button variant="ghost" size="sm" asChild>
-                                    <Link href={route('dashboard')}>
+                                    <Link href={route('dashboard')} prefetch>
                                         <LayoutDashboard className="h-4 w-4 mr-1.5" />
                                         Dashboard
                                     </Link>
@@ -237,25 +237,25 @@ export default function AuthenticatedLayout({
                                 {isParent && (
                                     <>
                                         <Button variant="ghost" size="sm" asChild>
-                                            <Link href={route('spenders.index')}>
+                                            <Link href={route('spenders.index')} prefetch>
                                                 <Users className="h-4 w-4 mr-1.5" />
                                                 Kids
                                             </Link>
                                         </Button>
                                         <Button variant="ghost" size="sm" asChild>
-                                            <Link href={route('chores.index')}>
+                                            <Link href={route('chores.index')} prefetch>
                                                 <CheckSquare className="h-4 w-4 mr-1.5" />
                                                 Chores
                                             </Link>
                                         </Button>
                                         <Button variant="ghost" size="sm" asChild>
-                                            <Link href={route('pocket-money.release')}>
+                                            <Link href={route('pocket-money.release')} prefetch>
                                                 <Coins className="h-4 w-4 mr-1.5" />
                                                 Pocket Money
                                             </Link>
                                         </Button>
                                         <Button variant="ghost" size="sm" asChild>
-                                            <Link href={route('goals.index')}>
+                                            <Link href={route('goals.index')} prefetch>
                                                 <Target className="h-4 w-4 mr-1.5" />
                                                 Goals
                                             </Link>
@@ -283,7 +283,7 @@ export default function AuthenticatedLayout({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
                                     <DropdownMenuItem asChild>
-                                        <Link href={route('profile.edit')} className="flex items-center gap-2">
+                                        <Link href={route('profile.edit')} prefetch className="flex items-center gap-2">
                                             <User className="h-4 w-4" />
                                             Profile
                                         </Link>
@@ -327,6 +327,7 @@ export default function AuthenticatedLayout({
                         <div className="flex items-center justify-between px-4 h-14 border-b shrink-0">
                             <Link
                                 href={route('dashboard')}
+                                prefetch
                                 className="flex items-center gap-2 font-semibold text-foreground"
                                 onClick={closeMenu}
                             >
@@ -346,7 +347,7 @@ export default function AuthenticatedLayout({
                         {/* Nav links */}
                         <nav className="flex flex-col gap-1 p-3">
                             <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                <Link href={route('dashboard')}>
+                                <Link href={route('dashboard')} prefetch>
                                     <LayoutDashboard className="h-4 w-4 mr-2" />
                                     Dashboard
                                 </Link>
@@ -354,25 +355,25 @@ export default function AuthenticatedLayout({
                             {isParent && (
                                 <>
                                     <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('spenders.index')}>
+                                        <Link href={route('spenders.index')} prefetch>
                                             <Users className="h-4 w-4 mr-2" />
                                             Kids
                                         </Link>
                                     </Button>
                                     <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('chores.index')}>
+                                        <Link href={route('chores.index')} prefetch>
                                             <CheckSquare className="h-4 w-4 mr-2" />
                                             Chores
                                         </Link>
                                     </Button>
                                     <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('pocket-money.release')}>
+                                        <Link href={route('pocket-money.release')} prefetch>
                                             <Coins className="h-4 w-4 mr-2" />
                                             Pocket Money
                                         </Link>
                                     </Button>
                                     <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('goals.index')}>
+                                        <Link href={route('goals.index')} prefetch>
                                             <Target className="h-4 w-4 mr-2" />
                                             Goals
                                         </Link>

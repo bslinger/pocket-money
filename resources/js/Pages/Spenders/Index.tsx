@@ -81,7 +81,7 @@ export default function SpendersIndex({ family, spenders }: Props) {
                                 return (
                                     <div key={spender.id} className="flex items-center gap-4 px-6 py-4">
                                         {/* Avatar */}
-                                        <Link href={route('spenders.show', spender.id)}>
+                                        <Link href={route('spenders.show', spender.id)} prefetch>
                                             <Avatar className="h-10 w-10 shrink-0">
                                                 <AvatarImage src={spender.avatar_url ?? undefined} />
                                                 <AvatarFallback
