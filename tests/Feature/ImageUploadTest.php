@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Storage;
 
 describe('image upload', function () {
     it('uploads an image and returns a storage key', function () {
-        Storage::fake();
+        Storage::fake('images');
 
         [$user] = parentWithFamily();
 
@@ -17,11 +17,11 @@ describe('image upload', function () {
         $response->assertOk()
             ->assertJsonStructure(['key', 'url']);
 
-        Storage::assertExists($response->json('key'));
+        Storage::disk('images')->assertExists($response->json('key'));
     });
 
     it('rejects non-image files', function () {
-        Storage::fake();
+        Storage::fake('images');
 
         [$user] = parentWithFamily();
 
@@ -34,7 +34,7 @@ describe('image upload', function () {
     });
 
     it('rejects files over 5MB', function () {
-        Storage::fake();
+        Storage::fake('images');
 
         [$user] = parentWithFamily();
 

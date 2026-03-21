@@ -16,7 +16,7 @@ class ImageUploadController extends Controller
 
         $key = $request->file('file')->store(
             'uploads/'.auth()->id(),
-            config('filesystems.default'),
+            'images',
         );
 
         return response()->json([
@@ -35,12 +35,14 @@ class ImageUploadController extends Controller
             return null;
         }
 
-        $disk = Storage::getDefaultDriver();
+        $disk = Storage::disk('images');
 
-        if ($disk === 'local' || $disk === 'public') {
-            return Storage::url($key);
+        $driver = $disk->getConfig()['driver'] ?? 'local';
+
+        if ($driver === 'local') {
+            return $disk->url($key);
         }
 
-        return Storage::temporaryUrl($key, now()->addMinutes(60));
+        return $disk->temporaryUrl($key, now()->addMinutes(60));
     }
 }
