@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { Spender, SavingsGoal } from '@/types/models';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, Info } from 'lucide-react';
 
 interface SpenderWithGoals extends Spender {
   savings_goals: SavingsGoal[];
@@ -33,6 +33,19 @@ export default function GoalsIndex({ spenders }: { spenders: SpenderWithGoals[] 
             + New Goal
           </Link>
         </div>
+
+        {hasAnyGoals && (
+          <div className="flex gap-2.5 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 p-3 mb-6 text-sm text-blue-800 dark:text-blue-300">
+            <Info className="h-4 w-4 shrink-0 mt-0.5 text-blue-500" />
+            <div className="space-y-1">
+              <p className="font-medium">Goals fill in priority order</p>
+              <p className="text-blue-700/80 dark:text-blue-400 text-xs">
+                An account's balance is allocated to goals from top to bottom — the first goal fills completely before any remainder spills to the next.
+                Use the arrows to change the order within each account.
+              </p>
+            </div>
+          </div>
+        )}
 
         {!hasAnyGoals && (
           <p className="text-gray-500 text-sm text-center py-12">No savings goals yet. Create one to get started.</p>
