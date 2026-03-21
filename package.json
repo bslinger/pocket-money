@@ -4,7 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "tsc && vite build",
-        "build:ssr": "vite build --ssr",
+        "build:ssr": "tsc && vite build && vite build --ssr",
         "dev": "vite",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
