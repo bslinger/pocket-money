@@ -24,7 +24,7 @@ class FamilyInvitation extends Mailable
         /** @var Family $family */
         $family = $this->invitation->family;
         return new Envelope(
-            subject: "{$this->inviterName} invited you to join {$family->name} on Pocket Money",
+            subject: "{$this->inviterName} invited you to join {$family->name} on Quiddo",
         );
     }
 

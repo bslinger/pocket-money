@@ -166,7 +166,7 @@ export default function OnboardingContinue({ family }: Props) {
                     <div className="text-center mb-8">
                         <ApplicationLogo className="h-10 w-auto mx-auto" />
                         <h1 className="text-2xl font-bold mt-3">{family.name} is ready!</h1>
-                        <p className="text-muted-foreground text-sm mt-1">A few optional steps to get the most out of Pocket Money.</p>
+                        <p className="text-muted-foreground text-sm mt-1">A few optional steps to get the most out of Quiddo.</p>
                     </div>
 
                     {/* Step indicator */}

@@ -106,7 +106,7 @@ export default function OnboardingIndex() {
                     {/* Logo */}
                     <div className="text-center mb-8">
                         <ApplicationLogo className="h-10 w-auto mx-auto" />
-                        <h1 className="text-2xl font-bold mt-3">Welcome to Pocket Money</h1>
+                        <h1 className="text-2xl font-bold mt-3">Welcome to Quiddo</h1>
                         <p className="text-muted-foreground text-sm mt-1">Let's get your family set up.</p>
                     </div>
 
@@ -141,7 +141,7 @@ export default function OnboardingIndex() {
                                     <div>
                                         <h2 className="text-lg font-semibold">Your family</h2>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Give your family a name. This is your workspace in Pocket Money — everything
+                                            Give your family a name. This is your workspace in Quiddo — everything
                                             belongs to a family: kids, accounts, chores, and goals.
                                         </p>
                                     </div>

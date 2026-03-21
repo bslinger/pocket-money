@@ -5,10 +5,10 @@
     <title>Child Account Invitation</title>
 </head>
 <body style="font-family: sans-serif; max-width: 520px; margin: 40px auto; color: #111;">
-    <h2>You've been invited to Pocket Money!</h2>
+    <h2>You've been invited to Quiddo!</h2>
 
     <p><strong>{{ $inviterName }}</strong> has invited you to view
-        <strong>{{ $invitation->spender->name }}</strong>'s Pocket Money account —
+        <strong>{{ $invitation->spender->name }}</strong>'s Quiddo account —
         a family finance app to track pocket money, chores, and savings goals.</p>
 
     <p style="margin: 24px 0;">
@@ -24,6 +24,6 @@
     </p>
 
     <hr style="border:none; border-top:1px solid #e5e7eb; margin: 24px 0;">
-    <p style="color:#9ca3af; font-size:0.75rem;">Pocket Money · You received this because {{ $invitation->email }} was invited.</p>
+    <p style="color:#9ca3af; font-size:0.75rem;">Quiddo · You received this because {{ $invitation->email }} was invited.</p>
 </body>
 </html>

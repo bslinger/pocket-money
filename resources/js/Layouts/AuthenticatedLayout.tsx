@@ -224,7 +224,7 @@ export default function AuthenticatedLayout({
 
                             <Link href={route('dashboard')} prefetch className="flex items-center gap-2 font-semibold text-foreground">
                                 <Wallet className="h-5 w-5 text-primary" />
-                                <span className="hidden sm:inline">Pocket Money</span>
+                                <span className="hidden sm:inline">Quiddo</span>
                             </Link>
                             <Separator orientation="vertical" className="h-5 hidden sm:block" />
                             <div className="hidden sm:flex items-center gap-1">
@@ -332,7 +332,7 @@ export default function AuthenticatedLayout({
                                 onClick={closeMenu}
                             >
                                 <Wallet className="h-5 w-5 text-primary" />
-                                Pocket Money
+                                Quiddo
                             </Link>
                             <Button
                                 variant="ghost"

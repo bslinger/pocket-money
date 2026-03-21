@@ -3,7 +3,7 @@ import createServer from '@inertiajs/react/server';
 import ReactDOMServer from 'react-dom/server';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Pocket Money';
+const appName = import.meta.env.VITE_APP_NAME || 'Quiddo';
 
 createServer((page) =>
     createInertiaApp({

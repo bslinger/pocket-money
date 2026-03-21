@@ -15,6 +15,25 @@ const features = [
   { emoji: '📱', title: 'Kid-friendly view', desc: 'A simple, colourful screen designed just for children.' },
 ];
 
+const comparisons = [
+  {
+    them: 'Kids need their own debit card',
+    us: 'No cards, no bank accounts needed',
+  },
+  {
+    them: 'Parents manage separate banking apps',
+    us: 'Everything in one place for your whole family',
+  },
+  {
+    them: 'Complicated setup with identity checks',
+    us: 'Up and running in under 5 minutes',
+  },
+  {
+    them: 'Monthly fees per child',
+    us: 'One flat price for the whole family',
+  },
+];
+
 export default function Home({ canLogin, canRegister }: Props) {
   return (
     <MarketingLayout canLogin={canLogin} canRegister={canRegister}>
@@ -29,7 +48,7 @@ export default function Home({ canLogin, canRegister }: Props) {
           Raise money-smart kids.
         </h1>
         <p className="mt-6 text-lg text-stone-500 max-w-xl mx-auto leading-relaxed">
-          Quiddo makes it easy to manage pocket money, assign chores, and help your kids build healthy saving habits.
+          Quiddo makes it easy to manage pocket money, assign chores, and help your kids build healthy saving habits — no debit cards or separate bank accounts required.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
           {canRegister && (
@@ -37,7 +56,7 @@ export default function Home({ canLogin, canRegister }: Props) {
               href={route('register')}
               className="bg-[#0F6E56] text-white font-semibold px-8 py-3.5 rounded-full text-base hover:bg-[#1D9E75] transition-colors"
             >
-              Start for free
+              Get started
             </Link>
           )}
           <Link
@@ -48,7 +67,7 @@ export default function Home({ canLogin, canRegister }: Props) {
           </Link>
         </div>
 
-        {/* Stat preview widget */}
+        {/* App preview widget */}
         <div className="mt-16 inline-grid grid-cols-3 gap-px bg-stone-200 rounded-2xl overflow-hidden shadow-lg text-left">
           {[
             { label: 'Family Balance', value: '$48.50' },
@@ -81,17 +100,25 @@ export default function Home({ canLogin, canRegister }: Props) {
         </div>
       </section>
 
-      {/* Social proof stats */}
-      <section className="py-20 mx-auto max-w-6xl px-6 text-center">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
-          {[
-            { number: '2,000+', label: 'families using Quiddo' },
-            { number: '$180k+', label: 'pocket money tracked' },
-            { number: '95%', label: 'parent satisfaction' },
-          ].map(s => (
-            <div key={s.label}>
-              <p className="font-serif text-5xl font-bold text-[#0F6E56]">{s.number}</p>
-              <p className="text-stone-500 mt-2">{s.label}</p>
+      {/* Comparison section */}
+      <section className="py-20 mx-auto max-w-6xl px-6">
+        <div className="text-center mb-12">
+          <h2 className="font-serif text-4xl font-bold text-[#1C1A18]">A simpler approach</h2>
+          <p className="mt-4 text-stone-500 max-w-md mx-auto">
+            Other apps give kids their own debit cards and accounts. Quiddo keeps it simple — parents stay in control, kids learn the value of money.
+          </p>
+        </div>
+        <div className="max-w-2xl mx-auto space-y-4">
+          {comparisons.map((c, i) => (
+            <div key={i} className="grid grid-cols-2 gap-4">
+              <div className="bg-stone-100 rounded-xl p-4 text-sm text-stone-500 flex items-start gap-3">
+                <span className="text-stone-400 mt-0.5">✗</span>
+                {c.them}
+              </div>
+              <div className="bg-[#E1F5EE] rounded-xl p-4 text-sm text-[#0F6E56] font-medium flex items-start gap-3">
+                <span className="mt-0.5">✓</span>
+                {c.us}
+              </div>
             </div>
           ))}
         </div>
@@ -100,7 +127,7 @@ export default function Home({ canLogin, canRegister }: Props) {
       {/* CTA banner */}
       <section className="bg-[#1C1A18] py-20 text-center px-6">
         <h2 className="font-serif text-4xl font-bold text-white mb-4">Ready to get started?</h2>
-        <p className="text-stone-400 mb-8 text-lg">Set up in under 5 minutes. Free plan available.</p>
+        <p className="text-stone-400 mb-8 text-lg">Set up in under 5 minutes. From A$1.99/month for your whole family.</p>
         {canRegister && (
           <Link
             href={route('register')}

@@ -134,3 +134,8 @@ Organised by strategic area, with specific tasks nested under each.
  - [x] Set up a Github action using https://github.com/marketplace/actions/deploy-to-laravel-cloud to deploy to Laravel Cloud only when all Pest and E2E tests pass. Do everything you can yourself, then add items to this TODO section for any additional configuration.
    - [ ] Add `LARAVEL_CLOUD_API_TOKEN` secret to the GitHub repo (Settings → Secrets → Actions)
    - [ ] Add `LARAVEL_CLOUD_APP_NAME` variable to the GitHub repo (Settings → Variables → Actions) with the exact application name from Laravel Cloud
+
+## App Identity and Marketing
+ - [x] The app is now named "Quiddo" - a combination of "Quid" and "Kiddo". Replace all uses of "Pocket Money" as an app name with "Quiddo". Make sure not to replace elements where pocket money is referring to the general concept rather than the name of the app.
+ - [x] Pricing is changing to AUD$1.99 a month per family, with each family being up to 12 kids. Annual pricing is AUD$15 a year if you pay annually. Figure out what the percentage saving is there and make sure that's part of the marketing copy.
+ - [x] Update the landing page. Remove any stats about how many users we have as we're only just launching. We want the copy to focus on the simplicity and ease of use of the app, especially compared to other apps that give kids their own debit cards and require adults to mess with separate accounts.

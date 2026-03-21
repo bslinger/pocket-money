@@ -9,49 +9,34 @@ interface Props {
 
 const plans = [
   {
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    description: 'Perfect for getting started.',
+    name: 'Monthly',
+    price: 'A$1.99',
+    period: 'per month',
+    description: 'Everything you need for your family.',
     features: [
-      'Up to 2 children',
+      'Up to 12 children',
       'Pocket money tracking',
-      'Basic chores',
+      'Chore system with approvals',
       'Savings goals',
+      'Kid-friendly dashboard',
+      'Family leaderboard',
     ],
     cta: 'Get started',
     href: 'register',
     dark: false,
   },
   {
-    name: 'Monthly',
-    price: '$4.99',
-    period: 'per month',
-    description: 'For families who want more.',
-    features: [
-      'Unlimited children',
-      'All Free features',
-      'Chore approval workflow',
-      'Responsibility tracking',
-      'Pocket money release page',
-      'Priority support',
-    ],
-    cta: 'Start free trial',
-    href: 'register',
-    dark: false,
-  },
-  {
     name: 'Annual',
-    price: '$39.99',
+    price: 'A$15',
     period: 'per year',
-    description: 'Best value — save 33%.',
+    description: 'Best value — save 37%.',
     features: [
       'Everything in Monthly',
-      'Save $19.89 vs monthly',
+      'Save A$8.88 vs monthly',
       'Early access to new features',
       'Priority support',
     ],
-    cta: 'Start free trial',
+    cta: 'Get started',
     href: 'register',
     dark: true,
   },
@@ -66,11 +51,11 @@ export default function Pricing({ canLogin, canRegister }: Props) {
         <div className="text-center mb-14">
           <h1 className="font-serif text-5xl font-bold text-[#1C1A18]">Simple pricing</h1>
           <p className="mt-4 text-lg text-stone-500 max-w-md mx-auto">
-            Start free, upgrade when you need more. No hidden fees.
+            One plan, everything included. Pay monthly or save 37% with annual billing.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {plans.map(plan => (
             <div
               key={plan.name}
@@ -119,7 +104,7 @@ export default function Pricing({ canLogin, canRegister }: Props) {
         </div>
 
         <p className="text-center text-sm text-stone-400 mt-10">
-          All paid plans include a 14-day free trial. No credit card required.
+          Prices in Australian dollars. One subscription covers your whole family — up to 12 kids.
         </p>
       </section>
     </MarketingLayout>

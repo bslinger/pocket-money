@@ -23,7 +23,7 @@ class ChildInvitationMail extends Mailable
         /** @var \App\Models\Spender $spender */
         $spender = $this->invitation->spender;
         return new Envelope(
-            subject: "{$this->inviterName} invited you to view {$spender->name}'s Pocket Money account",
+            subject: "{$this->inviterName} invited you to view {$spender->name}'s Quiddo account",
         );
     }
 

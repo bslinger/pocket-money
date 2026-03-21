@@ -57,7 +57,7 @@ function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processin
                         What the child needs to do
                     </p>
                     <p className="text-amber-700/80 dark:text-amber-500 text-xs">
-                        They'll receive an email with a link. They'll need to create a Pocket Money account (or log in) using this email address to accept the invitation.
+                        They'll receive an email with a link. They'll need to create a Quiddo account (or log in) using this email address to accept the invitation.
                     </p>
                 </div>
 
