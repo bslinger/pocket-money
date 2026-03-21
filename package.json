@@ -3,7 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsc && vite build && vite build --ssr",
+        "build": "tsc && vite build",
+        "build:ssr": "vite build --ssr",
         "dev": "vite",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
