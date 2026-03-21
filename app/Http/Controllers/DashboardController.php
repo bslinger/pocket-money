@@ -66,7 +66,7 @@ class DashboardController extends Controller
                 'choreCompletions' => fn($q) => $q->whereBetween('completed_at', [
                     now()->startOfWeek(),
                     now()->endOfWeek(),
-                ]),
+                ])->orderByDesc('completed_at'),
             ])->find($viewingAsSpenderId);
 
             if ($spender !== null) {
@@ -165,7 +165,7 @@ class DashboardController extends Controller
             'choreCompletions' => fn($q) => $q->whereBetween('completed_at', [
                 now()->startOfWeek(),
                 now()->endOfWeek(),
-            ]),
+            ])->orderByDesc('completed_at'),
         ])->get();
 
         foreach ($spenders as $spender) {

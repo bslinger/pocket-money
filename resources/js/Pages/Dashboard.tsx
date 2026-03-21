@@ -735,6 +735,7 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
   weekCompletions: { chore_id: string; status: string }[];
   currencySymbol?: string;
 }) {
+  // weekCompletions is ordered most-recent-first; take the latest for this chore
   const thisCompletion = weekCompletions.find(c => c.chore_id === chore.id);
   const [localStatus, setLocalStatus] = useState<string | null>(thisCompletion?.status ?? null);
   const { post, processing } = useForm({ spender_id: spenderId });
