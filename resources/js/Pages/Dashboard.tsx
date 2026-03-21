@@ -766,12 +766,12 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
           </button>
         )}
         {status === 'pending' && (
-          <span className="flex items-center gap-1.5 bg-amber-500/20 text-amber-400 text-sm font-medium px-3 py-1.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-amber-400 text-sm font-medium">
             ⏳ Waiting confirmation
           </span>
         )}
         {status === 'approved' && (
-          <span className="flex items-center gap-1.5 bg-green-500/20 text-green-400 text-sm font-medium px-3 py-1.5 rounded-full">
+          <span className="flex items-center gap-1.5 text-green-400 text-sm font-medium">
             <Check className="h-3.5 w-3.5" /> Done
           </span>
         )}
