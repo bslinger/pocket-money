@@ -108,12 +108,14 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Spender Create page** — add optional currency override (currently only on Edit)
 - [ ] **PHPStan** — keep at level 5; run after every PHP change
 
-## Chore Improvements v1
+## Chore Improvements
 - [x] Ticking off a chore from the kids view (parent logged in) is throwing an error
 - [x] It needs to be clearer which day a particular chore is for. There should be separate sections for setting up chores (often recurring) and a calendar of chores for today and future days.
 - [x] The calendar view should be grouped by child.
 - [x] The chore type (Responsibility, etc) should not have the hover effect on the chore list, but instead should have a tooltip that appears after a moment giving more information about that chore type. Refactor the text that defines each chore type into a file and make sure it's used wherever it's needed.
 - [x] Parent should be able to unapprove chores that they've already approved. If undoing the chore approval would invalidate a payment that had already been made (eg. their pocket money responsibilities are no longer met, but pocket money has been paid) then the parent should get a notification about that payment and an option to cancel it.
+- The Schedule tab of Chores should show which tasks have been marked as completed and/or approved for the current week.
+
 
 ## Pocket Money Improvements v1
 - [x] We need to be able to set the recurring amount a child gets. It should be weekly or monthly, and be able to be any day of the week or month that actually triggers it. It can vary per kid.
@@ -128,3 +130,4 @@ Organised by strategic area, with specific tasks nested under each.
 ## Infrastructure Stuff v1
  - [ ] Enable Asset Prefetching through Vite
  - [ ] Add Inertia link prefetching everywhere it makes sense
+ - [ ] Set up a Github action using https://github.com/marketplace/actions/deploy-to-laravel-cloud to deploy to Laravel Cloud only when all Pest and E2E tests pass. Do everything you can yourself, then add items to this TODO section for any additional configuration.
