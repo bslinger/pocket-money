@@ -42,6 +42,7 @@ jobs:
           files: storage/coverage/pest/clover.xml
           flags: pest
           token: ${{ secrets.CODECOV_TOKEN }}
+          disable_search: true
 
       - name: Upload Pest coverage report
         if: always()
@@ -143,6 +144,7 @@ jobs:
           files: storage/coverage/e2e/html/lcov.info
           flags: e2e
           token: ${{ secrets.CODECOV_TOKEN }}
+          disable_search: true
 
       - name: Upload E2E coverage report
         if: always()
