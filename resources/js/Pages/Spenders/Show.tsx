@@ -1,15 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { Spender } from '@/types/models';
+import { Spender, ChildInvitation } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { Eye, PlusCircle, Link2, Unlink, User } from 'lucide-react';
+import { Eye, PlusCircle, Link2, Unlink, User, Mail, X } from 'lucide-react';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 
-function ChildLoginCard({ spender }: { spender: Spender }) {
+function ChildLoginCard({ spender, pendingInvitations }: { spender: Spender; pendingInvitations: ChildInvitation[] }) {
     const { auth } = usePage().props as any;
     const isParent: boolean = auth.isParent ?? false;
     const { data, setData, post, processing, errors, reset } = useForm({ email: '' });
@@ -17,6 +17,7 @@ function ChildLoginCard({ spender }: { spender: Spender }) {
     if (!isParent) return null;
 
     const linkedUsers = spender.users ?? [];
+    const hasAny = linkedUsers.length > 0 || pendingInvitations.length > 0;
 
     return (
         <Card>
@@ -27,9 +28,11 @@ function ChildLoginCard({ spender }: { spender: Spender }) {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-                {linkedUsers.length === 0 ? (
+                {!hasAny && (
                     <p className="text-sm text-muted-foreground">No login account linked yet.</p>
-                ) : (
+                )}
+
+                {linkedUsers.length > 0 && (
                     <div className="space-y-2">
                         {linkedUsers.map(user => (
                             <div key={user.id} className="flex items-center justify-between gap-2">
@@ -44,6 +47,28 @@ function ChildLoginCard({ spender }: { spender: Spender }) {
                                     className="text-destructive hover:text-destructive/80 shrink-0"
                                 >
                                     <Unlink className="h-3.5 w-3.5" />
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {pendingInvitations.length > 0 && (
+                    <div className="space-y-2">
+                        {pendingInvitations.map(inv => (
+                            <div key={inv.id} className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <Mail className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                                    <span className="text-sm truncate text-muted-foreground">{inv.email}</span>
+                                    <Badge variant="outline" className="text-xs shrink-0">Pending</Badge>
+                                </div>
+                                <Link
+                                    href={route('child-invitations.cancel', inv.id)}
+                                    method="delete"
+                                    as="button"
+                                    className="text-muted-foreground hover:text-destructive shrink-0"
+                                >
+                                    <X className="h-3.5 w-3.5" />
                                 </Link>
                             </div>
                         ))}
@@ -66,7 +91,7 @@ function ChildLoginCard({ spender }: { spender: Spender }) {
                     />
                     <Button type="submit" size="sm" disabled={processing} className="shrink-0">
                         <PlusCircle className="h-3.5 w-3.5 mr-1" />
-                        Link
+                        Invite
                     </Button>
                 </form>
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
@@ -75,7 +100,7 @@ function ChildLoginCard({ spender }: { spender: Spender }) {
     );
 }
 
-export default function SpenderShow({ spender }: { spender: Spender }) {
+export default function SpenderShow({ spender, pendingInvitations }: { spender: Spender; pendingInvitations: ChildInvitation[] }) {
     const { auth } = usePage().props as any;
     const isParent: boolean = auth.isParent ?? false;
     const currencySymbol = spenderCurrencySymbol(spender);
@@ -192,7 +217,7 @@ export default function SpenderShow({ spender }: { spender: Spender }) {
                 )}
 
                 {/* Child login card — parents only */}
-                <ChildLoginCard spender={spender} />
+                <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
             </div>
         </AuthenticatedLayout>
     );

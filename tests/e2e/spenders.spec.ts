@@ -80,6 +80,18 @@ test.describe('Spenders', () => {
         await expect(page.getByPlaceholder("Child's email address")).toBeVisible();
     });
 
+    test('can send a child invitation and see it as pending', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await page.fill('input[type="email"]', 'newchild@example.com');
+        await page.getByRole('button', { name: 'Invite' }).click();
+
+        await expect(page.getByText('newchild@example.com')).toBeVisible();
+        await expect(page.getByText('Pending')).toBeVisible();
+    });
+
     test('can set a weekly pocket money schedule', async ({ page }) => {
         await page.goto('/spenders');
         await page.getByRole('link', { name: 'Emma' }).first().click();

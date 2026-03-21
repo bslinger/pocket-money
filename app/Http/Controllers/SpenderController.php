@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSpenderRequest;
+use App\Mail\ChildInvitationMail;
+use App\Models\ChildInvitation;
 use App\Models\PocketMoneySchedule;
 use App\Models\Spender;
 use App\Models\SpenderUser;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Illuminate\Support\Carbon;
 
@@ -68,13 +72,18 @@ class SpenderController extends Controller
             abort(403);
         }
 
+        $pendingInvitations = $isParentInFamily
+            ? $spender->childInvitations()->where('expires_at', '>', now())->get()
+            : collect();
+
         return Inertia::render('Spenders/Show', [
-            'spender' => $spender->load([
+            'spender'            => $spender->load([
                 'accounts.transactions' => fn($q) => $q->latest('occurred_at')->limit(20),
                 'savingsGoals.account',
                 'family',
                 'users',
             ]),
+            'pendingInvitations' => $pendingInvitations,
         ]);
     }
 
@@ -84,16 +93,36 @@ class SpenderController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
-            return back()->withErrors(['email' => 'No user found with that email address.']);
+        if ($user) {
+            SpenderUser::firstOrCreate([
+                'spender_id' => $spender->id,
+                'user_id'    => $user->id,
+            ]);
+            return back()->with('success', 'Child account linked.');
         }
 
-        SpenderUser::firstOrCreate([
+        // User doesn't exist yet — send an invitation email
+        ChildInvitation::where('spender_id', $spender->id)
+            ->where('email', $request->email)
+            ->delete();
+
+        $invitation = ChildInvitation::create([
             'spender_id' => $spender->id,
-            'user_id'    => $user->id,
+            'email'      => $request->email,
+            'token'      => Str::random(64),
+            'expires_at' => now()->addDays(7),
         ]);
 
-        return back()->with('success', 'Child account linked.');
+        /** @var User $sender */
+        $sender = $request->user();
+        Mail::to($request->email)->send(
+            new ChildInvitationMail(
+                $invitation->load('spender'),
+                $sender->display_name ?? $sender->name,
+            )
+        );
+
+        return back()->with('success', "Invitation sent to {$request->email}.");
     }
 
     public function unlinkChild(Spender $spender, User $user)

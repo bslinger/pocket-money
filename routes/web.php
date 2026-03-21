@@ -9,7 +9,7 @@ use App\Http\Controllers\{
     BillingController, SettingsController, ImageUploadController,
     ChoreController, ChoreCompletionController, PocketMoneyReleaseController,
     PocketMoneyScheduleController, ChoreRewardController,
-    MarketingController, InvitationController
+    MarketingController, InvitationController, ChildInvitationController
 };
 use App\Http\Controllers\ProfileController;
 
@@ -27,6 +27,10 @@ Route::middleware('auth')->group(function () {
 Route::get('/invitations/{token}/accept', [InvitationController::class, 'accept'])
     ->middleware('auth')
     ->name('invitations.accept');
+
+// Child invitation accept — accessible to guests (redirects to login if needed)
+Route::get('/child-invitations/{token}/accept', [ChildInvitationController::class, 'accept'])
+    ->name('child-invitations.accept');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -52,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('spenders', SpenderController::class)->except('show');
         Route::post('/spenders/{spender}/link-child', [SpenderController::class, 'linkChild'])->name('spenders.link-child');
         Route::delete('/spenders/{spender}/linked-children/{user}', [SpenderController::class, 'unlinkChild'])->name('spenders.unlink-child');
+        Route::delete('/child-invitations/{childInvitation}', [ChildInvitationController::class, 'cancel'])->name('child-invitations.cancel');
         Route::post('/spenders/{id}/restore', [SpenderController::class, 'restore'])->name('spenders.restore');
         Route::resource('accounts', AccountController::class)->except('show');
         Route::resource('accounts.transactions', TransactionController::class);

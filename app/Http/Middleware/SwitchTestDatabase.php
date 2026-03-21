@@ -13,9 +13,12 @@ class SwitchTestDatabase
         if (app()->isLocal()) {
             $workerIndex = $request->header('X-Test-DB');
 
+            // Octane clones config from boot-state for each request, so reading
+            // config() here always gives the original value from config/database.php.
+            $default  = config('database.connections.pgsql.database', 'pocket_money');
             $database = ($workerIndex !== null && ctype_digit((string) $workerIndex))
                 ? "pocket_money_test_{$workerIndex}"
-                : env('DB_DATABASE', 'pocket_money');
+                : $default;
 
             config(['database.connections.pgsql.database' => $database]);
             DB::purge('pgsql');

@@ -150,6 +150,17 @@ export interface ChoreReward {
   updated_at: string;
 }
 
+export interface ChildInvitation {
+  id: string;
+  spender_id: string;
+  email: string;
+  token: string;
+  expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SavingsGoal {
   id: string;
   spender_id: string;
