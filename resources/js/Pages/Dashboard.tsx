@@ -7,7 +7,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { PlusCircle, Check, CheckCheck, X, LogOut, TrendingUp, Plus, Minus } from 'lucide-react';
+import { PlusCircle, Check, CheckCheck, X, LogOut, TrendingUp, Plus, Minus, Undo2 } from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol, accountUsesIntegers } from '@/lib/utils';
@@ -18,11 +18,12 @@ interface Props {
   spenders: Spender[];
   pendingCompletions: (ChoreCompletion & { chore: Chore; spender: Spender })[];
   recentActivity: (Transaction & { account: { spender: Spender } })[];
+  recentApprovedCompletions: (ChoreCompletion & { chore: Chore; spender: Spender })[];
   totalBalance: string;
   paidThisMonth: string;
 }
 
-export default function Dashboard({ isParent, families, spenders, pendingCompletions, recentActivity, totalBalance, paidThisMonth }: Props) {
+export default function Dashboard({ isParent, families, spenders, pendingCompletions, recentActivity, recentApprovedCompletions, totalBalance, paidThisMonth }: Props) {
   const { auth } = usePage().props as any;
   const isActualParent: boolean = auth.isParent ?? false;
 
@@ -35,6 +36,7 @@ export default function Dashboard({ isParent, families, spenders, pendingComplet
             families={families}
             pendingCompletions={pendingCompletions}
             recentActivity={recentActivity}
+            recentApprovedCompletions={recentApprovedCompletions}
             totalBalance={totalBalance}
             paidThisMonth={paidThisMonth}
           />
@@ -51,16 +53,22 @@ export default function Dashboard({ isParent, families, spenders, pendingComplet
 
 // ── Parent ────────────────────────────────────────────────────────────────────
 
+type ActivityItem =
+  | { kind: 'transaction'; data: Transaction & { account: { spender: Spender } }; sortKey: string }
+  | { kind: 'completion'; data: ChoreCompletion & { chore: Chore; spender: Spender }; sortKey: string };
+
 function ParentDashboard({
   families,
   pendingCompletions: initialPending,
   recentActivity,
+  recentApprovedCompletions,
   totalBalance,
   paidThisMonth,
 }: {
   families: Family[];
   pendingCompletions: (ChoreCompletion & { chore: Chore; spender: Spender })[];
   recentActivity: (Transaction & { account: { spender: Spender } })[];
+  recentApprovedCompletions: (ChoreCompletion & { chore: Chore; spender: Spender })[];
   totalBalance: string;
   paidThisMonth: string;
 }) {
@@ -146,45 +154,82 @@ function ParentDashboard({
       {/* Pending approvals */}
       <PendingApprovals initialPending={initialPending} />
 
-      {/* Recent activity */}
-      {recentActivity.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y">
-            {recentActivity.map(tx => {
-              const spender = tx.account?.spender;
-              return (
-                <div key={tx.id} className="flex items-center justify-between py-2.5 gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    {spender && (
+      {/* Recent activity — transactions + approved chore completions merged */}
+      {(recentActivity.length > 0 || recentApprovedCompletions.length > 0) && (() => {
+        const feed: ActivityItem[] = [
+          ...recentActivity.map(tx => ({ kind: 'transaction' as const, data: tx, sortKey: tx.occurred_at })),
+          ...recentApprovedCompletions.map(c => ({ kind: 'completion' as const, data: c, sortKey: c.reviewed_at ?? c.completed_at })),
+        ].sort((a, b) => b.sortKey.localeCompare(a.sortKey)).slice(0, 15);
+
+        return (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent className="divide-y">
+              {feed.map(item => {
+                if (item.kind === 'transaction') {
+                  const tx = item.data;
+                  const spender = tx.account?.spender;
+                  return (
+                    <div key={`tx-${tx.id}`} className="flex items-center justify-between py-2.5 gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {spender && (
+                          <Avatar className="h-7 w-7 shrink-0">
+                            <AvatarImage src={spender.avatar_url ?? undefined} />
+                            <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white text-xs font-semibold">
+                              {spender.name[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm truncate">{tx.description ?? 'Transaction'}</p>
+                          <p className="text-xs text-muted-foreground">{spender?.name}</p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-sm font-medium tabular-nums ${tx.type === 'credit' ? 'text-green-600' : 'text-red-500'}`}>
+                          {tx.type === 'credit' ? '+' : '-'}{formatAmount(tx.amount, spenderCurrencySymbol(tx.account?.spender ?? { currency_symbol: null }))}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(tx.occurred_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+
+                const completion = item.data;
+                return (
+                  <div key={`cc-${completion.id}`} className="flex items-center justify-between py-2.5 gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <Avatar className="h-7 w-7 shrink-0">
-                        <AvatarImage src={spender.avatar_url ?? undefined} />
-                        <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white text-xs font-semibold">
-                          {spender.name[0].toUpperCase()}
+                        <AvatarImage src={completion.spender?.avatar_url ?? undefined} />
+                        <AvatarFallback style={{ backgroundColor: completion.spender?.color ?? '#6366f1' }} className="text-white text-xs font-semibold">
+                          {completion.spender?.name[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm truncate">{tx.description ?? 'Transaction'}</p>
-                      <p className="text-xs text-muted-foreground">{spender?.name}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm truncate">{completion.chore?.name}</p>
+                        <p className="text-xs text-muted-foreground">{completion.spender?.name} · approved</p>
+                      </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 text-xs text-muted-foreground gap-1.5"
+                      onClick={() => router.patch(route('chore-completions.unapprove', completion.id), {}, { preserveScroll: true })}
+                    >
+                      <Undo2 className="h-3.5 w-3.5" />
+                      Unapprove
+                    </Button>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className={`text-sm font-medium tabular-nums ${tx.type === 'credit' ? 'text-green-600' : 'text-red-500'}`}>
-                      {tx.type === 'credit' ? '+' : '-'}{formatAmount(tx.amount, spenderCurrencySymbol(tx.account?.spender ?? { currency_symbol: null }))}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(tx.occurred_at), { addSuffix: true })}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
+                );
+              })}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Quick transaction modal */}
       {quickTxModal && (

@@ -19,8 +19,16 @@ class ChoreController extends Controller
             ->with(['chores.spenders', 'spenders'])
             ->get();
 
+        $choreIds = $families->flatMap(fn($f) => $f->chores)->pluck('id');
+
+        $weekCompletions = \App\Models\ChoreCompletion::whereIn('chore_id', $choreIds)
+            ->whereBetween('completed_at', [now()->startOfDay(), now()->addDays(6)->endOfDay()])
+            ->select(['id', 'chore_id', 'spender_id', 'status', 'completed_at'])
+            ->get();
+
         return Inertia::render('Chores/Index', [
-            'families' => $families,
+            'families'       => $families,
+            'weekCompletions' => $weekCompletions,
         ]);
     }
 

@@ -115,6 +115,14 @@ class DashboardController extends Controller
                 ->limit(15)
                 ->get();
 
+            $recentApprovedCompletions = ChoreCompletion::where('status', 'approved')
+                ->whereHas('chore', fn($q) => $q->whereIn('family_id', $familyIds))
+                ->where('reviewed_at', '>=', now()->startOfWeek())
+                ->with(['chore', 'spender'])
+                ->latest('reviewed_at')
+                ->limit(15)
+                ->get();
+
             $totalBalance = $families->flatMap(fn($f) => $f->spenders)
                 ->flatMap(fn($s) => $s->accounts)
                 ->sum('balance');
@@ -126,13 +134,14 @@ class DashboardController extends Controller
                 ->sum('amount');
 
             return Inertia::render('Dashboard', [
-                'isParent'           => true,
-                'families'           => $families,
-                'spenders'           => [],
-                'pendingCompletions' => $pendingCompletions,
-                'recentActivity'     => $recentActivity,
-                'totalBalance'       => number_format((float) $totalBalance, 2, '.', ''),
-                'paidThisMonth'      => number_format((float) $paidThisMonth, 2, '.', ''),
+                'isParent'                   => true,
+                'families'                   => $families,
+                'spenders'                   => [],
+                'pendingCompletions'         => $pendingCompletions,
+                'recentActivity'             => $recentActivity,
+                'recentApprovedCompletions'  => $recentApprovedCompletions,
+                'totalBalance'               => number_format((float) $totalBalance, 2, '.', ''),
+                'paidThisMonth'              => number_format((float) $paidThisMonth, 2, '.', ''),
             ]);
         }
 

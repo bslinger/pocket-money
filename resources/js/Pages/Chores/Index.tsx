@@ -6,17 +6,26 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History, Calendar, List } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History, Calendar, List, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { formatAmount } from '@/lib/utils';
 import { CHORE_TYPE_INFO } from '@/lib/choreTypes';
 import { useState } from 'react';
 import { format, addDays, isToday, isTomorrow } from 'date-fns';
+
+interface WeekCompletion {
+  id: string;
+  chore_id: string;
+  spender_id: string;
+  status: 'pending' | 'approved' | 'declined';
+  completed_at: string;
+}
 
 interface Props {
   families: (Family & {
     chores: (Chore & { spenders: Spender[] })[];
     spenders: Spender[];
   })[];
+  weekCompletions: WeekCompletion[];
 }
 
 type SortField = 'name' | 'created_at';
@@ -76,7 +85,7 @@ const frequencyLabel = (f: Chore['frequency']) => {
   return map[f];
 };
 
-export default function ChoresIndex({ families }: Props) {
+export default function ChoresIndex({ families, weekCompletions }: Props) {
   const [tab, setTab] = useState<Tab>('manage');
   const [filterSpenderId, setFilterSpenderId] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('name');
@@ -129,6 +138,17 @@ export default function ChoresIndex({ families }: Props) {
   // Build 7-day schedule: array of { date, spenderRows: { spender, chores }[] }
   const scheduleWeek = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i));
   const allChores = families.flatMap(f => f.chores);
+
+  // Lookup: "choreId-spenderId-yyyy-MM-dd" → completion status
+  const completionMap = new Map<string, 'pending' | 'approved' | 'declined'>();
+  for (const c of weekCompletions) {
+    const dateKey = format(new Date(c.completed_at), 'yyyy-MM-dd');
+    completionMap.set(`${c.chore_id}-${c.spender_id}-${dateKey}`, c.status);
+  }
+
+  function getCompletionStatus(choreId: string, spenderId: string, date: Date) {
+    return completionMap.get(`${choreId}-${spenderId}-${format(date, 'yyyy-MM-dd')}`);
+  }
 
   return (
     <TooltipProvider>
@@ -343,15 +363,26 @@ export default function ChoresIndex({ families }: Props) {
                         <span className="text-xs font-medium text-muted-foreground">{spender.name}</span>
                       </div>
                       <div className="flex flex-wrap gap-2 pl-7">
-                        {chores.map(chore => (
+                        {chores.map(chore => {
+                          const status = getCompletionStatus(chore.id, spender.id, date);
+                          return (
                           <div
                             key={chore.id}
-                            className="flex items-center gap-1.5 bg-muted rounded-lg px-2.5 py-1 text-xs"
+                            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs ${
+                              status === 'approved' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                              status === 'pending'  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                              status === 'declined' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' :
+                              'bg-muted'
+                            }`}
                           >
                             <span>{chore.emoji ?? '📋'}</span>
                             <span className="font-medium">{chore.name}</span>
+                            {status === 'approved' && <CheckCircle2 className="h-3 w-3 shrink-0" />}
+                            {status === 'pending'  && <Clock className="h-3 w-3 shrink-0" />}
+                            {status === 'declined' && <XCircle className="h-3 w-3 shrink-0" />}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

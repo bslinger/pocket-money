@@ -8,27 +8,27 @@ interface Props {
 
 export default function MarketingLayout({ canLogin, canRegister, children }: PropsWithChildren<Props>) {
   return (
-    <div className="min-h-screen flex flex-col bg-white text-[#1C1A18]">
+    <div className="min-h-screen flex flex-col bg-white text-[#121b21]">
       {/* Nav */}
       <header className="border-b border-stone-200">
         <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <Link href={route('home')} className="font-serif text-2xl font-bold text-[#1C1A18] tracking-tight">
+          <Link href={route('home')} className="font-serif text-2xl font-bold text-[#121b21] tracking-tight">
             Quiddo
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-stone-600">
-            <Link href={route('marketing.how')} className="hover:text-[#1C1A18] transition-colors">How It Works</Link>
-            <Link href={route('marketing.pricing')} className="hover:text-[#1C1A18] transition-colors">Pricing</Link>
+            <Link href={route('marketing.how')} className="hover:text-[#121b21] transition-colors">How It Works</Link>
+            <Link href={route('marketing.pricing')} className="hover:text-[#121b21] transition-colors">Pricing</Link>
           </nav>
           <div className="flex items-center gap-3">
             {canLogin && (
-              <Link href={route('login')} className="text-sm font-medium text-stone-600 hover:text-[#1C1A18] transition-colors">
+              <Link href={route('login')} className="text-sm font-medium text-stone-600 hover:text-[#121b21] transition-colors">
                 Log in
               </Link>
             )}
             {canRegister && (
               <Link
                 href={route('register')}
-                className="bg-[#0F6E56] text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-[#1D9E75] transition-colors"
+                className="bg-[#ec1354] text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-[#bd0f43] transition-colors"
               >
                 Start Free
               </Link>
