@@ -1,0 +1,16 @@
+{
+    "agents": [
+        "claude_code"
+    ],
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "nightwatch_mcp": true,
+    "sail": true,
+    "skills": [
+        "cashier-stripe-development",
+        "pest-testing",
+        "inertia-react-development",
+        "tailwindcss-development"
+    ]
+}
