@@ -12,24 +12,27 @@ import { useState } from 'react';
 
 const STEP_LABELS = ['Your family', 'Currency', 'Add kids'];
 
-interface KidRow { name: string; color: string; }
+interface KidRow { name: string; color: string; balance: string; }
 
-const CURRENCY_PRESETS = [
-    { label: 'US Dollar',        symbol: '$',  name: 'Dollar',  plural: 'Dollars'  },
-    { label: 'Australian Dollar',symbol: '$',  name: 'Dollar',  plural: 'Dollars'  },
-    { label: 'British Pound',    symbol: '£',  name: 'Pound',   plural: 'Pounds'   },
-    { label: 'Euro',             symbol: '€',  name: 'Euro',    plural: 'Euros'    },
-    { label: 'New Zealand Dollar',symbol: '$', name: 'Dollar',  plural: 'Dollars'  },
-    { label: 'Canadian Dollar',  symbol: '$',  name: 'Dollar',  plural: 'Dollars'  },
-    { label: 'Singapore Dollar', symbol: '$',  name: 'Dollar',  plural: 'Dollars'  },
-    { label: 'Japanese Yen',     symbol: '¥',  name: 'Yen',     plural: 'Yen'      },
-    { label: 'Swiss Franc',      symbol: 'Fr', name: 'Franc',   plural: 'Francs'   },
+const CURRENCY_SYMBOLS = [
+    { symbol: '$',  name: 'Dollar',  plural: 'Dollars'  },
+    { symbol: '£',  name: 'Pound',   plural: 'Pounds'   },
+    { symbol: '€',  name: 'Euro',    plural: 'Euros'    },
+    { symbol: '¥',  name: 'Yen',     plural: 'Yen'      },
+    { symbol: '₹',  name: 'Rupee',   plural: 'Rupees'   },
+    { symbol: 'kr', name: 'Krone',   plural: 'Kroner'   },
+    { symbol: 'Fr', name: 'Franc',   plural: 'Francs'   },
+    { symbol: 'R',  name: 'Rand',    plural: 'Rand'     },
+    { symbol: '₩',  name: 'Won',     plural: 'Won'      },
+    { symbol: '₪',  name: 'Shekel',  plural: 'Shekels'  },
+    { symbol: '₺',  name: 'Lira',    plural: 'Lira'     },
+    { symbol: '₿',  name: 'Bitcoin', plural: 'Bitcoin'  },
 ] as const;
 
 export default function OnboardingIndex() {
     const [step, setStep] = useState(0);
     const [currencyType, setCurrencyType] = useState<'real' | 'custom'>('real');
-    const [selectedPreset, setSelectedPreset] = useState(0);
+    const [selectedSymbolIdx, setSelectedSymbolIdx] = useState(0);
 
     const { data, setData, post, processing, errors } = useForm<{
         name: string;
@@ -47,16 +50,16 @@ export default function OnboardingIndex() {
         spenders: [],
     });
 
-    function selectPreset(idx: number) {
-        setSelectedPreset(idx);
-        const p = CURRENCY_PRESETS[idx];
+    function selectSymbol(idx: number) {
+        setSelectedSymbolIdx(idx);
+        const p = CURRENCY_SYMBOLS[idx];
         setData(d => ({ ...d, currency_symbol: p.symbol, currency_name: p.name, currency_name_plural: p.plural }));
     }
 
     function switchCurrencyType(type: 'real' | 'custom') {
         setCurrencyType(type);
         if (type === 'real') {
-            selectPreset(selectedPreset);
+            selectSymbol(selectedSymbolIdx);
         } else {
             setData(d => ({ ...d, currency_symbol: '', currency_name: '', currency_name_plural: '', use_integer_amounts: false }));
         }
@@ -64,7 +67,7 @@ export default function OnboardingIndex() {
 
     function addKid() {
         const nextColor = COLOURS[data.spenders.length % COLOURS.length];
-        setData('spenders', [...data.spenders, { name: '', color: nextColor }]);
+        setData('spenders', [...data.spenders, { name: '', color: nextColor, balance: '' }]);
     }
 
     function updateKid(idx: number, field: keyof KidRow, value: string) {
@@ -90,6 +93,9 @@ export default function OnboardingIndex() {
     const canProceedStep1 = currencyType === 'real' || (data.currency_symbol.trim().length > 0 && data.currency_name.trim().length > 0);
     // Step 2 (kids) is always skippable
     const canProceed = step === 0 ? canProceedStep0 : step === 1 ? canProceedStep1 : true;
+
+    const currencyNameSingular = data.currency_name || 'unit';
+    const currencyNamePlural   = data.currency_name_plural || (currencyNameSingular + 's');
 
     return (
         <>
@@ -192,26 +198,28 @@ export default function OnboardingIndex() {
                                     </div>
 
                                     {currencyType === 'real' && (
-                                        <div className="space-y-1.5">
-                                            <Label>Currency</Label>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                {CURRENCY_PRESETS.map((p, i) => (
+                                        <div className="space-y-2">
+                                            <Label>Currency symbol</Label>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {CURRENCY_SYMBOLS.map((p, i) => (
                                                     <button
                                                         key={i}
                                                         type="button"
-                                                        onClick={() => selectPreset(i)}
+                                                        onClick={() => selectSymbol(i)}
                                                         className={cn(
-                                                            'flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition-colors text-left',
-                                                            selectedPreset === i
-                                                                ? 'border-primary bg-primary/5 text-primary font-medium'
+                                                            'flex items-center justify-center px-3 py-2.5 rounded-md border text-sm font-mono transition-colors',
+                                                            selectedSymbolIdx === i
+                                                                ? 'border-primary bg-primary/5 text-primary font-bold'
                                                                 : 'border-border hover:border-primary/40'
                                                         )}
                                                     >
-                                                        <span className="font-mono text-base">{p.symbol}</span>
-                                                        <span>{p.label}</span>
+                                                        {p.symbol}
                                                     </button>
                                                 ))}
                                             </div>
+                                            <p className="text-xs text-muted-foreground pt-1">
+                                                You can create accounts with different currencies later.
+                                            </p>
                                         </div>
                                     )}
 
@@ -227,7 +235,8 @@ export default function OnboardingIndex() {
                                                         onPickerChange={d => setData(prev => ({
                                                             ...prev,
                                                             currency_symbol: d.emoji,
-                                                            currency_name: prev.currency_name || guessNameFromEmoji(d.names),
+                                                            currency_name: guessNameFromEmoji(d.names),
+                                                            currency_name_plural: guessNameFromEmoji(d.names) + 's',
                                                         }))}
                                                         pickerAlign="left"
                                                     />
@@ -259,13 +268,18 @@ export default function OnboardingIndex() {
                                                     onChange={e => setData('use_integer_amounts', e.target.checked)}
                                                     className="rounded accent-primary"
                                                 />
-                                                <span className="text-sm">Whole numbers only (e.g. 1 Star, not 0.50 Stars)</span>
+                                                <span className="text-sm">
+                                                    Whole numbers only (e.g. 1 {currencyNameSingular}, not 0.50 {currencyNamePlural})
+                                                </span>
                                             </label>
                                             {data.currency_symbol && data.currency_name && (
                                                 <p className="text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded">
-                                                    Preview: {data.currency_symbol}1 {data.currency_name} · {data.currency_symbol}25 {data.currency_name_plural || (data.currency_name + 's')}
+                                                    Preview: {data.currency_symbol}1 {currencyNameSingular} · {data.currency_symbol}25 {currencyNamePlural}
                                                 </p>
                                             )}
+                                            <p className="text-xs text-muted-foreground">
+                                                You can create accounts with different currencies later.
+                                            </p>
                                         </div>
                                     )}
                                 </div>
@@ -277,7 +291,7 @@ export default function OnboardingIndex() {
                                     <div>
                                         <h2 className="text-lg font-semibold">Add your kids</h2>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Each kid gets their own account and balance. You can set up pocket money and chores for them in the next steps — or add more kids later.
+                                            Each kid gets their own account. You can set up pocket money and chores in the next steps — or add more kids later.
                                         </p>
                                     </div>
 
@@ -295,6 +309,20 @@ export default function OnboardingIndex() {
                                                     className="flex-1"
                                                     autoFocus={idx === data.spenders.length - 1}
                                                 />
+                                                <div className="relative w-28 shrink-0">
+                                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+                                                        {data.currency_symbol || '$'}
+                                                    </span>
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        step={data.use_integer_amounts ? '1' : '0.01'}
+                                                        placeholder="0"
+                                                        value={kid.balance}
+                                                        onChange={e => updateKid(idx, 'balance', e.target.value)}
+                                                        className="pl-6"
+                                                    />
+                                                </div>
                                                 <Button
                                                     type="button"
                                                     variant="ghost"

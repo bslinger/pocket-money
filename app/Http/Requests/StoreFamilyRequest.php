@@ -21,8 +21,9 @@ class StoreFamilyRequest extends FormRequest
             'currency_symbol'      => 'nullable|string|max:10',
             'use_integer_amounts'  => 'nullable|boolean',
             'spenders'          => 'nullable|array|max:20',
-            'spenders.*.name'   => 'required_with:spenders|string|max:255',
-            'spenders.*.color'  => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'spenders.*.name'    => 'required_with:spenders|string|max:255',
+            'spenders.*.color'   => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'spenders.*.balance' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }

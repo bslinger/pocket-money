@@ -47,7 +47,7 @@ class OnboardingController extends Controller
         ]);
 
         foreach ($spendersData as $spenderInput) {
-            /** @var array{name: string, color?: string|null} $spenderInput */
+            /** @var array{name: string, color?: string|null, balance?: string|float|null} $spenderInput */
             $spender = Spender::create([
                 'family_id' => $family->id,
                 'name'      => $spenderInput['name'],
@@ -56,7 +56,7 @@ class OnboardingController extends Controller
             Account::create([
                 'spender_id' => $spender->id,
                 'name'       => 'Savings',
-                'balance'    => 0,
+                'balance'    => (float) ($spenderInput['balance'] ?? 0),
             ]);
         }
 
