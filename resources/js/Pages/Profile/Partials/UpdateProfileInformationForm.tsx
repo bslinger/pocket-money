@@ -4,7 +4,15 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
+
+const PARENT_TITLE_OPTIONS = ['Mum', 'Mom', 'Dad', 'Papa', 'Pop', 'Nana', 'Grandma', 'Grandpa', 'Carer'];
+
+function deriveDropdownValue(title: string | null | undefined): string {
+    if (!title) return '';
+    if (PARENT_TITLE_OPTIONS.includes(title)) return title;
+    return '__custom__';
+}
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
@@ -17,11 +25,27 @@ export default function UpdateProfileInformation({
 }) {
     const user = usePage().props.auth.user;
 
+    const [parentTitleDropdown, setParentTitleDropdown] = useState(deriveDropdownValue(user.parent_title));
+    const [customTitle, setCustomTitle] = useState(
+        user.parent_title && !PARENT_TITLE_OPTIONS.includes(user.parent_title) ? user.parent_title : ''
+    );
+
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
             email: user.email,
+            parent_title: user.parent_title ?? '',
         });
+
+    function handleDropdownChange(value: string) {
+        setParentTitleDropdown(value);
+        setData('parent_title', value !== '__custom__' ? value : customTitle);
+    }
+
+    function handleCustomTitleChange(value: string) {
+        setCustomTitle(value);
+        setData('parent_title', value);
+    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -56,6 +80,31 @@ export default function UpdateProfileInformation({
                     />
 
                     <InputError className="mt-2" message={errors.name} />
+                </div>
+
+                <div>
+                    <InputLabel htmlFor="parent_title" value="What do your kids call you?" />
+                    <select
+                        id="parent_title"
+                        value={parentTitleDropdown}
+                        onChange={(e) => handleDropdownChange(e.target.value)}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                        <option value="">— not set —</option>
+                        {PARENT_TITLE_OPTIONS.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                        <option value="__custom__">Custom…</option>
+                    </select>
+                    {parentTitleDropdown === '__custom__' && (
+                        <TextInput
+                            className="mt-2 block w-full"
+                            value={customTitle}
+                            onChange={(e) => handleCustomTitleChange(e.target.value)}
+                            placeholder="e.g. Oma, Père, Baba…"
+                        />
+                    )}
+                    <InputError className="mt-2" message={errors.parent_title} />
                 </div>
 
                 <div>

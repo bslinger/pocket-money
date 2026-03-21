@@ -6,6 +6,34 @@ test.describe('Settings', () => {
         await expect(page.getByText('Settings')).toBeVisible();
     });
 
+    test('can set parent title from dropdown', async ({ page }) => {
+        await page.goto('/settings');
+        await page.selectOption('select:near(:text("What do your kids call you"))', 'Mum');
+        await page.click('button:has-text("Save Changes")');
+        await page.waitForURL('/settings');
+        await expect(page.locator('select:near(:text("What do your kids call you"))')).toHaveValue('Mum');
+
+        // Restore
+        await page.selectOption('select:near(:text("What do your kids call you"))', '');
+        await page.click('button:has-text("Save Changes")');
+        await page.waitForURL('/settings');
+    });
+
+    test('can set a custom parent title', async ({ page }) => {
+        await page.goto('/settings');
+        await page.selectOption('select:near(:text("What do your kids call you"))', '__custom__');
+        await page.fill('input[placeholder*="Oma"]', 'Baba');
+        await page.click('button:has-text("Save Changes")');
+        await page.waitForURL('/settings');
+        await expect(page.locator('select:near(:text("What do your kids call you"))')).toHaveValue('__custom__');
+        await expect(page.locator('input[placeholder*="Oma"]')).toHaveValue('Baba');
+
+        // Restore
+        await page.selectOption('select:near(:text("What do your kids call you"))', '');
+        await page.click('button:has-text("Save Changes")');
+        await page.waitForURL('/settings');
+    });
+
     test('can update display name', async ({ page }) => {
         await page.goto('/settings');
         // Display name input placeholder is user.name ('ben'), value is display_name
