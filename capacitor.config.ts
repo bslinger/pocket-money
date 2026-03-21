@@ -3,13 +3,13 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const isProd = process.env.NODE_ENV === 'production';
 
 const config: CapacitorConfig = {
-  appId: 'com.pocketmoney.app',
-  appName: 'Pocket Money',
+  appId: 'com.quiddo.app',
+  appName: 'Quiddo',
   webDir: 'public',
   server: isProd
     ? undefined  // uses bundled assets in prod
     : {
-        url: 'http://pocket-money.lndo.site',
+        url: 'https://quiddo-main-5m5iax.laravel.cloud/',
         cleartext: true,
       },
 };
