@@ -754,18 +754,16 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
       <div className="flex items-center gap-3">
         <span className="text-2xl">{chore.emoji ?? '📋'}</span>
         <div>
-          <div className="flex items-center gap-1.5">
-            <p className="font-medium text-sm">{chore.name}</p>
-            {isDeclined && (
-              <span title="Your parent sent this back" className="text-red-400 text-xs">↩</span>
-            )}
-          </div>
+          <p className="font-medium text-sm">{chore.name}</p>
           {chore.reward_type === 'earns' && chore.amount && (
             <p className="text-xs text-amber-400">{formatAmount(chore.amount, currencySymbol)}</p>
           )}
         </div>
       </div>
-      <div>
+      <div className="flex items-center gap-2">
+        {isDeclined && (
+          <span title="Your parent sent this back"><Undo2 className="h-4 w-4 text-red-400 shrink-0" /></span>
+        )}
         {(status === null || isDeclined) && (
           <button
             onClick={markDone}
@@ -773,7 +771,7 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
             className="flex items-center gap-1.5 bg-white text-gray-900 text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-60"
           >
             <Check className="h-3.5 w-3.5" />
-            I did it!
+            {isDeclined ? 'This time I really did it' : 'I did it!'}
           </button>
         )}
         {status === 'pending' && (
