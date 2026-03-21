@@ -7,7 +7,9 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 1,
     workers: process.env.CI ? 2 : 1,
     outputDir: '/tmp/pw-test-results',
-    reporter: 'html',
+    reporter: process.env.CI
+        ? [['html'], ['junit', { outputFile: 'test-results/e2e-junit.xml' }]]
+        : 'html',
     timeout: 30000,
     use: {
         baseURL: process.env.APP_URL ?? 'http://localhost',

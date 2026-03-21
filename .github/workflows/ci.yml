@@ -31,7 +31,7 @@ jobs:
         run: php artisan key:generate
 
       - name: Run Pest tests with coverage
-        run: php artisan test --coverage-html storage/coverage/pest/html --coverage-clover storage/coverage/pest/clover.xml
+        run: php artisan test --log-junit storage/coverage/pest/junit.xml --coverage-html storage/coverage/pest/html --coverage-clover storage/coverage/pest/clover.xml
         env:
           XDEBUG_MODE: coverage
 
@@ -43,6 +43,14 @@ jobs:
           flags: pest
           token: ${{ secrets.CODECOV_TOKEN }}
           disable_search: true
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v5
+        with:
+          files: storage/coverage/pest/junit.xml
+          flags: pest
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload Pest coverage report
         if: always()
@@ -145,6 +153,14 @@ jobs:
           flags: e2e
           token: ${{ secrets.CODECOV_TOKEN }}
           disable_search: true
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v5
+        with:
+          files: test-results/e2e-junit.xml
+          flags: e2e
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload E2E coverage report
         if: always()
