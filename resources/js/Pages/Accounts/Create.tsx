@@ -81,17 +81,17 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
   const currencyNamePlural   = data.currency_name_plural || (currencyNameSingular + 's');
 
   return (
-    <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Add Account</h2>}>
+    <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-bark-700">Add Account</h2>}>
       <Head title="Add Account" />
       <div className="py-8 max-w-lg mx-auto px-4">
-        <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 space-y-4">
+        <form onSubmit={submit} className="bg-white border border-bark-200 rounded-card p-6 space-y-4">
           {spenders.length > 1 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Spender</label>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Spender</label>
               <select
                 value={data.spender_id}
                 onChange={e => setData('spender_id', e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+                className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
               >
                 {spenders.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -101,17 +101,17 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Name</label>
+            <label className="block text-sm font-medium text-bark-700 mb-1">Account Name</label>
             <input
               id="name"
               type="text"
               value={data.name}
               onChange={e => setData('name', e.target.value)}
               placeholder="e.g. Spending Money"
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+              className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
               autoFocus
             />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-redearth-400 text-xs mt-1">{errors.name}</p>}
           </div>
 
           {/* Optional currency override */}
@@ -125,14 +125,14 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
               />
               <div>
                 <p className="text-sm font-medium">Custom currency for this account</p>
-                <p className="text-xs text-gray-500 dark:text-muted-foreground">
+                <p className="text-xs text-bark-500">
                   Overrides the family default ({familySymbol} {familyName})
                 </p>
               </div>
             </label>
 
             {overrideCurrency && (
-              <div className="pl-6 space-y-3 border-l-2 border-gray-200 dark:border-border">
+              <div className="pl-6 space-y-3 border-l-2 border-bark-200">
                 {/* Real / Custom toggle */}
                 <div className="grid grid-cols-2 gap-2">
                   {(['real', 'custom'] as const).map(type => (
@@ -143,11 +143,11 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
                       className={cn(
                         'px-3 py-2 rounded-lg border text-left transition-colors text-sm',
                         overrideType === type
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/40'
+                          ? 'border-eucalyptus-400 bg-eucalyptus-50'
+                          : 'border-bark-200 hover:border-eucalyptus-300'
                       )}
                     >
-                      <span className={cn('font-medium', overrideType === type ? 'text-primary' : '')}>
+                      <span className={cn('font-medium', overrideType === type ? 'text-eucalyptus-400' : '')}>
                         {type === 'real' ? '💵 Real money' : '⭐ Custom'}
                       </span>
                     </button>
@@ -164,8 +164,8 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
                         className={cn(
                           'flex items-center justify-center px-3 py-2 rounded-md border text-sm font-mono transition-colors',
                           selectedSymbolIdx === i
-                            ? 'border-primary bg-primary/5 text-primary font-bold'
-                            : 'border-border hover:border-primary/40'
+                            ? 'border-eucalyptus-400 bg-eucalyptus-50 text-eucalyptus-400 font-bold'
+                            : 'border-bark-200 hover:border-eucalyptus-300'
                         )}
                       >
                         {p.symbol}
@@ -230,7 +230,7 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
                 )}
 
                 {data.currency_symbol && data.currency_name && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-bark-500">
                     Preview: {data.currency_symbol}1 {currencyNameSingular} · {data.currency_symbol}25 {currencyNamePlural}
                   </p>
                 )}
@@ -241,7 +241,7 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
           <button
             type="submit"
             disabled={processing}
-            className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="w-full py-2 bg-eucalyptus-400 text-white rounded-pill hover:bg-eucalyptus-500 font-semibold disabled:opacity-50"
           >
             Add Account
           </button>

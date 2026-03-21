@@ -8,27 +8,27 @@ interface Props {
 
 export default function MarketingLayout({ canLogin, canRegister, children }: PropsWithChildren<Props>) {
   return (
-    <div className="min-h-screen flex flex-col bg-surface text-heading">
+    <div className="min-h-screen flex flex-col bg-bark-50 text-bark-700">
       {/* Nav */}
-      <header className="border-b border-stone-200">
+      <header className="bg-white border-b border-bark-200">
         <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <Link href={route('home')} className="font-serif text-2xl font-bold text-heading tracking-tight">
+          <Link href={route('home')} className="font-display text-2xl font-bold text-eucalyptus-400 tracking-tight">
             Quiddo
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-stone-600">
-            <Link href={route('marketing.how')} className="hover:text-heading transition-colors">How It Works</Link>
-            <Link href={route('marketing.pricing')} className="hover:text-heading transition-colors">Pricing</Link>
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-bark-600">
+            <Link href={route('marketing.how')} className="hover:text-bark-700 transition-colors">How It Works</Link>
+            <Link href={route('marketing.pricing')} className="hover:text-bark-700 transition-colors">Pricing</Link>
           </nav>
           <div className="flex items-center gap-3">
             {canLogin && (
-              <Link href={route('login')} className="text-sm font-medium text-stone-600 hover:text-heading transition-colors">
+              <Link href={route('login')} className="text-sm font-medium text-bark-600 hover:text-bark-700 transition-colors">
                 Log in
               </Link>
             )}
             {canRegister && (
               <Link
                 href={route('register')}
-                className="bg-brand text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-brand-emphasis transition-colors"
+                className="bg-eucalyptus-400 text-white text-sm font-semibold px-4 py-2 rounded-pill hover:bg-eucalyptus-500 transition-colors"
               >
                 Start Free
               </Link>
@@ -43,12 +43,13 @@ export default function MarketingLayout({ canLogin, canRegister, children }: Pro
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-stone-200 py-8">
-        <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-stone-500">
-          <p>© {new Date().getFullYear()} Quiddo. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-stone-700 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-stone-700 transition-colors">Terms</a>
+      <footer className="bg-eucalyptus-600 py-8">
+        <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+          <p className="font-display text-xl font-semibold text-wattle-300">Quiddo</p>
+          <p className="text-eucalyptus-100">© {new Date().getFullYear()} Quiddo. All rights reserved.</p>
+          <div className="flex gap-6 text-eucalyptus-100">
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
           </div>
         </div>
       </footer>

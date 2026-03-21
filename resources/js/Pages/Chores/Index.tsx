@@ -217,7 +217,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
           <CheckCircle2 className="h-4 w-4" />
           Needs Approval
           {pending.filter(c => !localApproved.has(c.id)).length > 0 && (
-            <Badge className="bg-amber-100 text-amber-800 border-amber-200 ml-0.5">{pending.filter(c => !localApproved.has(c.id)).length}</Badge>
+            <Badge className="bg-wattle-50 text-wattle-600 border-wattle-200 ml-0.5">{pending.filter(c => !localApproved.has(c.id)).length}</Badge>
           )}
         </button>
         <button
@@ -261,14 +261,14 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                     <CardTitle className="text-base flex items-center gap-2">
                       Chore completions
                       {trulyPending.length > 0 && (
-                        <Badge className="bg-amber-100 text-amber-800 border-amber-200">{trulyPending.length} pending</Badge>
+                        <Badge className="bg-wattle-50 text-wattle-600 border-wattle-200">{trulyPending.length} pending</Badge>
                       )}
                     </CardTitle>
                     {trulyPending.length > 1 && (
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-green-300 text-green-700 hover:bg-green-50 gap-1.5 h-7 text-xs"
+                        className="border-gumleaf-200 text-gumleaf-600 hover:bg-gumleaf-50 gap-1.5 h-7 text-xs"
                         onClick={approveAll}
                       >
                         <CheckCheck className="h-3.5 w-3.5" />
@@ -301,7 +301,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {c.spender.name} · {formatDistanceToNow(new Date(c.completed_at), { addSuffix: true })}
-                              {isApproved && <span className="ml-1.5 text-green-600 font-medium">· approved</span>}
+                              {isApproved && <span className="ml-1.5 text-gumleaf-400 font-medium">· approved</span>}
                             </p>
                           </div>
                         </div>
@@ -322,7 +322,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                               <Button
                                 size="icon"
                                 variant="outline"
-                                className="h-8 w-8 border-green-300 text-green-700 hover:bg-green-50"
+                                className="h-8 w-8 border-gumleaf-200 text-gumleaf-600 hover:bg-gumleaf-50"
                                 onClick={() => approve(c)}
                                 title="Approve"
                               >
@@ -331,7 +331,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                               <Button
                                 size="icon"
                                 variant="outline"
-                                className="h-8 w-8 border-red-300 text-red-600 hover:bg-red-50"
+                                className="h-8 w-8 border-redearth-200 text-redearth-600 hover:bg-redearth-50"
                                 onClick={() => decline(c)}
                                 title="Decline"
                               >
@@ -423,7 +423,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                                     {frequencyLabel(chore.frequency)}
                                   </Badge>
                                   {chore.up_for_grabs && (
-                                    <Badge variant="outline" className="text-xs font-normal text-blue-600 border-blue-200">Up for grabs</Badge>
+                                    <Badge variant="outline" className="text-xs font-normal text-eucalyptus-600 border-eucalyptus-200">Up for grabs</Badge>
                                   )}
                                   {!chore.is_active && (
                                     <Badge variant="secondary" className="text-xs">Paused</Badge>
@@ -528,9 +528,9 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                           <div
                             key={chore.id}
                             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs ${
-                              status === 'approved' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                              status === 'pending'  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                              status === 'declined' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' :
+                              status === 'approved' ? 'bg-gumleaf-50 text-gumleaf-600' :
+                              status === 'pending'  ? 'bg-wattle-50 text-wattle-600' :
+                              status === 'declined' ? 'bg-redearth-50 text-redearth-600' :
                               'bg-muted'
                             }`}
                           >

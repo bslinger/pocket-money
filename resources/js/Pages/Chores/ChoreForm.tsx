@@ -77,13 +77,13 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
               <select
                 value={data.family_id}
                 onChange={e => setData('family_id', e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-bark-200 bg-bark-50 px-3 py-2 text-sm"
               >
                 {families.map(f => (
                   <option key={f.id} value={f.id}>{f.name}</option>
                 ))}
               </select>
-              {errors.family_id && <p className="text-xs text-destructive">{errors.family_id}</p>}
+              {errors.family_id && <p className="text-xs text-redearth-400">{errors.family_id}</p>}
             </div>
           )}
 
@@ -92,7 +92,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
             <div className="space-y-1.5">
               <Label htmlFor="name">Chore name</Label>
               <Input id="name" value={data.name} onChange={e => setData('name', e.target.value)} placeholder="Tidy bedroom" />
-              {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+              {errors.name && <p className="text-xs text-redearth-400">{errors.name}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Emoji</Label>
@@ -117,19 +117,19 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
                     onClick={() => setData('reward_type', value)}
                     className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                       selected
-                        ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                        : 'border-border hover:border-primary/40 bg-background'
+                        ? 'border-eucalyptus-400 bg-eucalyptus-50'
+                        : 'border-bark-200 hover:border-eucalyptus-300 bg-bark-50'
                     }`}
                   >
-                    <p className={`text-sm font-medium ${selected ? 'text-primary' : 'text-foreground'}`}>
+                    <p className={`text-sm font-medium ${selected ? 'text-eucalyptus-400' : 'text-bark-700'}`}>
                       {label}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                    <p className="text-xs text-bark-500 mt-0.5">{description}</p>
                   </button>
                 );
               })}
             </div>
-            {errors.reward_type && <p className="text-xs text-destructive">{errors.reward_type}</p>}
+            {errors.reward_type && <p className="text-xs text-redearth-400">{errors.reward_type}</p>}
           </div>
 
           {/* Amount (earns only) */}
@@ -146,7 +146,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
                 placeholder={useIntegers ? '1' : '0.50'}
                 className="max-w-xs"
               />
-              {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
+              {errors.amount && <p className="text-xs text-redearth-400">{errors.amount}</p>}
             </div>
           )}
 
@@ -156,7 +156,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
             <select
               value={data.frequency}
               onChange={e => setData('frequency', e.target.value as typeof data.frequency)}
-              className="w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-full max-w-xs rounded-md border border-bark-200 bg-bark-50 px-3 py-2 text-sm"
             >
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -177,8 +177,8 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
                     onClick={() => toggleDay(i)}
                     className={`w-10 h-10 rounded-full text-sm font-medium border transition-colors ${
                       (data.days_of_week as number[]).includes(i)
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-background border-border text-muted-foreground hover:border-primary/50'
+                        ? 'bg-eucalyptus-400 text-white border-eucalyptus-400'
+                        : 'bg-bark-50 border-bark-200 text-bark-500 hover:border-eucalyptus-300'
                     }`}
                   >
                     {label}
@@ -195,7 +195,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
                 type="checkbox"
                 checked={data.requires_approval}
                 onChange={e => setData('requires_approval', e.target.checked)}
-                className="rounded accent-primary"
+                className="rounded accent-eucalyptus-400"
               />
               <span className="text-sm">Requires approval</span>
             </label>
@@ -204,7 +204,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
                 type="checkbox"
                 checked={data.up_for_grabs}
                 onChange={e => setData('up_for_grabs', e.target.checked)}
-                className="rounded accent-primary"
+                className="rounded accent-eucalyptus-400"
               />
               <span className="text-sm">Up for grabs</span>
             </label>
@@ -213,7 +213,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
                 type="checkbox"
                 checked={data.is_active}
                 onChange={e => setData('is_active', e.target.checked)}
-                className="rounded accent-primary"
+                className="rounded accent-eucalyptus-400"
               />
               <span className="text-sm">Active</span>
             </label>
@@ -222,7 +222,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
           {/* Assign spenders */}
           <div className="space-y-2">
             <Label>Assign to</Label>
-            {errors.spender_ids && <p className="text-xs text-destructive">{errors.spender_ids}</p>}
+            {errors.spender_ids && <p className="text-xs text-redearth-400">{errors.spender_ids}</p>}
             <div className="flex gap-3 flex-wrap">
               {spenders.map(s => {
                 const selected = (data.spender_ids as string[]).includes(s.id);
@@ -233,8 +233,8 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
                     onClick={() => toggleSpender(s.id)}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors ${
                       selected
-                        ? 'border-primary bg-primary/10 text-primary font-medium'
-                        : 'border-border hover:border-primary/50'
+                        ? 'border-eucalyptus-400 bg-eucalyptus-50 text-eucalyptus-400 font-medium'
+                        : 'border-bark-200 hover:border-eucalyptus-300'
                     }`}
                   >
                     <Avatar className="h-5 w-5">

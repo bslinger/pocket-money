@@ -23,13 +23,13 @@ export function TooltipContent({
             <TooltipPrimitive.Content
                 sideOffset={4}
                 className={cn(
-                    'z-50 max-w-xs rounded-md bg-gray-900 dark:bg-gray-100 px-3 py-1.5 text-xs text-white dark:text-gray-900 shadow-md animate-in fade-in-0 zoom-in-95',
+                    'z-50 max-w-xs rounded-md bg-bark-800 px-3 py-1.5 text-xs text-white shadow-md animate-in fade-in-0 zoom-in-95',
                     className,
                 )}
                 {...props}
             >
                 {children}
-                <TooltipPrimitive.Arrow className="fill-gray-900 dark:fill-gray-100" />
+                <TooltipPrimitive.Arrow className="fill-bark-800" />
             </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
     );

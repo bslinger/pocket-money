@@ -30,7 +30,7 @@ export default function GoalShow({ goal }: Props) {
     return (
         <AuthenticatedLayout header={
             <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold">{goal.name}</h1>
+                <h1 className="text-xl font-semibold text-bark-700">{goal.name}</h1>
                 <Button variant="outline" size="sm" asChild>
                     <Link href={route('goals.edit', goal.id)}>
                         <Pencil className="h-3.5 w-3.5 mr-1.5" />
@@ -43,32 +43,32 @@ export default function GoalShow({ goal }: Props) {
             <div className="max-w-lg space-y-4">
 
                 {/* Back */}
-                <Link href={route('goals.index')} className="text-sm text-muted-foreground hover:text-foreground">
+                <Link href={route('goals.index')} className="text-sm text-bark-500 hover:text-bark-700">
                     ← All goals
                 </Link>
 
                 {/* Cover image */}
                 {goal.image_url && (
-                    <div className="rounded-xl overflow-hidden h-48">
+                    <div className="rounded-card overflow-hidden h-48">
                         <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
                     </div>
                 )}
 
                 {/* Progress card */}
-                <Card>
+                <Card className="border-bark-200">
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-base flex items-center gap-2">
                                 <span
                                     className="h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-                                    style={{ backgroundColor: goal.spender.color ?? '#6366f1' }}
+                                    style={{ backgroundColor: goal.spender.color ?? '#4A7C59' }}
                                 >
                                     {goal.spender.name[0].toUpperCase()}
                                 </span>
                                 {goal.spender.name}'s goal
                             </CardTitle>
                             {isCompleted && (
-                                <Badge className="bg-green-500 hover:bg-green-500 gap-1">
+                                <Badge className="bg-gumleaf-50 text-gumleaf-600 border-gumleaf-200 gap-1">
                                     <CheckCircle2 className="h-3 w-3" /> Complete
                                 </Badge>
                             )}
@@ -78,42 +78,42 @@ export default function GoalShow({ goal }: Props) {
                         {/* Amounts */}
                         <div className="flex items-end justify-between">
                             <div>
-                                <p className="text-3xl font-bold">{formatAmount(current, symbol)}</p>
-                                <p className="text-sm text-muted-foreground">saved so far</p>
+                                <p className="font-display text-3xl text-bark-700">{formatAmount(current, symbol)}</p>
+                                <p className="text-sm text-bark-500">saved so far</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-lg font-semibold text-muted-foreground">{formatAmount(target, symbol)}</p>
-                                <p className="text-sm text-muted-foreground">target</p>
+                                <p className="font-display text-lg text-bark-400">{formatAmount(target, symbol)}</p>
+                                <p className="text-sm text-bark-500">target</p>
                             </div>
                         </div>
 
                         {/* Progress bar */}
                         <div className="space-y-1.5">
-                            <div className="w-full h-4 bg-muted rounded-full overflow-hidden">
+                            <div className="w-full h-4 bg-bark-200 rounded-full overflow-hidden">
                                 <div
-                                    className={`h-4 rounded-full transition-all duration-500 ${isCompleted ? 'bg-green-500' : 'bg-primary'}`}
+                                    className={`h-4 rounded-full transition-all duration-500 ${isCompleted ? 'bg-gumleaf-400' : 'bg-wattle-400'}`}
                                     style={{ width: `${pct}%` }}
                                 />
                             </div>
-                            <p className="text-xs text-muted-foreground text-right">{pct.toFixed(0)}%</p>
+                            <p className="text-xs text-wattle-600 text-right font-medium">{pct.toFixed(0)}%</p>
                         </div>
 
                         {/* Stats row */}
                         <div className="grid grid-cols-2 gap-3 pt-1">
                             <div className="flex items-center gap-2 text-sm">
-                                <TrendingUp className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <TrendingUp className="h-4 w-4 text-bark-400 shrink-0" />
                                 <span>
-                                    <span className="font-medium">{formatAmount(remaining > 0 ? remaining : 0, symbol)}</span>
-                                    <span className="text-muted-foreground"> to go</span>
+                                    <span className="font-medium text-bark-700">{formatAmount(remaining > 0 ? remaining : 0, symbol)}</span>
+                                    <span className="text-bark-500"> to go</span>
                                 </span>
                             </div>
                             {daysLeft !== null && (
                                 <div className="flex items-center gap-2 text-sm">
-                                    <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <CalendarDays className="h-4 w-4 text-bark-400 shrink-0" />
                                     <span>
                                         {daysLeft > 0
-                                            ? <><span className="font-medium">{daysLeft}</span><span className="text-muted-foreground"> days left</span></>
-                                            : <span className="text-destructive font-medium">Past target date</span>
+                                            ? <><span className="font-medium text-bark-700">{daysLeft}</span><span className="text-bark-500"> days left</span></>
+                                            : <span className="text-redearth-400 font-medium">Past target date</span>
                                         }
                                     </span>
                                 </div>
@@ -124,10 +124,10 @@ export default function GoalShow({ goal }: Props) {
 
                 {/* Linked account */}
                 {goal.account && (
-                    <Card>
+                    <Card className="border-bark-200">
                         <CardContent className="py-4">
-                            <p className="text-sm font-medium">Linked to: {goal.account.name}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
+                            <p className="text-sm font-medium text-bark-700">Linked to: {goal.account.name}</p>
+                            <p className="text-xs text-bark-500 mt-0.5">
                                 Progress updates automatically as the account balance changes.
                             </p>
                         </CardContent>
@@ -136,12 +136,12 @@ export default function GoalShow({ goal }: Props) {
 
                 {/* Completion message */}
                 {isCompleted && (
-                    <Card className="border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-900">
+                    <Card className="border-gumleaf-200 bg-gumleaf-50">
                         <CardContent className="py-4 flex items-center gap-3">
-                            <CheckCircle2 className="h-6 w-6 text-green-600 shrink-0" />
+                            <CheckCircle2 className="h-6 w-6 text-gumleaf-400 shrink-0" />
                             <div>
-                                <p className="font-semibold text-green-700 dark:text-green-400">Goal reached!</p>
-                                <p className="text-sm text-green-600 dark:text-green-500">{goal.spender.name} saved {formatAmount(target, symbol)} 🎉</p>
+                                <p className="font-semibold text-gumleaf-600">Goal reached!</p>
+                                <p className="text-sm text-gumleaf-600">{goal.spender.name} saved {formatAmount(target, symbol)} 🎉</p>
                             </div>
                         </CardContent>
                     </Card>

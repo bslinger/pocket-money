@@ -161,7 +161,7 @@ function FamilyDetailsSection({ family }: { family: Family }) {
 
                     <div className="flex items-center gap-3">
                         <Button type="submit" disabled={processing}>Save</Button>
-                        {recentlySuccessful && <p className="text-sm text-green-600">Saved.</p>}
+                        {recentlySuccessful && <p className="text-sm text-gumleaf-400">Saved.</p>}
                     </div>
                 </form>
             </CardContent>

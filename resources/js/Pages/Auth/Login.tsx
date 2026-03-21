@@ -28,7 +28,7 @@ export default function Login({
             <Head title="Log in" />
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">{status}</div>
+                <div className="mb-4 text-sm font-medium text-gumleaf-600">{status}</div>
             )}
 
             <form onSubmit={submit} className="space-y-4">

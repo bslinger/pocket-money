@@ -19,8 +19,8 @@ function familyInitial(name: string) {
 
 // Deterministic accent colour from family name for the letter avatar
 const AVATAR_COLOURS = [
-    'bg-violet-600', 'bg-blue-600', 'bg-emerald-600',
-    'bg-rose-600',   'bg-amber-600', 'bg-cyan-600',
+    'bg-eucalyptus-400', 'bg-wattle-400', 'bg-gumleaf-400',
+    'bg-redearth-400',   'bg-nightsky-400', 'bg-eucalyptus-600',
 ];
 function avatarColour(name: string) {
     let hash = 0;
@@ -64,7 +64,7 @@ function FamilyAccountMenu({
                     <span className="hidden sm:inline text-sm font-medium max-w-[140px] truncate">
                         {activeFamily.name}
                     </span>
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <ChevronDown className="h-3.5 w-3.5 text-bark-500 shrink-0" />
                 </Button>
             </DropdownMenuTrigger>
 
@@ -76,7 +76,7 @@ function FamilyAccountMenu({
                         <FamilyAvatar name={activeFamily.name} size="lg" />
                         <div className="min-w-0">
                             <p className="text-sm font-semibold truncate">{activeFamily.name}</p>
-                            <p className="text-xs text-muted-foreground">{memberSummary}</p>
+                            <p className="text-xs text-bark-500">{memberSummary}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -101,7 +101,7 @@ function FamilyAccountMenu({
                 <div className="py-2">
                     {/* User row */}
                     <div className="px-3 py-1.5 mb-1">
-                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                        <p className="text-xs text-bark-500 truncate">{user.email}</p>
                     </div>
 
                     {/* Family list */}
@@ -117,11 +117,11 @@ function FamilyAccountMenu({
                         >
                             <FamilyAvatar name={f.name} size="sm" />
                             <span className="flex-1 truncate text-sm">{f.name}</span>
-                            {f.id === activeFamily.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                            {f.id === activeFamily.id && <Check className="h-3.5 w-3.5 text-eucalyptus-400 shrink-0" />}
                         </DropdownMenuItem>
                     ))}
 
-                    <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 text-primary hover:text-primary cursor-pointer">
+                    <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 text-eucalyptus-400 hover:text-eucalyptus-400 cursor-pointer">
                         <Link href={route('families.create')}>
                             <PlusCircle className="h-3.5 w-3.5 shrink-0" />
                             <span className="text-sm">New family</span>
@@ -187,9 +187,9 @@ export default function AuthenticatedLayout({
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-bark-100">
             {viewingAsSpender && (
-                <div className="bg-amber-500 text-amber-950 px-4 py-2 flex items-center justify-between gap-3 text-sm font-medium">
+                <div className="bg-wattle-400 text-wattle-900 px-4 py-2 flex items-center justify-between gap-3 text-sm font-medium">
                     <div className="flex items-center gap-2">
                         <Eye className="h-4 w-4 shrink-0" />
                         <span><strong>{viewingAsSpender.name}&apos;s view</strong></span>
@@ -198,14 +198,14 @@ export default function AuthenticatedLayout({
                         href={route('dashboard.exit-view-as')}
                         method="delete"
                         as="button"
-                        className="flex items-center gap-1.5 rounded px-2 py-0.5 hover:bg-amber-600/30 transition-colors"
+                        className="flex items-center gap-1.5 rounded px-2 py-0.5 hover:bg-wattle-500/30 transition-colors"
                     >
                         <X className="h-3.5 w-3.5" />
                         Exit
                     </Link>
                 </div>
             )}
-            <nav className="border-b bg-card">
+            <nav className="border-b border-bark-200 bg-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-14 items-center justify-between">
 
@@ -222,9 +222,9 @@ export default function AuthenticatedLayout({
                                 <Menu className="h-5 w-5" />
                             </Button>
 
-                            <Link href={route('dashboard')} prefetch className="flex items-center gap-2 font-semibold text-foreground">
-                                <Wallet className="h-5 w-5 text-primary" />
-                                <span className="hidden sm:inline">Quiddo</span>
+                            <Link href={route('dashboard')} prefetch className="flex items-center gap-2">
+                                <Wallet className="h-5 w-5 text-eucalyptus-400" />
+                                <span className="hidden sm:inline font-display text-lg font-semibold text-eucalyptus-400">Quiddo</span>
                             </Link>
                             <Separator orientation="vertical" className="h-5 hidden sm:block" />
                             <div className="hidden sm:flex items-center gap-1">
@@ -278,7 +278,7 @@ export default function AuthenticatedLayout({
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="sm" className="gap-2">
                                         <span className="text-sm">{user.display_name ?? user.name}</span>
-                                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                                        <ChevronDown className="h-3.5 w-3.5 text-bark-500" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
@@ -319,20 +319,20 @@ export default function AuthenticatedLayout({
 
                     {/* Drawer panel */}
                     <div
-                        className={`absolute top-0 left-0 h-full w-72 bg-card shadow-xl flex flex-col transition-transform duration-300 ease-in-out ${drawerVisible ? 'translate-x-0' : '-translate-x-full'}`}
+                        className={`absolute top-0 left-0 h-full w-72 bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out ${drawerVisible ? 'translate-x-0' : '-translate-x-full'}`}
                         onClick={e => e.stopPropagation()}
                         onTransitionEnd={handleDrawerTransitionEnd}
                     >
                         {/* Drawer header */}
-                        <div className="flex items-center justify-between px-4 h-14 border-b shrink-0">
+                        <div className="flex items-center justify-between px-4 h-14 border-b border-bark-200 shrink-0">
                             <Link
                                 href={route('dashboard')}
                                 prefetch
-                                className="flex items-center gap-2 font-semibold text-foreground"
+                                className="flex items-center gap-2"
                                 onClick={closeMenu}
                             >
-                                <Wallet className="h-5 w-5 text-primary" />
-                                Quiddo
+                                <Wallet className="h-5 w-5 text-eucalyptus-400" />
+                                <span className="font-display text-lg font-semibold text-eucalyptus-400">Quiddo</span>
                             </Link>
                             <Button
                                 variant="ghost"
@@ -386,7 +386,7 @@ export default function AuthenticatedLayout({
             )}
 
             {header && (
-                <div className="border-b bg-card">
+                <div className="border-b border-bark-200 bg-white">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
                         {header}
                     </div>

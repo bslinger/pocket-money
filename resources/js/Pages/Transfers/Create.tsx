@@ -22,52 +22,52 @@ export default function TransferCreate({ account, accounts }: Props) {
     }
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Transfer Funds</h2>}>
+        <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-bark-700">Transfer Funds</h2>}>
             <Head title="Transfer Funds" />
             <div className="py-8 max-w-lg mx-auto px-4">
-                <form onSubmit={submit} className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 space-y-4">
+                <form onSubmit={submit} className="bg-white border border-bark-200 rounded-card p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From</label>
-                        <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">{account.name}</p>
+                        <label className="block text-sm font-medium text-bark-700 mb-1">From</label>
+                        <p className="text-sm text-bark-700 font-medium">{account.name}</p>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Account</label>
+                        <label className="block text-sm font-medium text-bark-700 mb-1">To Account</label>
                         <select
                             value={data.to_account_id}
                             onChange={e => setData('to_account_id', e.target.value)}
-                            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+                            className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
                         >
                             {accounts.map(a => (
                                 <option key={a.id} value={a.id}>{a.name}</option>
                             ))}
                         </select>
-                        {errors.to_account_id && <p className="text-red-500 text-xs mt-1">{errors.to_account_id}</p>}
+                        {errors.to_account_id && <p className="text-redearth-400 text-xs mt-1">{errors.to_account_id}</p>}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount</label>
+                        <label className="block text-sm font-medium text-bark-700 mb-1">Amount</label>
                         <input
                             type="number"
                             step={useIntegers ? '1' : '0.01'}
                             min={useIntegers ? '1' : '0.01'}
                             value={data.amount}
                             onChange={e => setData('amount', e.target.value)}
-                            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+                            className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
                         />
-                        {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}
+                        {errors.amount && <p className="text-redearth-400 text-xs mt-1">{errors.amount}</p>}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                        <label className="block text-sm font-medium text-bark-700 mb-1">Description</label>
                         <input
                             type="text"
                             value={data.description}
                             onChange={e => setData('description', e.target.value)}
-                            className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 dark:bg-gray-700 dark:text-white"
+                            className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                        className="w-full py-2 bg-eucalyptus-400 text-white rounded-pill hover:bg-eucalyptus-500 font-semibold disabled:opacity-50"
                     >
                         Transfer
                     </button>

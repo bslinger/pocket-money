@@ -39,8 +39,8 @@ export default function HowItWorks({ canLogin, canRegister }: Props) {
       <Head title="How It Works — Quiddo" />
 
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-8 text-center">
-        <h1 className="font-serif text-5xl font-bold text-heading">How It Works</h1>
-        <p className="mt-4 text-lg text-stone-500 max-w-xl mx-auto">
+        <h1 className="font-display text-5xl font-bold text-bark-700">How It Works</h1>
+        <p className="mt-4 text-lg text-bark-500 max-w-xl mx-auto">
           Getting started takes less than 5 minutes. Here's how Quiddo works.
         </p>
       </section>
@@ -49,25 +49,25 @@ export default function HowItWorks({ canLogin, canRegister }: Props) {
         <div className="space-y-6 mt-12">
           {steps.map((step, i) => (
             <div key={step.number} className={`flex gap-6 items-start ${i % 2 === 1 ? 'flex-row-reverse' : ''}`}>
-              <div className="shrink-0 w-20 h-20 rounded-2xl flex items-center justify-center text-4xl bg-highlight-subtle">
+              <div className="shrink-0 w-20 h-20 rounded-card flex items-center justify-center text-4xl bg-wattle-50 border border-wattle-200">
                 {step.emoji}
               </div>
               <div className="flex-1 py-2">
-                <span className="text-xs font-bold text-highlight tracking-widest uppercase">{step.number}</span>
-                <h3 className="font-serif text-2xl font-bold text-heading mt-1 mb-2">{step.title}</h3>
-                <p className="text-stone-500 leading-relaxed">{step.desc}</p>
+                <span className="text-xs font-bold text-wattle-600 tracking-widest uppercase">{step.number}</span>
+                <h3 className="font-display text-2xl font-bold text-bark-700 mt-1 mb-2">{step.title}</h3>
+                <p className="text-bark-500 leading-relaxed">{step.desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="bg-surface-muted py-16 text-center px-6">
-        <h2 className="font-serif text-3xl font-bold text-heading mb-4">Ready to give it a try?</h2>
+      <section className="bg-bark-100 py-16 text-center px-6">
+        <h2 className="font-display text-3xl font-bold text-bark-700 mb-4">Ready to give it a try?</h2>
         {canRegister && (
           <Link
             href={route('register')}
-            className="inline-block bg-brand text-white font-semibold px-8 py-3.5 rounded-full hover:bg-brand-emphasis transition-colors"
+            className="inline-block bg-eucalyptus-400 text-white font-semibold px-8 py-3.5 rounded-pill hover:bg-eucalyptus-500 transition-colors"
           >
             Start for free
           </Link>

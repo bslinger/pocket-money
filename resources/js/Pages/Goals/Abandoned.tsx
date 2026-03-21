@@ -22,7 +22,7 @@ export default function AbandonedGoals({ spenders }: { spenders: SpenderWithGoal
         <Link href={route('goals.index')} className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Abandoned Goals</h2>
+        <h2 className="text-xl font-semibold text-bark-700">Abandoned Goals</h2>
       </div>
     }>
       <Head title="Abandoned Goals" />
@@ -38,12 +38,12 @@ export default function AbandonedGoals({ spenders }: { spenders: SpenderWithGoal
                   ) : (
                     <div
                       className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ backgroundColor: spender.color ?? '#6366f1' }}
+                      style={{ backgroundColor: spender.color ?? '#4A7C59' }}
                     >
                       {spender.name[0].toUpperCase()}
                     </div>
                   )}
-                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">{spender.name}</h4>
+                  <h4 className="font-semibold text-bark-700">{spender.name}</h4>
                 </div>
 
                 <div className="space-y-3">
@@ -57,12 +57,12 @@ export default function AbandonedGoals({ spenders }: { spenders: SpenderWithGoal
                     return (
                       <div
                         key={goal.id}
-                        className="bg-white dark:bg-gray-800 rounded-xl shadow p-5"
+                        className="bg-white border border-bark-200 rounded-card p-5"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 dark:text-gray-100">{goal.name}</p>
-                            <div className="mt-1 space-y-0.5 text-xs text-gray-400">
+                            <p className="font-medium text-bark-700">{goal.name}</p>
+                            <div className="mt-1 space-y-0.5 text-xs text-bark-400">
                               <p>Created: {new Date(goal.created_at).toLocaleDateString()}</p>
                               <p>Abandoned: {goal.abandoned_at ? new Date(goal.abandoned_at).toLocaleDateString() : '—'}</p>
                               <p>

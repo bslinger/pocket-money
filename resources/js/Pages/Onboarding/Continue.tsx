@@ -435,7 +435,7 @@ export default function OnboardingContinue({ family }: Props) {
                                     {invitesSent.length > 0 && (
                                         <div className="space-y-1.5">
                                             {invitesSent.map(email => (
-                                                <div key={email} className="flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+                                                <div key={email} className="flex items-center gap-2 text-sm text-gumleaf-600">
                                                     <Check className="h-3.5 w-3.5 shrink-0" />
                                                     Invite sent to {email}
                                                 </div>

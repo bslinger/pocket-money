@@ -47,8 +47,8 @@ export default function Pricing({ canLogin, canRegister }: Props) {
 
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-24">
         <div className="text-center mb-14">
-          <h1 className="font-serif text-5xl font-bold text-heading">Simple pricing</h1>
-          <p className="mt-4 text-lg text-stone-500 max-w-md mx-auto">
+          <h1 className="font-display text-5xl font-bold text-bark-700">Simple pricing</h1>
+          <p className="mt-4 text-lg text-bark-500 max-w-md mx-auto">
             One plan, everything included. Pay monthly or save 37% with annual billing.
           </p>
         </div>
@@ -57,27 +57,27 @@ export default function Pricing({ canLogin, canRegister }: Props) {
           {plans.map(plan => (
             <div
               key={plan.name}
-              className={`rounded-2xl p-8 flex flex-col ${
+              className={`rounded-card p-8 flex flex-col ${
                 plan.dark
-                  ? 'bg-surface-dark text-white'
-                  : 'bg-surface-muted border border-surface-border'
+                  ? 'bg-eucalyptus-600 text-white'
+                  : 'bg-white border border-bark-200'
               }`}
             >
               <div>
-                <p className={`text-sm font-semibold uppercase tracking-wide mb-3 ${plan.dark ? 'text-brand-inverse' : 'text-brand'}`}>
+                <p className={`text-sm font-semibold uppercase tracking-wide mb-3 ${plan.dark ? 'text-wattle-300' : 'text-eucalyptus-400'}`}>
                   {plan.name}
                 </p>
                 <div className="flex items-end gap-1 mb-1">
-                  <span className={`text-4xl font-bold ${plan.dark ? 'text-white' : 'text-heading'}`}>{plan.price}</span>
-                  <span className="text-sm mb-1 text-stone-400">/{plan.period}</span>
+                  <span className={`font-display text-4xl font-bold ${plan.dark ? 'text-white' : 'text-bark-700'}`}>{plan.price}</span>
+                  <span className={`text-sm mb-1 ${plan.dark ? 'text-eucalyptus-200' : 'text-bark-400'}`}>/{plan.period}</span>
                 </div>
-                <p className={`text-sm mb-6 ${plan.dark ? 'text-stone-400' : 'text-stone-500'}`}>{plan.description}</p>
+                <p className={`text-sm mb-6 ${plan.dark ? 'text-eucalyptus-100' : 'text-bark-500'}`}>{plan.description}</p>
 
                 <ul className="space-y-3 mb-8">
                   {plan.features.map(f => (
                     <li key={f} className="flex items-center gap-3 text-sm">
-                      <Check className={`h-4 w-4 shrink-0 ${plan.dark ? 'text-brand-inverse' : 'text-brand'}`} />
-                      <span className={plan.dark ? 'text-stone-300' : 'text-stone-600'}>{f}</span>
+                      <Check className={`h-4 w-4 shrink-0 ${plan.dark ? 'text-wattle-300' : 'text-gumleaf-400'}`} />
+                      <span className={plan.dark ? 'text-eucalyptus-100' : 'text-bark-600'}>{f}</span>
                     </li>
                   ))}
                 </ul>
@@ -87,10 +87,10 @@ export default function Pricing({ canLogin, canRegister }: Props) {
                 <div className="mt-auto">
                   <Link
                     href={route(plan.href as any)}
-                    className={`block text-center font-semibold px-6 py-3 rounded-full transition-colors ${
+                    className={`block text-center font-semibold px-6 py-3 rounded-pill transition-colors ${
                       plan.dark
-                        ? 'bg-brand-inverse text-heading hover:bg-brand-subtle'
-                        : 'bg-brand text-white hover:bg-brand-emphasis'
+                        ? 'bg-wattle-400 text-wattle-900 hover:bg-wattle-300'
+                        : 'bg-eucalyptus-400 text-white hover:bg-eucalyptus-500'
                     }`}
                   >
                     {plan.cta}
@@ -101,7 +101,7 @@ export default function Pricing({ canLogin, canRegister }: Props) {
           ))}
         </div>
 
-        <p className="text-center text-sm text-stone-400 mt-10">
+        <p className="text-center text-sm text-bark-400 mt-10">
           Prices in Australian dollars. One subscription covers your whole family — up to 12 kids.
         </p>
       </section>

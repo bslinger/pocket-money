@@ -21,11 +21,11 @@ interface Props {
 
 export default function Release({ spenders }: Props) {
   return (
-    <AuthenticatedLayout header={<h1 className="text-xl font-semibold">Release Pocket Money</h1>}>
+    <AuthenticatedLayout header={<h1 className="text-xl font-semibold text-bark-700">Release Pocket Money</h1>}>
       <Head title="Pocket Money Release" />
       <div className="max-w-2xl space-y-4">
         {spenders.length === 0 && (
-          <p className="text-muted-foreground text-sm">No spenders found.</p>
+          <p className="text-bark-500 text-sm">No spenders found.</p>
         )}
         {spenders.map(item => (
           <SpenderReleaseCard key={item.spender.id} item={item} />
@@ -55,30 +55,30 @@ function SpenderReleaseCard({ item }: { item: SpenderRelease }) {
     : 100;
 
   return (
-    <Card>
+    <Card className="border-bark-200">
       <CardContent className="pt-5 pb-5">
         <div className="flex items-start gap-4">
           <Avatar className="h-12 w-12 shrink-0">
             <AvatarImage src={spender.avatar_url ?? undefined} />
-            <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white font-semibold">
+            <AvatarFallback style={{ backgroundColor: spender.color ?? '#4A7C59' }} className="text-white font-semibold">
               {spender.name[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-base">{spender.name}</p>
+            <p className="font-semibold text-base text-bark-700">{spender.name}</p>
 
             {/* Responsibility chores progress */}
             {responsibility_chores_total > 0 && (
               <div className="mt-2">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Responsibilities</span>
-                  <span className={allDone ? 'text-green-600 font-medium' : 'text-red-500 font-medium'}>
+                  <span className="text-bark-500">Responsibilities</span>
+                  <span className={allDone ? 'text-gumleaf-600 font-medium' : 'text-redearth-400 font-medium'}>
                     {responsibility_chores_done}/{responsibility_chores_total} done
                   </span>
                 </div>
-                <div className="bg-muted rounded-full h-2">
+                <div className="bg-bark-200 rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full transition-all ${allDone ? 'bg-green-500' : 'bg-red-400'}`}
+                    className={`h-2 rounded-full transition-all ${allDone ? 'bg-gumleaf-400' : 'bg-redearth-300'}`}
                     style={{ width: `${progressPct}%` }}
                   />
                 </div>
@@ -88,7 +88,7 @@ function SpenderReleaseCard({ item }: { item: SpenderRelease }) {
             {/* Amount input + pay button */}
             <form onSubmit={submit} className="mt-3 flex items-center gap-3">
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{currencySymbol}</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-bark-400 text-sm">{currencySymbol}</span>
                 <Input
                   type="number"
                   min={useIntegers ? '1' : '0.01'}
@@ -102,7 +102,7 @@ function SpenderReleaseCard({ item }: { item: SpenderRelease }) {
                 Pay Now
               </Button>
               {recentlySuccessful && (
-                <span className="text-sm text-green-600 font-medium">Paid! ✓</span>
+                <span className="text-sm text-gumleaf-600 font-medium">Paid! ✓</span>
               )}
             </form>
           </div>

@@ -53,7 +53,7 @@ function GoalCard({
           <button
             onClick={() => reorder(accountGoals, goal.id, 'up')}
             disabled={idx === 0}
-            className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 disabled:cursor-not-allowed"
+            className="p-0.5 text-bark-400 hover:text-bark-600 disabled:opacity-20 disabled:cursor-not-allowed"
             aria-label="Move up"
           >
             <ChevronUp className="h-4 w-4" />
@@ -61,7 +61,7 @@ function GoalCard({
           <button
             onClick={() => reorder(accountGoals, goal.id, 'down')}
             disabled={idx === accountGoals.length - 1}
-            className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-20 disabled:cursor-not-allowed"
+            className="p-0.5 text-bark-400 hover:text-bark-600 disabled:opacity-20 disabled:cursor-not-allowed"
             aria-label="Move down"
           >
             <ChevronDown className="h-4 w-4" />
@@ -71,25 +71,25 @@ function GoalCard({
       {!isActive && <div className="w-6 shrink-0" />}
 
       <div
-        className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow p-5 cursor-pointer hover:shadow-md transition-shadow"
+        className="flex-1 bg-white border border-bark-200 rounded-card p-5 cursor-pointer hover:border-eucalyptus-300 transition-colors"
         onClick={() => router.visit(route('goals.show', goal.id))}
       >
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="font-medium text-gray-900 dark:text-gray-100">{goal.name}</p>
+            <p className="font-medium text-bark-700">{goal.name}</p>
             {goal.target_date && (
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-bark-400 mt-0.5">
                 Target: {new Date(goal.target_date).toLocaleDateString()}
               </p>
             )}
           </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              <p className="text-sm font-semibold text-wattle-600">
                 {formatAmount(allocated, sym)}
-                <span className="text-gray-400 font-normal"> of {formatAmount(target, sym)}</span>
+                <span className="text-bark-400 font-normal"> of {formatAmount(target, sym)}</span>
               </p>
-              <p className="text-xs text-gray-400">{pctRounded}%</p>
+              <p className="text-xs text-bark-400">{pctRounded}%</p>
             </div>
             {/* Abandon button — only active goals */}
             {isActive && (
@@ -100,7 +100,7 @@ function GoalCard({
                     router.patch(route('goals.abandon', goal.id), {}, { preserveScroll: false });
                   }
                 }}
-                className="ml-2 p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded"
+                className="ml-2 p-1.5 text-bark-400 hover:text-redearth-400 transition-colors rounded"
                 aria-label={`Abandon ${goal.name}`}
                 title="Abandon goal"
               >
@@ -109,14 +109,14 @@ function GoalCard({
             )}
           </div>
         </div>
-        <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="w-full h-2.5 bg-bark-200 rounded-full overflow-hidden">
           <div
-            className={`h-2.5 rounded-full ${goal.is_completed ? 'bg-green-500' : 'bg-indigo-500'}`}
+            className={`h-2.5 rounded-full transition-all ${goal.is_completed ? 'bg-gumleaf-400' : 'bg-wattle-400'}`}
             style={{ width: `${pct}%` }}
           />
         </div>
         {goal.is_completed && (
-          <p className="text-xs text-green-600 font-medium mt-2">Goal reached!</p>
+          <p className="text-xs text-gumleaf-600 font-medium mt-2">Goal reached!</p>
         )}
       </div>
     </div>
@@ -152,12 +152,12 @@ function SpenderGoals({
         ) : (
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-            style={{ backgroundColor: spender.color ?? '#6366f1' }}
+            style={{ backgroundColor: spender.color ?? '#4A7C59' }}
           >
             {spender.name[0].toUpperCase()}
           </div>
         )}
-        <h4 className="font-semibold text-gray-900 dark:text-gray-100">{spender.name}</h4>
+        <h4 className="font-semibold text-bark-700">{spender.name}</h4>
       </div>
 
       <div className="space-y-6">
@@ -166,7 +166,7 @@ function SpenderGoals({
           return (
             <div key={accountKey}>
               {accountName && (
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2 ml-1">
+                <p className="text-xs font-semibold text-bark-400 uppercase tracking-widest mb-2 ml-1">
                   {accountName}
                 </p>
               )}
@@ -213,17 +213,17 @@ export default function GoalsIndex({ spenders, recentCompletedCutoff }: Props) {
   const hasCompleted = spendersWithCompleted.some(s => s.savings_goals.length > 0);
 
   return (
-    <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Savings Goals</h2>}>
+    <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-bark-700">Savings Goals</h2>}>
       <Head title="Savings Goals" />
       <div className="py-8 max-w-4xl mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-1 rounded-lg border bg-muted p-1">
+          <div className="flex gap-1 rounded-card border border-bark-200 bg-bark-50 p-1">
             <button
               onClick={() => setTab('active')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 tab === 'active'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-white text-bark-700 shadow-sm'
+                  : 'text-bark-500 hover:text-bark-700'
               }`}
             >
               Active
@@ -232,8 +232,8 @@ export default function GoalsIndex({ spenders, recentCompletedCutoff }: Props) {
               onClick={() => setTab('completed')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 tab === 'completed'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-white text-bark-700 shadow-sm'
+                  : 'text-bark-500 hover:text-bark-700'
               }`}
             >
               Completed
@@ -242,12 +242,12 @@ export default function GoalsIndex({ spenders, recentCompletedCutoff }: Props) {
           <div className="flex items-center gap-2">
             {hasCompleted && tab === 'active' && (
               <Button variant="ghost" size="sm" asChild>
-                <Link href={route('goals.abandoned')} className="text-muted-foreground text-xs">
+                <Link href={route('goals.abandoned')} className="text-bark-400 text-xs">
                   Abandoned goals
                 </Link>
               </Button>
             )}
-            <Link href={route('goals.create')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm">
+            <Link href={route('goals.create')} className="px-4 py-2 bg-eucalyptus-400 text-white rounded-pill hover:bg-eucalyptus-500 text-sm font-semibold transition-colors">
               + New Goal
             </Link>
           </div>
@@ -256,11 +256,11 @@ export default function GoalsIndex({ spenders, recentCompletedCutoff }: Props) {
         {tab === 'active' && (
           <>
             {hasActive && (
-              <div className="flex gap-2.5 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 p-3 mb-6 text-sm text-blue-800 dark:text-blue-300">
-                <Info className="h-4 w-4 shrink-0 mt-0.5 text-blue-500" />
+              <div className="flex gap-2.5 rounded-card border border-eucalyptus-200 bg-eucalyptus-50 p-3 mb-6 text-sm text-eucalyptus-700">
+                <Info className="h-4 w-4 shrink-0 mt-0.5 text-eucalyptus-400" />
                 <div className="space-y-1">
                   <p className="font-medium">Goals fill in priority order</p>
-                  <p className="text-blue-700/80 dark:text-blue-400 text-xs">
+                  <p className="text-eucalyptus-600 text-xs">
                     An account's balance is allocated to goals from top to bottom — the first goal fills completely before any remainder spills to the next.
                     Use the arrows to change the order within each account.
                   </p>
@@ -269,7 +269,7 @@ export default function GoalsIndex({ spenders, recentCompletedCutoff }: Props) {
             )}
 
             {!hasActive && (
-              <p className="text-gray-500 text-sm text-center py-12">No active goals. Create one to get started.</p>
+              <p className="text-bark-500 text-sm text-center py-12">No active goals. Create one to get started.</p>
             )}
 
             <div className="space-y-8">
@@ -283,7 +283,7 @@ export default function GoalsIndex({ spenders, recentCompletedCutoff }: Props) {
         {tab === 'completed' && (
           <>
             {!hasCompleted && (
-              <p className="text-gray-500 text-sm text-center py-12">No completed goals yet.</p>
+              <p className="text-bark-500 text-sm text-center py-12">No completed goals yet.</p>
             )}
 
             <div className="space-y-8">

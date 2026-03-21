@@ -100,7 +100,7 @@ export default function EmojiPickerField({
                 value={display}
                 inputMode="text"
                 aria-label="Pick emoji"
-                className={`w-14 h-10 rounded-md border border-input bg-background text-xl text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+                className={`w-14 h-10 rounded-md border border-bark-200 bg-bark-50 text-xl text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-eucalyptus-400 ${className}`}
                 onChange={e => {
                     const emoji = extractFirstEmoji(e.target.value);
                     onChange(emoji || defaultEmoji);
@@ -121,7 +121,7 @@ export default function EmojiPickerField({
             <button
                 type="button"
                 onClick={() => setShowPicker(v => !v)}
-                className="w-14 h-10 rounded-md border border-input bg-background text-xl flex items-center justify-center hover:bg-accent transition-colors"
+                className="w-14 h-10 rounded-md border border-bark-200 bg-bark-50 text-xl flex items-center justify-center hover:bg-bark-100 transition-colors"
                 aria-label="Pick emoji"
             >
                 {display}

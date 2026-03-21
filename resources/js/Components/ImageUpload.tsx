@@ -72,13 +72,13 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
                     <img
                         src={preview}
                         alt="Cover"
-                        className="w-full h-48 object-cover rounded-lg border border-border"
+                        className="w-full h-48 object-cover rounded-lg border border-bark-200"
                     />
                     {onClear && (
                         <button
                             type="button"
                             onClick={clear}
-                            className="absolute top-2 right-2 h-6 w-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                            className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-bark-500 hover:text-bark-700 transition-colors"
                             aria-label="Remove image"
                         >
                             <X className="h-3.5 w-3.5" />
@@ -87,7 +87,7 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
                     <button
                         type="button"
                         onClick={() => inputRef.current?.click()}
-                        className="absolute bottom-2 right-2 text-xs bg-background/80 backdrop-blur px-2 py-1 rounded-md border border-border hover:bg-background transition-colors"
+                        className="absolute bottom-2 right-2 text-xs bg-white/80 backdrop-blur px-2 py-1 rounded-md border border-bark-200 hover:bg-bark-50 transition-colors"
                     >
                         Change
                     </button>
@@ -98,7 +98,7 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
                     onClick={() => inputRef.current?.click()}
                     onDrop={handleDrop}
                     onDragOver={e => e.preventDefault()}
-                    className="w-full h-32 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
+                    className="w-full h-32 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-2 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors"
                     disabled={uploading}
                 >
                     {uploading

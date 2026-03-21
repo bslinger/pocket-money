@@ -130,15 +130,15 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
             </CardHeader>
             <CardContent>
                 {schedule && (
-                    <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm">
-                        <p className="font-medium text-green-800 dark:text-green-300">
+                    <div className="mb-4 p-3 bg-gumleaf-50 rounded-card text-sm">
+                        <p className="font-medium text-gumleaf-600">
                             Active: {schedule.frequency === 'weekly'
                                 ? `${schedule.amount} every ${DAY_LABELS[schedule.day_of_week ?? 0]}`
                                 : `${schedule.amount} on day ${schedule.day_of_month ?? 1} of each month`}
-                            {schedule.account && <span className="text-green-700/70 dark:text-green-400"> → {schedule.account.name}</span>}
+                            {schedule.account && <span className="text-gumleaf-600/70"> → {schedule.account.name}</span>}
                         </p>
                         {schedule.next_run_at && (
-                            <p className="text-green-700 dark:text-green-400 text-xs mt-0.5">
+                            <p className="text-gumleaf-600 text-xs mt-0.5">
                                 Next payment: {new Date(schedule.next_run_at).toLocaleDateString()}
                             </p>
                         )}

@@ -4,122 +4,58 @@
 
 @layer base {
   :root {
-    /* Amber Glow — warm orange, primary brand */
-    --color-amber-glow-50:  #fff4ea;
-    --color-amber-glow-100: #ffe9d4;
-    --color-amber-glow-200: #ffd3a9;
-    --color-amber-glow-300: #ffbc7e;
-    --color-amber-glow-400: #ffa653;
-    --color-amber-glow-500: #f08c2a;
-    --color-amber-glow-600: #c46b10;
-    --color-amber-glow-700: #985000;
-    --color-amber-glow-800: #6c3800;
-    --color-amber-glow-900: #402200;
-    --color-amber-glow-950: #2b1600;
-
-    /* Forest Ink — deep forest green, the "edge" dark anchor */
-    --color-forest-ink-50:  #eaf0eb;
-    --color-forest-ink-100: #d5e1d7;
-    --color-forest-ink-200: #abc3af;
-    --color-forest-ink-300: #80a587;
-    --color-forest-ink-400: #56875f;
-    --color-forest-ink-500: #2c6937;
-    --color-forest-ink-600: #23542c;
-    --color-forest-ink-700: #1a3f21;
-    --color-forest-ink-800: #112a16;
-    --color-forest-ink-900: #08150b;
-    --color-forest-ink-950: #050e07;
-
-    /* Marigold — vibrant golden yellow, highlight accent */
-    --color-marigold-50:  #fffaeb;
-    --color-marigold-100: #fff5d6;
-    --color-marigold-200: #ffe9ad;
-    --color-marigold-300: #ffdd85;
-    --color-marigold-400: #ffd15c;
-    --color-marigold-500: #ffc533;
-    --color-marigold-600: #e0a000;
-    --color-marigold-700: #b07c00;
-    --color-marigold-800: #805800;
-    --color-marigold-900: #503500;
-    --color-marigold-950: #362400;
-
-    /* Warm Cream — soft neutral surfaces */
-    --color-warm-cream-50:  #fbf8f3;
-    --color-warm-cream-100: #f7f1e7;
-    --color-warm-cream-200: #efe3cf;
-    --color-warm-cream-300: #e7d5b7;
-    --color-warm-cream-400: #dfc79f;
-    --color-warm-cream-500: #d7b987;
-    --color-warm-cream-600: #ae9469;
-    --color-warm-cream-700: #836f4b;
-    --color-warm-cream-800: #584a2e;
-    --color-warm-cream-900: #2d2517;
-    --color-warm-cream-950: #1e190f;
-
-    /* Fired Clay — warm red-orange, negative indicators */
-    --color-fired-clay-50:  #fceee9;
-    --color-fired-clay-100: #f9ddd3;
-    --color-fired-clay-200: #f3bba6;
-    --color-fired-clay-300: #ed9979;
-    --color-fired-clay-400: #e7774d;
-    --color-fired-clay-500: #e15520;
-    --color-fired-clay-600: #b84015;
-    --color-fired-clay-700: #8e2f0d;
-    --color-fired-clay-800: #641f07;
-    --color-fired-clay-900: #3a1003;
-    --color-fired-clay-950: #280a02;
-
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Eucalyptus palette mapped to shadcn/Radix CSS vars */
+    --background: 37 40% 94%;             /* bark-100  */
+    --foreground: 32 19% 31%;             /* bark-600  */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 27 18% 19%;        /* bark-700  */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --popover-foreground: 27 18% 19%;
+    --primary: 138 25% 39%;               /* eucalyptus-400 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 37 40% 94%;              /* bark-100  */
+    --secondary-foreground: 27 18% 19%;   /* bark-700  */
+    --muted: 40 35% 88%;                  /* bark-200  */
+    --muted-foreground: 35 19% 46%;       /* bark-500  */
+    --accent: 143 29% 95%;               /* eucalyptus-50  */
+    --accent-foreground: 139 27% 23%;    /* eucalyptus-600 */
+    --destructive: 5 56% 51%;             /* redearth-400  */
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 35% 88%;                 /* bark-200  */
+    --input: 40 35% 88%;                  /* bark-200  */
+    --ring: 138 25% 39%;                  /* eucalyptus-400 */
     --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 138 25% 39%;
+    --chart-2: 141 64% 39%;
+    --chart-3: 38 83% 55%;
+    --chart-4: 5 56% 51%;
+    --chart-5: 27 18% 46%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 5%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 222 47% 8%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary: 138 25% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 5 56% 40%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 138 25% 48%;
+    --chart-1: 138 25% 48%;
     --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
+    --chart-3: 38 83% 55%;
+    --chart-4: 5 56% 51%;
     --chart-5: 340 75% 55%;
   }
 }
@@ -129,6 +65,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-bark-100 text-bark-600 font-body;
   }
 }

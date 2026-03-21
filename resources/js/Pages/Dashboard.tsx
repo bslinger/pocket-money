@@ -83,12 +83,12 @@ function ParentDashboard({
     return (
       <Card className="max-w-md mx-auto mt-16 text-center">
         <CardContent className="pt-10 pb-10 flex flex-col items-center gap-4">
-          <div className="rounded-full bg-muted p-4">
-            <PlusCircle className="h-8 w-8 text-muted-foreground" />
+          <div className="rounded-full bg-bark-50 p-4">
+            <PlusCircle className="h-8 w-8 text-bark-500" />
           </div>
           <div>
             <h2 className="font-semibold text-lg">Add your first kid</h2>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-bark-500 text-sm mt-1">
               Family "{families[0].name}" is ready — now add a spender profile for each child.
             </p>
           </div>
@@ -114,7 +114,7 @@ function ParentDashboard({
     <div className="space-y-6">
       {/* Kids carousel — top */}
       <div>
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Kids</h2>
+        <h2 className="text-xs font-semibold text-bark-500 uppercase tracking-wide mb-3">Kids</h2>
         <div className="flex gap-3 overflow-x-auto pb-2">
           {allSpenders.map(({ spender, family }) => (
             <KidCard
@@ -127,7 +127,7 @@ function ParentDashboard({
           ))}
           <Link
             href={route('spenders.create')}
-            className="shrink-0 flex flex-col items-center justify-center w-36 rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors text-muted-foreground text-sm gap-2 min-h-[140px]"
+            className="shrink-0 flex flex-col items-center justify-center w-36 rounded-card border-2 border-dashed border-bark-200 hover:border-eucalyptus-300 transition-colors text-bark-400 text-sm gap-2 min-h-[140px]"
           >
             <PlusCircle className="h-5 w-5" />
             Add kid
@@ -139,13 +139,13 @@ function ParentDashboard({
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardContent className="pt-5 pb-5">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Family Balance</p>
+            <p className="text-xs text-bark-500 uppercase tracking-wide">Family Balance</p>
             <p className="text-3xl font-bold tabular-nums mt-1">{formatAmount(totalBalance, familyCurrencySymbol)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5 pb-5">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Paid This Month</p>
+            <p className="text-xs text-bark-500 uppercase tracking-wide">Paid This Month</p>
             <p className="text-3xl font-bold tabular-nums mt-1">{formatAmount(paidThisMonth, familyCurrencySymbol)}</p>
           </CardContent>
         </Card>
@@ -186,14 +186,14 @@ function ParentDashboard({
                         )}
                         <div className="min-w-0">
                           <p className="text-sm truncate">{tx.description ?? 'Transaction'}</p>
-                          <p className="text-xs text-muted-foreground">{spender?.name}</p>
+                          <p className="text-xs text-bark-500">{spender?.name}</p>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className={`text-sm font-medium tabular-nums ${tx.type === 'credit' ? 'text-green-600' : 'text-red-500'}`}>
+                        <p className={`text-sm font-medium tabular-nums ${tx.type === 'credit' ? 'text-gumleaf-400' : 'text-redearth-400'}`}>
                           {tx.type === 'credit' ? '+' : '-'}{formatAmount(tx.amount, spenderCurrencySymbol(tx.account?.spender ?? { currency_symbol: null }))}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-bark-500">
                           {formatDistanceToNow(new Date(tx.occurred_at), { addSuffix: true })}
                         </p>
                       </div>
@@ -214,19 +214,19 @@ function ParentDashboard({
                       </Avatar>
                       <div className="min-w-0">
                         <p className="text-sm truncate">{completion.chore?.name}</p>
-                        <p className="text-xs text-muted-foreground">{completion.spender?.name} · approved</p>
+                        <p className="text-xs text-bark-500">{completion.spender?.name} · approved</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {hasReward && (
-                        <p className="text-sm font-medium tabular-nums text-green-600">
+                        <p className="text-sm font-medium tabular-nums text-gumleaf-400">
                           +{formatAmount(completion.chore!.amount!, spenderCurrencySymbol(completion.spender ?? { currency_symbol: null }))}
                         </p>
                       )}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-xs text-muted-foreground gap-1.5"
+                        className="text-xs text-bark-500 gap-1.5"
                         onClick={() => router.patch(route('chore-completions.unapprove', completion.id), {}, { preserveScroll: true })}
                       >
                         <Undo2 className="h-3.5 w-3.5" />
@@ -280,7 +280,7 @@ function KidCard({
     : null;
 
   return (
-    <div className="shrink-0 w-40 rounded-xl border bg-card hover:border-primary/40 transition-colors flex flex-col">
+    <div className="shrink-0 w-40 rounded-card border border-bark-200 bg-white hover:border-eucalyptus-300 transition-colors flex flex-col">
       {/* Clickable top area */}
       <Link href={route('spenders.show', spender.id)} prefetch className="flex flex-col gap-3 p-3 flex-1">
         {/* Avatar + name row */}
@@ -301,14 +301,14 @@ function KidCard({
         {goal !== null && goalProgress !== null && (
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-1">
-              <p className="text-xs font-medium truncate text-muted-foreground leading-tight">{goal.name}</p>
+              <p className="text-xs font-medium truncate text-bark-500 leading-tight">{goal.name}</p>
             </div>
             <div className="flex items-center justify-between gap-1">
-              <span className="text-xs tabular-nums text-amber-600 font-medium">{formatAmount(goalCurrent, currencySymbol)}</span>
-              <span className="text-xs tabular-nums text-muted-foreground">{formatAmount(parseFloat(String(goal.target_amount)), currencySymbol)}</span>
+              <span className="text-xs tabular-nums text-wattle-600 font-medium">{formatAmount(goalCurrent, currencySymbol)}</span>
+              <span className="text-xs tabular-nums text-bark-500">{formatAmount(parseFloat(String(goal.target_amount)), currencySymbol)}</span>
             </div>
-            <div className="w-full bg-muted rounded-full h-1.5">
-              <div className="bg-amber-400 h-1.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
+            <div className="w-full bg-bark-200 rounded-full h-1.5">
+              <div className="bg-wattle-400 h-1.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
             </div>
           </div>
         )}
@@ -318,16 +318,16 @@ function KidCard({
       <div className="flex border-t">
         <button
           onClick={onSubtract}
-          className="flex-1 flex items-center justify-center gap-1 py-2 text-red-500 hover:bg-red-50 transition-colors rounded-bl-xl"
+          className="flex-1 flex items-center justify-center gap-1 py-2 text-redearth-400 hover:bg-redearth-50 transition-colors rounded-bl-xl"
           aria-label={`Subtract from ${spender.name}`}
         >
           <Minus className="h-3.5 w-3.5" />
           <span className="text-xs font-medium">Spend</span>
         </button>
-        <div className="w-px bg-border" />
+        <div className="w-px bg-bark-200" />
         <button
           onClick={onAdd}
-          className="flex-1 flex items-center justify-center gap-1 py-2 text-green-600 hover:bg-green-50 transition-colors rounded-br-xl"
+          className="flex-1 flex items-center justify-center gap-1 py-2 text-gumleaf-400 hover:bg-gumleaf-50 transition-colors rounded-br-xl"
           aria-label={`Add to ${spender.name}`}
         >
           <Plus className="h-3.5 w-3.5" />
@@ -387,7 +387,7 @@ function QuickTransactionModal({
 
       {/* Panel */}
       <div
-        className="relative w-full max-w-sm bg-card rounded-2xl shadow-xl p-5 flex flex-col gap-4"
+        className="relative w-full max-w-sm bg-white border border-bark-200 rounded-2xl shadow-xl p-5 flex flex-col gap-4"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -401,7 +401,7 @@ function QuickTransactionModal({
             </Avatar>
             <span className="font-semibold text-sm">{spender.name}</span>
           </div>
-          <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} aria-label="Close" className="text-bark-500 hover:text-bark-700 transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -409,11 +409,11 @@ function QuickTransactionModal({
         {/* Account selector (only shown if spender has multiple accounts) */}
         {accounts.length > 1 && (
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Account</Label>
+            <Label className="text-xs text-bark-500">Account</Label>
             <select
               value={selectedAccountId}
               onChange={e => setSelectedAccountId(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-full rounded-md border border-bark-200 bg-bark-50 px-3 py-2 text-sm"
             >
               {accounts.map(a => (
                 <option key={a.id} value={a.id}>{a.name}</option>
@@ -428,18 +428,18 @@ function QuickTransactionModal({
             type="button"
             onClick={() => switchType('debit')}
             className={`flex-1 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
-              type === 'debit' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-muted'
+              type === 'debit' ? 'bg-redearth-400 text-white' : 'text-bark-500 hover:bg-bark-50'
             }`}
           >
             <Minus className="h-3.5 w-3.5" />
             Spend
           </button>
-          <div className="w-px bg-border" />
+          <div className="w-px bg-bark-200" />
           <button
             type="button"
             onClick={() => switchType('credit')}
             className={`flex-1 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
-              type === 'credit' ? 'bg-green-600 text-white' : 'text-muted-foreground hover:bg-muted'
+              type === 'credit' ? 'bg-gumleaf-400 text-white' : 'text-bark-500 hover:bg-bark-50'
             }`}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -467,7 +467,7 @@ function QuickTransactionModal({
 
           {/* Description */}
           <div className="space-y-1">
-            <Label htmlFor="quick-desc">Note <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Label htmlFor="quick-desc">Note <span className="text-bark-500 font-normal">(optional)</span></Label>
             <Input
               id="quick-desc"
               placeholder="e.g. Pocket money"
@@ -479,7 +479,7 @@ function QuickTransactionModal({
           <Button
             type="submit"
             disabled={processing || !data.amount}
-            className={type === 'credit' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-500 hover:bg-red-600'}
+            className={type === 'credit' ? 'bg-gumleaf-400 hover:bg-gumleaf-500' : 'bg-redearth-400 hover:bg-redearth-500'}
           >
             {type === 'credit' ? 'Add' : 'Deduct'} {data.amount ? `${currencySymbol}${data.amount}` : ''}
           </Button>
@@ -517,15 +517,15 @@ function PendingApprovals({ initialPending }: {
   }
 
   return (
-    <Card className="border-amber-200">
+    <Card className="border-wattle-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             Needs your approval
-            <Badge className="bg-amber-100 text-amber-800 border-amber-200">{pending.length}</Badge>
+            <Badge className="bg-wattle-50 text-wattle-600 border-wattle-200">{pending.length}</Badge>
           </CardTitle>
           {pending.length > 1 && (
-            <Button size="sm" variant="outline" className="border-green-300 text-green-700 hover:bg-green-50 gap-1.5 h-7 text-xs" onClick={approveAll}>
+            <Button size="sm" variant="outline" className="border-gumleaf-200 text-gumleaf-600 hover:bg-gumleaf-50 gap-1.5 h-7 text-xs" onClick={approveAll}>
               <CheckCheck className="h-3.5 w-3.5" />
               Approve all
             </Button>
@@ -546,16 +546,16 @@ function PendingApprovals({ initialPending }: {
                 <p className="text-sm font-medium truncate">
                   {c.chore.emoji ? `${c.chore.emoji} ` : ''}{c.chore.name}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-bark-500">
                   {c.spender.name} · {formatDistanceToNow(new Date(c.completed_at), { addSuffix: true })}
                 </p>
               </div>
             </div>
             <div className="flex gap-1.5 shrink-0">
-              <Button size="icon" variant="outline" className="h-8 w-8 border-green-300 text-green-700 hover:bg-green-50" onClick={() => approve(c)}>
+              <Button size="icon" variant="outline" className="h-8 w-8 border-gumleaf-200 text-gumleaf-600 hover:bg-gumleaf-50" onClick={() => approve(c)}>
                 <Check className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="outline" className="h-8 w-8 border-red-300 text-red-600 hover:bg-red-50" onClick={() => decline(c)}>
+              <Button size="icon" variant="outline" className="h-8 w-8 border-redearth-200 text-redearth-600 hover:bg-redearth-50" onClick={() => decline(c)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -579,12 +579,12 @@ function CreateFamilyWizard() {
   return (
     <Card className="max-w-md mx-auto mt-16">
       <CardContent className="pt-10 pb-10 flex flex-col items-center gap-6">
-        <div className="rounded-full bg-muted p-4">
-          <PlusCircle className="h-8 w-8 text-muted-foreground" />
+        <div className="rounded-full bg-bark-50 p-4">
+          <PlusCircle className="h-8 w-8 text-bark-500" />
         </div>
         <div className="text-center">
           <h2 className="font-semibold text-lg">Create your family</h2>
-          <p className="text-muted-foreground text-sm mt-1">Give your family a name to get started.</p>
+          <p className="text-bark-500 text-sm mt-1">Give your family a name to get started.</p>
         </div>
         <form onSubmit={submit} className="w-full space-y-4">
           <div className="space-y-1.5">
@@ -612,19 +612,19 @@ function ChildDashboard({ spenders, isParentPreview = false }: { spenders: Spend
   const kidName = spenders[0]?.name;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-nightsky-700 text-white">
       <header className="flex items-center justify-between px-6 py-4">
         {isParentPreview && kidName ? (
           <span className="font-semibold text-white">{kidName}&apos;s view</span>
         ) : (
-          <span className="font-serif text-xl font-bold tracking-tight text-white">Quiddo</span>
+          <span className="font-display text-xl font-bold tracking-tight text-white">Quiddo</span>
         )}
         {isParentPreview ? (
           <Link
             href={route('dashboard.exit-view-as')}
             method="delete"
             as="button"
-            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Back to parent view
@@ -634,7 +634,7 @@ function ChildDashboard({ spenders, isParentPreview = false }: { spenders: Spend
             href={route('logout')}
             method="post"
             as="button"
-            className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
           >
             <LogOut className="h-4 w-4" />
             Log out
@@ -647,7 +647,7 @@ function ChildDashboard({ spenders, isParentPreview = false }: { spenders: Spend
           <ChildSpenderView key={spender.id} spender={spender} />
         ))}
         {spenders.length === 0 && (
-          <p className="text-center text-gray-500 pt-16">No profile linked yet. Ask a parent to set you up!</p>
+          <p className="text-center text-white/60 pt-16">No profile linked yet. Ask a parent to set you up!</p>
         )}
       </main>
     </div>
@@ -660,27 +660,27 @@ function GoalProgressCard({ goal, currencySymbol }: { goal: SavingsGoal; currenc
   const pct     = Math.min(100, target > 0 ? (current / target) * 100 : 0);
 
   return (
-    <div className="bg-gray-900 rounded-2xl overflow-hidden">
+    <div className="bg-nightsky-600 rounded-2xl overflow-hidden">
       {goal.image_url && (
         <img src={goal.image_url} alt={goal.name} className="w-full h-28 object-cover" />
       )}
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-amber-400" />
+            <TrendingUp className="h-4 w-4 text-wattle-300" />
             <span className="text-sm font-medium">{goal.name}</span>
           </div>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-white/60">
             {goal.is_completed ? '🎉 Done!' : `${pct.toFixed(0)}%`}
           </span>
         </div>
-        <div className="bg-gray-800 rounded-full h-2.5">
+        <div className="bg-white/10 rounded-full h-2.5">
           <div
-            className={`h-2.5 rounded-full transition-all ${goal.is_completed ? 'bg-green-400' : 'bg-amber-400'}`}
+            className={`h-2.5 rounded-full transition-all ${goal.is_completed ? 'bg-gumleaf-400' : 'bg-wattle-400'}`}
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="mt-1.5 text-xs text-gray-500 text-center">
+        <div className="mt-1.5 text-xs text-white/60 text-center">
           <span>{formatAmount(current, currencySymbol)} of {formatAmount(target, currencySymbol)} ({pct.toFixed(0)}%)</span>
         </div>
       </div>
@@ -702,7 +702,7 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
           style={{ backgroundColor: spender.color ?? '#6366f1' }}>
           <span className="text-2xl font-bold text-white">{spender.name[0].toUpperCase()}</span>
         </div>
-        <p className="text-gray-400 text-sm">{spender.name}</p>
+        <p className="text-white/60 text-sm">{spender.name}</p>
         <p className="text-5xl font-bold tabular-nums mt-2" style={{ color: spender.color ?? '#6366f1' }}>
           {formatAmount(mainBalance, currencySymbol)}
         </p>
@@ -710,7 +710,7 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
 
       {goals.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Goals</h3>
+          <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wide">My Goals</h3>
           {goals.map(goal => (
             <GoalProgressCard key={goal.id} goal={goal} currencySymbol={currencySymbol} />
           ))}
@@ -719,7 +719,7 @@ function ChildSpenderView({ spender }: { spender: Spender }) {
 
       {(spender.chores?.length ?? 0) > 0 && (
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">My Chores</h3>
+          <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wide">My Chores</h3>
           {spender.chores?.map(chore => (
             <ChoreItem key={chore.id} chore={chore} spenderId={spender.id} weekCompletions={spender.chore_completions ?? []} currencySymbol={currencySymbol} />
           ))}
@@ -753,9 +753,9 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
   const reviewerName = reviewer?.parent_title ?? reviewer?.name ?? 'Your parent';
 
   return (
-    <div className="bg-gray-900 rounded-2xl p-4 flex flex-col gap-3">
+    <div className="bg-nightsky-600 rounded-2xl p-4 flex flex-col gap-3">
       {isDeclined && (
-        <div className="flex items-center justify-center gap-1.5 text-red-400 text-xs font-medium">
+        <div className="flex items-center justify-center gap-1.5 text-redearth-400 text-xs font-medium">
           <Undo2 className="h-3.5 w-3.5 shrink-0" />
           <span>{reviewerName} sent this back</span>
         </div>
@@ -766,7 +766,7 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
           <div>
             <p className="font-medium text-sm">{chore.name}</p>
             {chore.reward_type === 'earns' && chore.amount && (
-              <p className="text-xs text-amber-400">{formatAmount(chore.amount, currencySymbol)}</p>
+              <p className="text-xs text-wattle-300">{formatAmount(chore.amount, currencySymbol)}</p>
             )}
           </div>
         </div>
@@ -775,19 +775,19 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
           <button
             onClick={markDone}
             disabled={processing}
-            className="flex items-center gap-1.5 bg-white text-gray-900 text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-60"
+            className="flex items-center gap-1.5 bg-wattle-400 text-wattle-900 text-sm font-semibold px-3 py-1.5 rounded-full hover:bg-wattle-300 transition-colors disabled:opacity-60"
           >
             <Check className="h-3.5 w-3.5" />
             {isDeclined ? 'This time I really did it!' : 'I did it!'}
           </button>
         )}
         {status === 'pending' && (
-          <span className="flex items-center gap-1.5 text-amber-400 text-sm font-medium">
+          <span className="flex items-center gap-1.5 text-wattle-300 text-sm font-medium">
             ⏳ Waiting confirmation
           </span>
         )}
         {status === 'approved' && (
-          <span className="flex items-center gap-1.5 text-green-400 text-sm font-medium">
+          <span className="flex items-center gap-1.5 text-gumleaf-400 text-sm font-medium">
             <Check className="h-3.5 w-3.5" /> Done
           </span>
         )}

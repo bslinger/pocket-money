@@ -37,26 +37,26 @@ function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processin
                     <p className="font-medium text-xs uppercase tracking-wide text-muted-foreground">What they'll get access to</p>
                     <ul className="space-y-2">
                         <li className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-gumleaf-400 shrink-0" />
                             View account balances and transactions
                         </li>
                         <li className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-gumleaf-400 shrink-0" />
                             Track savings goals progress
                         </li>
                         <li className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-gumleaf-400 shrink-0" />
                             Mark chores as complete
                         </li>
                     </ul>
                 </div>
 
-                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-3 space-y-1 text-sm">
-                    <p className="font-medium flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+                <div className="rounded-lg border border-wattle-200 bg-wattle-50 p-3 space-y-1 text-sm">
+                    <p className="font-medium flex items-center gap-1.5 text-wattle-600">
                         <Smartphone className="h-3.5 w-3.5" />
                         What the child needs to do
                     </p>
-                    <p className="text-amber-700/80 dark:text-amber-500 text-xs">
+                    <p className="text-wattle-600/80 text-xs">
                         They'll receive an email with a link. They'll need to create a Quiddo account (or log in) using this email address to accept the invitation.
                     </p>
                 </div>
@@ -147,7 +147,7 @@ function ChildLoginCard({ spender, pendingInvitations }: { spender: Spender; pen
                             {pendingInvitations.map(inv => (
                                 <div key={inv.id} className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <Mail className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                                        <Mail className="h-3.5 w-3.5 text-wattle-400 shrink-0" />
                                         <span className="text-sm truncate text-muted-foreground">{inv.email}</span>
                                         <Badge variant="outline" className="text-xs shrink-0">Pending</Badge>
                                     </div>
@@ -196,7 +196,7 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                 <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
                         <AvatarImage src={spender.avatar_url ?? undefined} />
-                        <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white font-semibold">
+                        <AvatarFallback style={{ backgroundColor: spender.color ?? '#4A7C59' }} className="text-white font-semibold">
                             {spender.name[0].toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
