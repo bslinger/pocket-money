@@ -125,6 +125,6 @@ Organised by strategic area, with specific tasks nested under each.
  - [x] The emoji picker on the family edit page should match the dark/light mode of the page. It's currently in dark mode.
  - [x] The pluralisation of the currency needs to be better - find and install a pluralisation library that will help.
 
-## Next Steps
- - [ ] Instead of requiring a child account to already have an existing user, send an email to invite a user as a child account
- - [ ] 
+## Infrastructure Stuff v1
+ - [ ] Enable Asset Prefetching through Vite
+ - [ ] Add Inertia link prefetching everywhere it makes sense
