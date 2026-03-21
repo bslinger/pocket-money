@@ -46,7 +46,7 @@ test.describe('Onboarding wizard', () => {
         await expect(page.getByText("What do your kids earn?")).toBeVisible();
     });
 
-    test('onboarding step 2: currency - select preset', async ({ page }) => {
+    test('onboarding step 2: currency - select symbol', async ({ page }) => {
         const email = `onboard+${Date.now()}@example.com`;
         await page.goto('/register');
         await page.fill('#name', 'New Parent');
@@ -59,13 +59,12 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');
 
-        // Default is "Real money" with US Dollar selected
+        // Default is "Real money" with symbol grid visible
         await expect(page.getByText('💵 Real money')).toBeVisible();
-        await expect(page.getByText('US Dollar')).toBeVisible();
 
-        // Select British Pound
-        await page.click('button:has-text("British Pound")');
-        await expect(page.locator('button:has-text("British Pound")')).toHaveClass(/border-primary/);
+        // Select £ symbol
+        await page.click('button:has-text("£")');
+        await expect(page.locator('button:has-text("£")')).toHaveClass(/border-primary/);
 
         await page.click('button:has-text("Continue")');
         await expect(page.getByText('Add your kids')).toBeVisible();
@@ -127,6 +126,31 @@ test.describe('Onboarding wizard', () => {
         // Should redirect to the Continue page
         await expect(page).toHaveURL(/onboarding\/.*\/continue/);
         await expect(page.getByText('The Testers is ready!')).toBeVisible();
+    });
+
+    test('onboarding step 3: add kid with starting balance', async ({ page }) => {
+        const email = `onboard+${Date.now()}@example.com`;
+        await page.goto('/register');
+        await page.fill('#name', 'New Parent');
+        await page.fill('#email', email);
+        await page.fill('#password', 'password123');
+        await page.fill('#password_confirmation', 'password123');
+        await page.click('button[type=submit]');
+        await page.goto('/dev/verify-email');
+
+        await page.fill('#family-name', 'The Testers');
+        await page.click('button:has-text("Continue")');
+        await page.click('button:has-text("Continue")');
+
+        // Add a kid with a starting balance
+        await page.click('button:has-text("Add a kid")');
+        await page.locator('input[placeholder="Kid 1 name"]').fill('Lily');
+        await page.locator('input[type=number][placeholder="0"]').fill('15');
+
+        await page.click('button:has-text("Create family")');
+
+        // Should redirect to the Continue page
+        await expect(page).toHaveURL(/onboarding\/.*\/continue/);
     });
 
     test('onboarding continue: pocket money step - enable for first kid', async ({ page }) => {

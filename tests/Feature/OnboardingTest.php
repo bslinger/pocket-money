@@ -133,6 +133,40 @@ describe('onboarding', function () {
             expect($alice->accounts()->count())->toBe(1);
         });
 
+        it('sets the starting balance on accounts when provided', function () {
+            $user = User::factory()->create();
+
+            $this->actingAs($user)
+                ->post(route('onboarding.store'), [
+                    'name'     => 'The Bakers',
+                    'spenders' => [
+                        ['name' => 'Lily', 'color' => '#6366f1', 'balance' => '12.50'],
+                        ['name' => 'Tom',  'color' => '#8b5cf6', 'balance' => '0'],
+                    ],
+                ]);
+
+            $lily = Spender::where('name', 'Lily')->first();
+            expect((float) $lily->accounts()->first()->balance)->toBe(12.5);
+
+            $tom = Spender::where('name', 'Tom')->first();
+            expect((float) $tom->accounts()->first()->balance)->toBe(0.0);
+        });
+
+        it('defaults balance to zero when not provided', function () {
+            $user = User::factory()->create();
+
+            $this->actingAs($user)
+                ->post(route('onboarding.store'), [
+                    'name'     => 'The Hills',
+                    'spenders' => [
+                        ['name' => 'Sam', 'color' => '#6366f1'],
+                    ],
+                ]);
+
+            $sam = Spender::where('name', 'Sam')->first();
+            expect((float) $sam->accounts()->first()->balance)->toBe(0.0);
+        });
+
         it('validates that name is required', function () {
             $user = User::factory()->create();
 
