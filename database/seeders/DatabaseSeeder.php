@@ -186,6 +186,18 @@ class DatabaseSeeder extends Seeder
             ['status' => CompletionStatus::Pending]
         );
 
+        // ── Completions (declined) ───────────────────────────────────────────
+
+        ChoreCompletion::firstOrCreate(
+            ['chore_id' => $dishes->id, 'spender_id' => $emma->id, 'completed_at' => now()->subHours(5)],
+            ['status' => CompletionStatus::Declined, 'reviewed_at' => now()->subHours(4), 'reviewed_by' => $user->id]
+        );
+
+        ChoreCompletion::firstOrCreate(
+            ['chore_id' => $vacuum->id, 'spender_id' => $jack->id, 'completed_at' => now()->subHours(3)],
+            ['status' => CompletionStatus::Declined, 'reviewed_at' => now()->subHours(2), 'reviewed_by' => $user->id]
+        );
+
         // Wash the dishes: emma today — not yet submitted (no completion record needed)
         // Make bed: not done by anyone today — no completion record needed
     }
