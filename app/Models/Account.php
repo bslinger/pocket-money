@@ -20,12 +20,17 @@ class Account extends Model
         'spender_id',
         'name',
         'balance',
+        'currency_name',
+        'currency_name_plural',
+        'currency_symbol',
+        'use_integer_amounts',
     ];
 
     protected function casts(): array
     {
         return [
-            'balance' => 'decimal:2',
+            'balance'             => 'decimal:2',
+            'use_integer_amounts' => 'boolean',
         ];
     }
 

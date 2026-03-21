@@ -160,8 +160,11 @@ class SpenderController extends Controller
 
     public function edit(Spender $spender)
     {
+        $spender->load('accounts');
+
         $schedule = PocketMoneySchedule::where('spender_id', $spender->id)
             ->where('is_active', true)
+            ->with('account')
             ->first();
 
         $choreRewards = $spender->choreRewards()

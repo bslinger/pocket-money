@@ -10,7 +10,7 @@ import { Label } from '@/Components/ui/label';
 import { PlusCircle, Check, CheckCheck, X, LogOut, TrendingUp, Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { formatAmount, spenderCurrencySymbol, spenderUsesIntegers } from '@/lib/utils';
+import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol, accountUsesIntegers } from '@/lib/utils';
 
 interface Props {
   isParent: boolean;
@@ -64,7 +64,7 @@ function ParentDashboard({
   totalBalance: string;
   paidThisMonth: string;
 }) {
-  const [quickTxModal, setQuickTxModal] = useState<{ spender: Spender; accountId: string; type: 'credit' | 'debit' } | null>(null);
+  const [quickTxModal, setQuickTxModal] = useState<{ spender: Spender; family: Family; type: 'credit' | 'debit' } | null>(null);
   const familyCurrencySymbol = families[0]?.currency_symbol ?? '$';
 
   if (families.length === 0) {
@@ -97,10 +97,9 @@ function ParentDashboard({
 
   const allSpenders = families.flatMap(f => (f.spenders ?? []).map(s => ({ spender: s, family: f })));
 
-  function openQuickTx(spender: Spender, type: 'credit' | 'debit') {
-    const mainAccount = spender.accounts?.[0];
-    if (!mainAccount) return;
-    setQuickTxModal({ spender, accountId: mainAccount.id, type });
+  function openQuickTx(spender: Spender, family: Family, type: 'credit' | 'debit') {
+    if (!spender.accounts?.length) return;
+    setQuickTxModal({ spender, family, type });
   }
 
   return (
@@ -113,9 +112,9 @@ function ParentDashboard({
             <KidCard
               key={spender.id}
               spender={spender}
-              currencySymbol={spender.currency_symbol ?? family.currency_symbol}
-              onAdd={() => openQuickTx(spender, 'credit')}
-              onSubtract={() => openQuickTx(spender, 'debit')}
+              currencySymbol={family.currency_symbol}
+              onAdd={() => openQuickTx(spender, family, 'credit')}
+              onSubtract={() => openQuickTx(spender, family, 'debit')}
             />
           ))}
           <Link
@@ -191,7 +190,7 @@ function ParentDashboard({
       {quickTxModal && (
         <QuickTransactionModal
           spender={quickTxModal.spender}
-          accountId={quickTxModal.accountId}
+          family={quickTxModal.family}
           initialType={quickTxModal.type}
           onClose={() => setQuickTxModal(null)}
         />
@@ -248,9 +247,18 @@ function KidCard({
         <p className="text-2xl font-bold tabular-nums">{formatAmount(mainBalance, currencySymbol)}</p>
 
         {/* Goal progress */}
-        {goalProgress !== null && (
-          <div className="w-full bg-muted rounded-full h-1.5">
-            <div className="bg-amber-400 h-1.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
+        {goal !== null && goalProgress !== null && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-1">
+              <p className="text-xs font-medium truncate text-muted-foreground leading-tight">{goal.name}</p>
+            </div>
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-xs tabular-nums text-amber-600 font-medium">{formatAmount(goalCurrent, currencySymbol)}</span>
+              <span className="text-xs tabular-nums text-muted-foreground">{formatAmount(parseFloat(String(goal.target_amount)), currencySymbol)}</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-1.5">
+              <div className="bg-amber-400 h-1.5 rounded-full transition-all" style={{ width: `${goalProgress}%` }} />
+            </div>
           </div>
         )}
       </Link>
@@ -283,17 +291,20 @@ function KidCard({
 
 function QuickTransactionModal({
   spender,
-  accountId,
+  family,
   initialType,
   onClose,
 }: {
   spender: Spender;
-  accountId: string;
+  family: Family;
   initialType: 'credit' | 'debit';
   onClose: () => void;
 }) {
-  const currencySymbol = spenderCurrencySymbol(spender);
-  const useIntegers = spenderUsesIntegers(spender);
+  const accounts = spender.accounts ?? [];
+  const [selectedAccountId, setSelectedAccountId] = useState(accounts[0]?.id ?? '');
+  const selectedAccount = accounts.find(a => a.id === selectedAccountId) ?? accounts[0];
+  const currencySymbol = selectedAccount ? accountCurrencySymbol(selectedAccount, family) : (family.currency_symbol ?? '$');
+  const useIntegers = selectedAccount ? accountUsesIntegers(selectedAccount, family) : false;
   const [type, setType] = useState<'credit' | 'debit'>(initialType);
   const { data, setData, post, processing, errors, reset } = useForm({
     type,
@@ -304,7 +315,7 @@ function QuickTransactionModal({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    post(route('accounts.transactions.store', accountId), {
+    post(route('accounts.transactions.store', selectedAccountId), {
       onSuccess: () => {
         reset();
         onClose();
@@ -343,6 +354,22 @@ function QuickTransactionModal({
             <X className="h-5 w-5" />
           </button>
         </div>
+
+        {/* Account selector (only shown if spender has multiple accounts) */}
+        {accounts.length > 1 && (
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Account</Label>
+            <select
+              value={selectedAccountId}
+              onChange={e => setSelectedAccountId(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              {accounts.map(a => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Credit / Debit toggle — subtract left, add right */}
         <div className="flex rounded-lg border overflow-hidden">

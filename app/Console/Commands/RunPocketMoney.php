@@ -21,7 +21,7 @@ class RunPocketMoney extends Command
             ->where('is_active', true)
             ->whereNotNull('next_run_at')
             ->where('next_run_at', '<=', now())
-            ->with(['spender.chores', 'spender.choreCompletions', 'spender.accounts'])
+            ->with(['spender.chores', 'spender.choreCompletions', 'spender.accounts', 'account'])
             ->get();
 
         $this->info("Processing {$due->count()} due pocket money schedules...");
@@ -72,7 +72,7 @@ class RunPocketMoney extends Command
         }
 
         DB::transaction(function () use ($schedule, $spender) {
-            $account = SpenderService::mainAccount($spender);
+            $account = $schedule->account ?? SpenderService::mainAccount($spender);
             Transaction::create([
                 'account_id'  => $account->id,
                 'type'        => 'credit',

@@ -52,6 +52,24 @@ describe('pocket money schedule controller', function () {
             expect($schedule->day_of_month)->toBe(15);
         });
 
+        it('stores account_id on the schedule', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $account = Account::factory()->create(['spender_id' => $spender->id]);
+
+            $this->actingAs($user)
+                ->post(route('pocket-money-schedule.store', $spender->id), [
+                    'amount'       => '5.00',
+                    'frequency'    => 'weekly',
+                    'day_of_week'  => 0,
+                    'account_id'   => $account->id,
+                ])
+                ->assertRedirect();
+
+            $schedule = PocketMoneySchedule::where('spender_id', $spender->id)->first();
+            expect($schedule->account_id)->toBe($account->id);
+        });
+
         it('deactivates existing schedule when creating a new one', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
@@ -192,6 +210,25 @@ describe('pocket-money:run command', function () {
         Artisan::call('pocket-money:run');
 
         expect($schedule->fresh()->next_run_at->gt($originalNextRun))->toBeTrue();
+    });
+
+    it('pays into the schedule account when account_id is set', function () {
+        [$user, , $spenders] = parentWithFamily(['Emma']);
+        $spender = $spenders->first();
+        $mainAccount = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
+        $targetAccount = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
+
+        PocketMoneySchedule::factory()->due()->create([
+            'spender_id' => $spender->id,
+            'account_id' => $targetAccount->id,
+            'amount'     => '7.00',
+            'created_by' => $user->id,
+        ]);
+
+        Artisan::call('pocket-money:run');
+
+        expect((float) $mainAccount->fresh()->balance)->toBe(0.0);
+        expect((float) $targetAccount->fresh()->balance)->toBe(7.0);
     });
 
     it('does not process inactive schedules', function () {

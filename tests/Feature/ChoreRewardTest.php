@@ -222,6 +222,37 @@ describe('chore rewards', function () {
             expect((float) $account->fresh()->balance)->toBe(0.0);
         });
 
+        it('pays into the reward account when account_id is set', function () {
+            [$user, $family, $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+            $mainAccount   = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
+            $targetAccount = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
+
+            $chore = Chore::factory()->create(['family_id' => $family->id]);
+            $spender->chores()->attach($chore->id);
+
+            ChoreCompletion::factory()->create([
+                'chore_id'   => $chore->id,
+                'spender_id' => $spender->id,
+                'status'     => CompletionStatus::Approved,
+            ]);
+
+            $reward = ChoreReward::factory()->create([
+                'spender_id'  => $spender->id,
+                'account_id'  => $targetAccount->id,
+                'amount'      => '8.00',
+                'payout_date' => now()->toDateString(),
+                'is_paid'     => false,
+                'created_by'  => $user->id,
+            ]);
+            $reward->chores()->attach($chore->id);
+
+            Artisan::call('chore-rewards:run');
+
+            expect((float) $mainAccount->fresh()->balance)->toBe(0.0);
+            expect((float) $targetAccount->fresh()->balance)->toBe(8.0);
+        });
+
         it('does not process future payout dates', function () {
             [$user, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();

@@ -25,9 +25,14 @@ class AccountController extends Controller
             ? \App\Models\Spender::whereIn('family_id', $user->families()->pluck('families.id'))->get()
             : $user->spenders()->get();
 
+        $family = $user->families()
+            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->first();
+
         return Inertia::render('Accounts/Create', [
             'spenders'              => $spenders,
             'preselectedSpenderId'  => $request->query('spender_id'),
+            'family'                => $family,
         ]);
     }
 

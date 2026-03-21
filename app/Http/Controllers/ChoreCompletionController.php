@@ -100,7 +100,7 @@ class ChoreCompletionController extends Controller
         $rewards = ChoreReward::where('spender_id', $completion->spender_id)
             ->where('is_paid', false)
             ->whereNull('payout_date')
-            ->with(['chores', 'spender.choreCompletions'])
+            ->with(['chores', 'spender.choreCompletions', 'account'])
             ->get();
 
         foreach ($rewards as $reward) {

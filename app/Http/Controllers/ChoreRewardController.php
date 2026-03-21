@@ -18,12 +18,14 @@ class ChoreRewardController extends Controller
             'amount'      => ['required', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string', 'max:255'],
             'payout_date' => ['nullable', 'date'],
+            'account_id'  => ['nullable', 'uuid', 'exists:accounts,id'],
             'chore_ids'   => ['required', 'array', 'min:1'],
             'chore_ids.*' => ['required', 'uuid'],
         ]);
 
         $reward = ChoreReward::create([
             'spender_id'  => $spender->id,
+            'account_id'  => $data['account_id'] ?? null,
             'amount'      => $data['amount'],
             'description' => $data['description'] ?? null,
             'payout_date' => $data['payout_date'] ?? null,
@@ -34,7 +36,7 @@ class ChoreRewardController extends Controller
 
         // If no payout date, check immediately if all chores are already done
         if (!$reward->payout_date) {
-            $reward->load('chores', 'spender.choreCompletions');
+            $reward->load('chores', 'spender.choreCompletions', 'account');
             if ($reward->allChoresCompleted()) {
                 $this->pay($reward);
             }
@@ -52,7 +54,7 @@ class ChoreRewardController extends Controller
     public static function pay(ChoreReward $reward): void
     {
         DB::transaction(function () use ($reward) {
-            $account = SpenderService::mainAccount($reward->spender);
+            $account = $reward->account ?? SpenderService::mainAccount($reward->spender);
             $transaction = Transaction::create([
                 'account_id'  => $account->id,
                 'type'        => 'credit',

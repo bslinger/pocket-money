@@ -21,6 +21,28 @@ describe('accounts', function () {
             expect((float) $account->balance)->toBe(0.0);
         });
 
+        it('creates an account with custom currency settings', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $spender = $spenders->first();
+
+            $this->actingAs($user)
+                ->post(route('accounts.store'), [
+                    'spender_id'          => $spender->id,
+                    'name'                => 'Star Bucks',
+                    'currency_symbol'     => '⭐',
+                    'currency_name'       => 'Star',
+                    'currency_name_plural' => 'Stars',
+                    'use_integer_amounts' => true,
+                ])
+                ->assertRedirect();
+
+            $account = Account::where('spender_id', $spender->id)->first();
+            expect($account)->not->toBeNull();
+            expect($account->currency_symbol)->toBe('⭐');
+            expect($account->currency_name)->toBe('Star');
+            expect($account->use_integer_amounts)->toBeTrue();
+        });
+
         it('validates that name is required', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
 

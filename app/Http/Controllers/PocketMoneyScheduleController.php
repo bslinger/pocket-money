@@ -15,6 +15,7 @@ class PocketMoneyScheduleController extends Controller
             'frequency'     => ['required', 'in:weekly,monthly'],
             'day_of_week'   => ['nullable', 'integer', 'min:0', 'max:6'],
             'day_of_month'  => ['nullable', 'integer', 'min:1', 'max:31'],
+            'account_id'    => ['nullable', 'uuid', 'exists:accounts,id'],
         ]);
 
         // Deactivate any existing schedule for this spender
@@ -24,6 +25,7 @@ class PocketMoneyScheduleController extends Controller
 
         PocketMoneySchedule::create([
             'spender_id'   => $spender->id,
+            'account_id'   => $data['account_id'] ?? null,
             'amount'       => $data['amount'],
             'frequency'    => $data['frequency'],
             'day_of_week'  => $data['day_of_week'] ?? null,

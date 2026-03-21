@@ -1,14 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import { Spender, Family, PocketMoneySchedule, Chore, ChoreReward } from '@/types/models';
+import { Spender, Family, PocketMoneySchedule, Chore, ChoreReward, Account } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { cn, guessNameFromEmoji } from '@/lib/utils';
-import EmojiPickerField from '@/Components/EmojiPickerField';
+import { cn } from '@/lib/utils';
 import ImageUpload from '@/Components/ImageUpload';
-import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 
 const COLOURS = [
@@ -19,7 +17,7 @@ const COLOURS = [
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 interface Props {
-    spender: Spender;
+    spender: Spender & { accounts?: Account[] };
     family: Family;
     pocketMoneySchedule: PocketMoneySchedule | null;
     choreRewards: ChoreReward[];
@@ -27,30 +25,19 @@ interface Props {
 }
 
 export default function SpenderEdit({ spender, family, pocketMoneySchedule, choreRewards, availableChores }: Props) {
-    const hasOverride = !!(spender.currency_symbol || spender.currency_name);
-    const [overrideCurrency, setOverrideCurrency] = useState(hasOverride);
-
     const { data, setData, put, processing, errors } = useForm({
-        family_id:        spender.family_id,
-        name:             spender.name,
-        avatar_key:       '',
-        color:            spender.color ?? COLOURS[0],
-        currency_name:         spender.currency_name ?? '',
-        currency_name_plural:  spender.currency_name_plural ?? '',
-        currency_symbol:       spender.currency_symbol ?? '',
+        family_id: spender.family_id,
+        name:      spender.name,
+        avatar_key: '',
+        color:     spender.color ?? COLOURS[0],
     });
-
-    function toggleOverride(checked: boolean) {
-        setOverrideCurrency(checked);
-        if (!checked) {
-            setData(d => ({ ...d, currency_name: '', currency_name_plural: '', currency_symbol: '' }));
-        }
-    }
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
         put(route('spenders.update', spender.id));
     }
+
+    const accounts = spender.accounts ?? [];
 
     return (
         <AuthenticatedLayout header={<h1 className="text-xl font-semibold">Edit Spender</h1>}>
@@ -100,64 +87,6 @@ export default function SpenderEdit({ spender, family, pocketMoneySchedule, chor
                                 ))}
                             </div>
                         </div>
-
-                        {/* Currency override */}
-                        <div className="space-y-3">
-                            <label className="flex items-center gap-2.5 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={overrideCurrency}
-                                    onChange={e => toggleOverride(e.target.checked)}
-                                    className="rounded accent-primary"
-                                />
-                                <div>
-                                    <p className="text-sm font-medium">Custom currency for this kid</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        Overrides the family default ({family.currency_symbol} {family.currency_name})
-                                    </p>
-                                </div>
-                            </label>
-
-                            {overrideCurrency && (
-                                <div className="pl-6 space-y-3 border-l-2 border-border">
-                                    <div className="flex items-center gap-3">
-                                        <div className="space-y-1">
-                                            <Label className="text-xs">Emoji symbol</Label>
-                                            <EmojiPickerField
-                                                value={data.currency_symbol}
-                                                defaultEmoji="💰"
-                                                onChange={e => setData(d => ({ ...d, currency_symbol: e }))}
-                                                onPickerChange={d => setData(prev => ({ ...prev, currency_symbol: d.emoji, currency_name: guessNameFromEmoji(d.names) }))}
-                                                pickerAlign="left"
-                                            />
-                                        </div>
-                                        <div className="flex-1 space-y-1">
-                                            <Label htmlFor="currency_name" className="text-xs">Singular name</Label>
-                                            <Input
-                                                id="currency_name"
-                                                value={data.currency_name}
-                                                onChange={e => setData('currency_name', e.target.value)}
-                                                placeholder="e.g. Star, Gem"
-                                            />
-                                        </div>
-                                        <div className="flex-1 space-y-1">
-                                            <Label htmlFor="currency_name_plural" className="text-xs">Plural (optional)</Label>
-                                            <Input
-                                                id="currency_name_plural"
-                                                value={data.currency_name_plural}
-                                                onChange={e => setData('currency_name_plural', e.target.value)}
-                                                placeholder={data.currency_name ? data.currency_name + 's' : 'Stars'}
-                                            />
-                                        </div>
-                                    </div>
-                                    {data.currency_symbol && (
-                                        <p className="text-xs text-muted-foreground">
-                                            Preview: {data.currency_symbol}1 {data.currency_name || 'unit'} · {data.currency_symbol}25 {data.currency_name_plural || (data.currency_name ? data.currency_name + 's' : 'units')}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
                     </CardContent>
                 </Card>
 
@@ -167,20 +96,21 @@ export default function SpenderEdit({ spender, family, pocketMoneySchedule, chor
                 </div>
             </form>
 
-            <PocketMoneyScheduleCard spender={spender} schedule={pocketMoneySchedule} />
-            <ChoreRewardsCard spender={spender} rewards={choreRewards} availableChores={availableChores} />
+            <PocketMoneyScheduleCard spender={spender} schedule={pocketMoneySchedule} accounts={accounts} />
+            <ChoreRewardsCard spender={spender} rewards={choreRewards} availableChores={availableChores} accounts={accounts} />
         </AuthenticatedLayout>
     );
 }
 
 // ── Pocket Money Schedule ──────────────────────────────────────────────────────
 
-function PocketMoneyScheduleCard({ spender, schedule }: { spender: Spender; schedule: PocketMoneySchedule | null }) {
+function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spender; schedule: PocketMoneySchedule | null; accounts: Account[] }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         amount:       schedule?.amount ?? '',
         frequency:    (schedule?.frequency ?? 'weekly') as 'weekly' | 'monthly',
         day_of_week:  schedule?.day_of_week ?? 0,
         day_of_month: schedule?.day_of_month ?? 1,
+        account_id:   schedule?.account_id ?? (accounts[0]?.id ?? ''),
     });
 
     function submit(e: React.FormEvent) {
@@ -205,6 +135,7 @@ function PocketMoneyScheduleCard({ spender, schedule }: { spender: Spender; sche
                             Active: {schedule.frequency === 'weekly'
                                 ? `${schedule.amount} every ${DAY_LABELS[schedule.day_of_week ?? 0]}`
                                 : `${schedule.amount} on day ${schedule.day_of_month ?? 1} of each month`}
+                            {schedule.account && <span className="text-green-700/70 dark:text-green-400"> → {schedule.account.name}</span>}
                         </p>
                         {schedule.next_run_at && (
                             <p className="text-green-700 dark:text-green-400 text-xs mt-0.5">
@@ -215,6 +146,21 @@ function PocketMoneyScheduleCard({ spender, schedule }: { spender: Spender; sche
                 )}
 
                 <form onSubmit={submit} className="space-y-4">
+                    {accounts.length > 1 && (
+                        <div className="space-y-1.5">
+                            <Label>Deposit into account</Label>
+                            <select
+                                value={data.account_id}
+                                onChange={e => setData('account_id', e.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                {accounts.map(a => (
+                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                             <Label htmlFor="pm-amount">Amount</Label>
@@ -302,15 +248,18 @@ function ChoreRewardsCard({
     spender,
     rewards,
     availableChores,
+    accounts,
 }: {
     spender: Spender;
     rewards: ChoreReward[];
     availableChores: Chore[];
+    accounts: Account[];
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         amount:      '',
         description: '',
         payout_date: '',
+        account_id:  accounts[0]?.id ?? '',
         chore_ids:   [] as string[],
     });
 
@@ -341,6 +290,7 @@ function ChoreRewardsCard({
                                 <div className="flex-1 min-w-0">
                                     <p className="font-medium">
                                         {reward.description || 'Reward'} — {reward.amount}
+                                        {reward.account && <span className="text-muted-foreground font-normal"> → {reward.account.name}</span>}
                                     </p>
                                     <p className="text-xs text-muted-foreground mt-0.5">
                                         {reward.chores?.map(c => c.name).join(', ')}
@@ -386,6 +336,21 @@ function ChoreRewardsCard({
                             />
                         </div>
                     </div>
+
+                    {accounts.length > 1 && (
+                        <div className="space-y-1">
+                            <Label className="text-xs">Deposit into account</Label>
+                            <select
+                                value={data.account_id}
+                                onChange={e => setData('account_id', e.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                {accounts.map(a => (
+                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     <div className="space-y-1">
                         <Label htmlFor="cr-description" className="text-xs">Description <span className="text-muted-foreground">(optional)</span></Label>

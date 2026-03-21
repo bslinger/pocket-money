@@ -17,7 +17,7 @@ class RunChoreRewards extends Command
             ->where('is_paid', false)
             ->whereNotNull('payout_date')
             ->where('payout_date', '<=', now()->toDateString())
-            ->with(['chores', 'spender.choreCompletions', 'spender.accounts'])
+            ->with(['chores', 'spender.choreCompletions', 'spender.accounts', 'account'])
             ->get();
 
         $this->info("Processing {$due->count()} due chore rewards...");

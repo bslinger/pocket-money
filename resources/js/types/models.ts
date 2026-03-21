@@ -59,6 +59,10 @@ export interface Account {
   spender_id: string;
   name: string;
   balance: string;
+  currency_name: string | null;
+  currency_name_plural: string | null;
+  currency_symbol: string | null;
+  use_integer_amounts: boolean | null;
   spender?: Spender;
   transactions?: Transaction[];
   created_at: string;
@@ -126,12 +130,14 @@ export interface ChoreCompletion {
 export interface PocketMoneySchedule {
   id: string;
   spender_id: string;
+  account_id: string | null;
   amount: string;
   frequency: 'weekly' | 'monthly';
   day_of_week: number | null;
   day_of_month: number | null;
   is_active: boolean;
   next_run_at: string | null;
+  account?: Account | null;
   created_at: string;
   updated_at: string;
 }
@@ -139,12 +145,14 @@ export interface PocketMoneySchedule {
 export interface ChoreReward {
   id: string;
   spender_id: string;
+  account_id: string | null;
   amount: string;
   description: string | null;
   payout_date: string | null;
   is_paid: boolean;
   paid_at: string | null;
   transaction_id: string | null;
+  account?: Account | null;
   chores?: Chore[];
   created_at: string;
   updated_at: string;

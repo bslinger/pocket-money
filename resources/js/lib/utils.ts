@@ -47,3 +47,30 @@ export function spenderUsesIntegers(
 ): boolean {
     return spender.use_integer_amounts ?? spender.family?.use_integer_amounts ?? false;
 }
+
+type FamilyCurrencyFallback = { currency_symbol?: string | null; currency_name?: string | null; currency_name_plural?: string | null; use_integer_amounts?: boolean | null } | null | undefined;
+
+/** Resolve the effective currency symbol for an account, falling back to the family setting. */
+export function accountCurrencySymbol(
+    account: { currency_symbol?: string | null },
+    family?: FamilyCurrencyFallback,
+): string {
+    return account.currency_symbol ?? family?.currency_symbol ?? '$';
+}
+
+export function accountCurrencyNamePlural(
+    account: { currency_name?: string | null; currency_name_plural?: string | null },
+    family?: FamilyCurrencyFallback,
+): string {
+    const plural = account.currency_name_plural ?? family?.currency_name_plural ?? null;
+    if (plural) return plural;
+    const singular = account.currency_name ?? family?.currency_name ?? 'Dollar';
+    return pluralize(singular);
+}
+
+export function accountUsesIntegers(
+    account: { use_integer_amounts?: boolean | null },
+    family?: FamilyCurrencyFallback,
+): boolean {
+    return account.use_integer_amounts ?? family?.use_integer_amounts ?? false;
+}

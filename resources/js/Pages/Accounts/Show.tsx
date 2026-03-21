@@ -1,14 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Account, Transaction } from '@/types/models';
-import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
+import { formatAmount, accountCurrencySymbol } from '@/lib/utils';
 
 interface Props {
   account: Account & { transactions: Transaction[] };
 }
 
 export default function AccountShow({ account }: Props) {
-  const symbol = spenderCurrencySymbol(account.spender ?? { currency_symbol: null });
+  const symbol = accountCurrencySymbol(account, account.spender?.family);
   return (
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{account.name}</h2>}>
       <Head title={account.name} />

@@ -23,6 +23,7 @@ class ChoreReward extends Model
 
     protected $fillable = [
         'spender_id',
+        'account_id',
         'amount',
         'description',
         'payout_date',
@@ -46,6 +47,12 @@ class ChoreReward extends Model
     public function spender(): BelongsTo
     {
         return $this->belongsTo(Spender::class);
+    }
+
+    /** @return BelongsTo<Account, $this> */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
     }
 
     /** @return BelongsTo<User, $this> */
