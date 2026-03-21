@@ -1,16 +1,16 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Family, Chore, Spender } from '@/types/models';
+import { Family, Chore, Spender, ChoreCompletion } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History, Calendar, List, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History, Calendar, List, CheckCircle2, Clock, XCircle, Check, CheckCheck } from 'lucide-react';
 import { formatAmount } from '@/lib/utils';
 import { CHORE_TYPE_INFO } from '@/lib/choreTypes';
 import { useState } from 'react';
-import { format, addDays, isToday, isTomorrow } from 'date-fns';
+import { format, addDays, isToday, isTomorrow, formatDistanceToNow } from 'date-fns';
 
 interface WeekCompletion {
   id: string;
@@ -26,11 +26,12 @@ interface Props {
     spenders: Spender[];
   })[];
   weekCompletions: WeekCompletion[];
+  pendingCompletions: (ChoreCompletion & { chore: Chore; spender: Spender })[];
 }
 
 type SortField = 'name' | 'created_at';
 type SortDir = 'asc' | 'desc';
-type Tab = 'manage' | 'schedule';
+type Tab = 'approval' | 'schedule' | 'manage';
 
 // Maps Mon=0…Sun=6 (ChoreForm convention) from a JS Date
 function jsDateToChoreDayIndex(date: Date): number {
@@ -85,11 +86,33 @@ const frequencyLabel = (f: Chore['frequency']) => {
   return map[f];
 };
 
-export default function ChoresIndex({ families, weekCompletions }: Props) {
-  const [tab, setTab] = useState<Tab>('manage');
+export default function ChoresIndex({ families, weekCompletions, pendingCompletions: initialPending }: Props) {
+  const [tab, setTab] = useState<Tab>('approval');
+  const [pending, setPending] = useState(initialPending);
   const [filterSpenderId, setFilterSpenderId] = useState<string>('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  function approve(completion: ChoreCompletion) {
+    router.patch(route('chore-completions.approve', completion.id), {}, {
+      preserveScroll: true,
+      onSuccess: () => setPending(p => p.filter(c => c.id !== completion.id)),
+    });
+  }
+
+  function approveAll() {
+    router.post(route('chore-completions.bulk-approve'), { ids: pending.map(c => c.id) }, {
+      preserveScroll: true,
+      onSuccess: () => setPending([]),
+    });
+  }
+
+  function decline(completion: ChoreCompletion) {
+    router.patch(route('chore-completions.decline', completion.id), {}, {
+      preserveScroll: true,
+      onSuccess: () => setPending(p => p.filter(c => c.id !== completion.id)),
+    });
+  }
 
   function deleteChore(chore: Chore) {
     if (!confirm(`Delete "${chore.name}"?`)) return;
@@ -168,15 +191,18 @@ export default function ChoresIndex({ families, weekCompletions }: Props) {
       {/* Tab bar */}
       <div className="flex gap-1 mb-5 border-b">
         <button
-          onClick={() => setTab('manage')}
+          onClick={() => setTab('approval')}
           className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            tab === 'manage'
+            tab === 'approval'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          <List className="h-4 w-4" />
-          Manage
+          <CheckCircle2 className="h-4 w-4" />
+          Needs Approval
+          {pending.length > 0 && (
+            <Badge className="bg-amber-100 text-amber-800 border-amber-200 ml-0.5">{pending.length}</Badge>
+          )}
         </button>
         <button
           onClick={() => setTab('schedule')}
@@ -189,7 +215,97 @@ export default function ChoresIndex({ families, weekCompletions }: Props) {
           <Calendar className="h-4 w-4" />
           Schedule
         </button>
+        <button
+          onClick={() => setTab('manage')}
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            tab === 'manage'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <List className="h-4 w-4" />
+          Manage
+        </button>
       </div>
+
+      {/* ── Needs Approval tab ────────────────────────────────────────── */}
+      {tab === 'approval' && (
+        <div>
+          {pending.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">All caught up — no chores waiting for approval.</p>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    Waiting for approval
+                    <Badge className="bg-amber-100 text-amber-800 border-amber-200">{pending.length}</Badge>
+                  </CardTitle>
+                  {pending.length > 1 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-green-300 text-green-700 hover:bg-green-50 gap-1.5 h-7 text-xs"
+                      onClick={approveAll}
+                    >
+                      <CheckCheck className="h-3.5 w-3.5" />
+                      Approve all
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="divide-y p-0">
+                {pending.map(c => (
+                  <div key={c.id} className="flex items-center justify-between px-6 py-3 gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={c.spender.avatar_url ?? undefined} />
+                        <AvatarFallback
+                          style={{ backgroundColor: c.spender.color ?? '#6366f1' }}
+                          className="text-white text-sm font-semibold"
+                        >
+                          {c.spender.name[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {c.chore.emoji ? `${c.chore.emoji} ` : ''}{c.chore.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.spender.name} · {formatDistanceToNow(new Date(c.completed_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5 shrink-0">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8 border-green-300 text-green-700 hover:bg-green-50"
+                        onClick={() => approve(c)}
+                        title="Approve"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8 border-red-300 text-red-600 hover:bg-red-50"
+                        onClick={() => decline(c)}
+                        title="Decline"
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* ── Manage tab ────────────────────────────────────────────── */}
       {tab === 'manage' && (

@@ -26,9 +26,16 @@ class ChoreController extends Controller
             ->select(['id', 'chore_id', 'spender_id', 'status', 'completed_at'])
             ->get();
 
+        $pendingCompletions = \App\Models\ChoreCompletion::where('status', 'pending')
+            ->whereIn('chore_id', $choreIds)
+            ->with(['chore', 'spender'])
+            ->latest('completed_at')
+            ->get();
+
         return Inertia::render('Chores/Index', [
-            'families'       => $families,
-            'weekCompletions' => $weekCompletions,
+            'families'          => $families,
+            'weekCompletions'   => $weekCompletions,
+            'pendingCompletions' => $pendingCompletions,
         ]);
     }
 

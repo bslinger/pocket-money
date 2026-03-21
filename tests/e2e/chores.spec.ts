@@ -15,6 +15,8 @@ test.describe('Chores', () => {
         await page.selectOption('select', 'weekly');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Test Earns Chore')).toBeVisible();
     });
 
@@ -25,6 +27,8 @@ test.describe('Chores', () => {
         await page.selectOption('select', 'daily');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Test Responsibility Chore')).toBeVisible();
     });
 
@@ -36,6 +40,8 @@ test.describe('Chores', () => {
         await page.selectOption('select', 'one_off');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Clean garage')).toBeVisible();
     });
 
@@ -62,6 +68,8 @@ test.describe('Chores', () => {
         await page.fill('#amount', '1.00');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Editable Chore')).toBeVisible();
 
         // Edit it — find the pencil/edit button in the same row
@@ -70,6 +78,8 @@ test.describe('Chores', () => {
         await expect(page).toHaveURL(/\/chores\/.*\/edit/);
         await page.fill('#name', 'Edited Chore');
         await page.click('button:has-text("Save Changes")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Edited Chore')).toBeVisible();
     });
 
@@ -81,6 +91,8 @@ test.describe('Chores', () => {
         await page.fill('#amount', '1.00');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Delete Me Chore')).toBeVisible();
 
         // Accept the confirm dialog and click the delete (trash) button in that row
@@ -99,6 +111,8 @@ test.describe('Chores', () => {
         await page.fill('#amount', '1.00');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('History Test Chore')).toBeVisible();
 
         // Click the history button (clock icon)
@@ -133,6 +147,8 @@ test.describe('Chores', () => {
         await page.fill('#amount', '2.00');
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Emma Only Chore')).toBeVisible();
 
         // Create a chore assigned only to Jack
@@ -142,10 +158,13 @@ test.describe('Chores', () => {
         await page.fill('#amount', '1.00');
         await page.click('button:has-text("Jack")');
         await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
         await expect(page.getByText('Jack Only Chore')).toBeVisible();
 
         // Filter by Emma — should see Emma's chore but not Jack's
         await page.goto('/chores');
+        await page.click('button:has-text("Manage")');
         await page.selectOption('select[aria-label="Filter by kid"]', { label: 'Emma' });
         await expect(page.getByText('Emma Only Chore')).toBeVisible();
         await expect(page.getByText('Jack Only Chore')).not.toBeVisible();
