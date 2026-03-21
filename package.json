@@ -9,7 +9,9 @@
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
         "test:e2e:headed": "playwright test --headed",
-        "coverage:e2e": "node --import tsx/esm tests/e2e/coverage-report.mts"
+        "test:e2e:coverage": "COLLECT_COVERAGE=true playwright test && node --import tsx/esm tests/e2e/coverage-report.mts",
+        "coverage:e2e": "node --import tsx/esm tests/e2e/coverage-report.mts",
+        "coverage:pest": "XDEBUG_MODE=coverage ./vendor/bin/sail artisan test --coverage-html storage/coverage/pest/html --coverage-clover storage/coverage/pest/clover.xml"
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",
