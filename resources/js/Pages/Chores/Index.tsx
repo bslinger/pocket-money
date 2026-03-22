@@ -481,7 +481,23 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
       )}
 
       {/* ── Schedule tab ──────────────────────────────────────────── */}
-      {tab === 'schedule' && (
+      {tab === 'schedule' && allChores.length === 0 && (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Calendar className="h-10 w-10 mx-auto text-bark-300 mb-3" />
+            <p className="text-bark-600 font-medium mb-1">No chores yet</p>
+            <p className="text-sm text-bark-400 mb-4">Create your first chore to start building a schedule.</p>
+            <Button asChild>
+              <Link href={route('chores.create')}>
+                <PlusCircle className="h-4 w-4 mr-1.5" />
+                Add a chore
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {tab === 'schedule' && allChores.length > 0 && (
         <div className="space-y-4">
           {/* Yesterday summary */}
           {(() => {
