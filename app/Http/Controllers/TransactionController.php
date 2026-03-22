@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TxType;
+use App\Http\Requests\StoreSplitTransactionRequest;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Account;
 use App\Models\Transaction;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -14,7 +16,7 @@ class TransactionController extends Controller
     public function index(Account $account)
     {
         return Inertia::render('Transactions/Index', [
-            'account'      => $account,
+            'account' => $account,
             'transactions' => $account->transactions()->latest('occurred_at')->paginate(50),
         ]);
     }
@@ -24,6 +26,30 @@ class TransactionController extends Controller
         return Inertia::render('Transactions/Create', [
             'account' => $account->load('spender.family'),
         ]);
+    }
+
+    public function storeSplit(StoreSplitTransactionRequest $request): RedirectResponse
+    {
+        $user = $request->user();
+        $familyIds = $user->families()->pluck('families.id');
+
+        DB::transaction(function () use ($request, $familyIds) {
+            foreach ($request->splits as $split) {
+                $account = Account::whereHas('spender', fn ($q) => $q->whereIn('family_id', $familyIds))
+                    ->findOrFail($split['account_id']);
+
+                $account->transactions()->create([
+                    'type' => 'credit',
+                    'amount' => $split['amount'],
+                    'description' => $request->description,
+                    'occurred_at' => $request->occurred_at,
+                ]);
+
+                $account->increment('balance', $split['amount']);
+            }
+        });
+
+        return redirect()->route('dashboard');
     }
 
     public function store(StoreTransactionRequest $request, Account $account)
@@ -44,7 +70,7 @@ class TransactionController extends Controller
     public function edit(Account $account, Transaction $transaction)
     {
         return Inertia::render('Transactions/Edit', [
-            'account'     => $account,
+            'account' => $account,
             'transaction' => $transaction,
         ]);
     }

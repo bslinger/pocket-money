@@ -77,6 +77,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/spenders/{id}/restore', [SpenderController::class, 'restore'])->name('spenders.restore');
         Route::resource('accounts', AccountController::class)->except('show');
         Route::resource('accounts.transactions', TransactionController::class);
+        Route::post('/transactions/split', [TransactionController::class, 'storeSplit'])->name('transactions.split');
         Route::resource('accounts.recurring', RecurringTransactionController::class);
         Route::post('/goals/reorder', [SavingsGoalController::class, 'reorder'])->name('goals.reorder');
         Route::get('/goals/abandoned', [SavingsGoalController::class, 'abandoned'])->name('goals.abandoned');
