@@ -135,6 +135,7 @@ Organised by strategic area, with specific tasks nested under each.
  - [x] The app is now named "Quiddo" - a combination of "Quid" and "Kiddo". Replace all uses of "Pocket Money" as an app name with "Quiddo". Make sure not to replace elements where pocket money is referring to the general concept rather than the name of the app. — completed 2026-03-21 21:24
  - [x] Pricing is changing to AUD$1.99 a month per family, with each family being up to 12 kids. Annual pricing is AUD$15 a year if you pay annually. Figure out what the percentage saving is there and make sure that's part of the marketing copy. — completed 2026-03-21 21:24
  - [x] Update the landing page. Remove any stats about how many users we have as we're only just launching. We want the copy to focus on the simplicity and ease of use of the app, especially compared to other apps that give kids their own debit cards and require adults to mess with separate accounts. — completed 2026-03-21 21:24
+ - [x] Implement the landing page available at /home/ben/Downloads/quiddo-landing.html and replace the existing set of marketing pages — completed 2026-03-22
 
 ## Mobile App improvements
 **These apply to the site when in a mobile viewport, either from the website or embedded in the Capacitor app**
