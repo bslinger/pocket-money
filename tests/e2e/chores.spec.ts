@@ -139,6 +139,27 @@ test.describe('Chores', () => {
         await expect(page.getByText('Daily Schedule Chore').first()).toBeVisible();
     });
 
+    test('schedule tab shows yesterday summary above Today card', async ({ page }) => {
+        // Create a daily chore — it will be scheduled for yesterday too
+        await page.goto('/chores/create');
+        await page.fill('#name', 'Yesterday Summary Chore');
+        await page.click('button:has-text("Responsibility")');
+        await page.selectOption('select', 'daily');
+        await page.click('button:has-text("Emma")');
+        await page.click('button:has-text("Create Chore")');
+
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Schedule")');
+
+        // Yesterday summary should appear above Today
+        const yesterdayBtn = page.getByRole('button', { name: /Yesterday/ }).first();
+        await expect(yesterdayBtn).toBeVisible();
+
+        // Clicking the yesterday summary should expand it to show chore details
+        await yesterdayBtn.click();
+        await expect(page.getByText('Yesterday Summary Chore').first()).toBeVisible();
+    });
+
     test('can filter chores by kid', async ({ page }) => {
         // Create a chore assigned only to Emma
         await page.goto('/chores/create');

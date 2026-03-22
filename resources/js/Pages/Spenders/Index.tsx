@@ -183,7 +183,7 @@ export default function SpendersIndex({ family, spenders }: Props) {
                                         {/* Per-account goal cards for multi-account kids */}
                                         {hasMultipleAccounts && (
                                             <div className="mt-3 ml-14 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                {spender.accounts.map(account => {
+                                                {[...spender.accounts].sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance)).map(account => {
                                                     const accountSym = account.currency_symbol ?? sym;
                                                     const accountBalance = parseFloat(account.balance);
                                                     const topGoal = activeGoals.find(g => g.account_id === account.id) ?? null;

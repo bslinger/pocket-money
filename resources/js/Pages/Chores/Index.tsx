@@ -10,7 +10,7 @@ import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History, C
 import { formatAmount } from '@/lib/utils';
 import { CHORE_TYPE_INFO } from '@/lib/choreTypes';
 import { useState } from 'react';
-import { format, addDays, isToday, isTomorrow, formatDistanceToNow } from 'date-fns';
+import { format, addDays, subDays, isToday, isTomorrow, formatDistanceToNow } from 'date-fns';
 
 interface WeekCompletion {
   id: string;
@@ -92,6 +92,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
   // IDs of completions approved this session (shown with Unapprove button until page reload)
   const [localApproved, setLocalApproved] = useState<Set<string>>(new Set());
   const [filterSpenderId, setFilterSpenderId] = useState<string>('');
+  const [yesterdayExpanded, setYesterdayExpanded] = useState(false);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
@@ -482,6 +483,118 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
       {/* ── Schedule tab ──────────────────────────────────────────── */}
       {tab === 'schedule' && (
         <div className="space-y-4">
+          {/* Yesterday summary */}
+          {(() => {
+            const yesterday = subDays(new Date(), 1);
+            const yesterdayRows = allSpenders
+              .map(spender => {
+                const spenderChores = allChores.filter(chore =>
+                  (chore.up_for_grabs || chore.spenders?.some(s => s.id === spender.id)) &&
+                  isChoreScheduledOnDate(chore, yesterday)
+                );
+                const total = spenderChores.length;
+                const completed = spenderChores.filter(chore => {
+                  const status = getCompletionStatus(chore.id, spender.id, yesterday);
+                  return status === 'approved' || status === 'pending';
+                }).length;
+                return { spender, chores: spenderChores, total, completed };
+              })
+              .filter(row => row.total > 0);
+
+            if (yesterdayRows.length === 0) return null;
+
+            return (
+              <div>
+                {/* Compact summary — always visible */}
+                <button
+                  type="button"
+                  onClick={() => setYesterdayExpanded(e => !e)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-center justify-between px-4 py-2.5 rounded-lg border border-dashed border-bark-200 bg-bark-50 hover:bg-bark-100 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-bark-500 uppercase tracking-wide">Yesterday</span>
+                      <span className="text-xs text-bark-400">{format(yesterday, 'EEE d MMM')}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {yesterdayRows.map(({ spender, completed, total }) => (
+                        <div key={spender.id} className="flex items-center gap-1.5 text-xs text-bark-500">
+                          <Avatar className="h-4 w-4">
+                            <AvatarImage src={spender.avatar_url ?? undefined} />
+                            <AvatarFallback
+                              style={{ backgroundColor: spender.color ?? '#6366f1' }}
+                              className="text-white text-[8px] font-bold"
+                            >
+                              {spender.name[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className={completed === total ? 'text-gumleaf-600 font-medium' : ''}>
+                            {completed}/{total}
+                          </span>
+                        </div>
+                      ))}
+                      <span className="text-bark-400 text-xs">{yesterdayExpanded ? '▲' : '▼'}</span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Expanded full card */}
+                {yesterdayExpanded && (
+                  <Card className="mt-2 border-bark-200">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold text-muted-foreground">
+                        Yesterday
+                        <span className="ml-2 font-normal text-xs text-muted-foreground">
+                          {format(yesterday, 'EEEE d MMMM')}
+                        </span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 space-y-3">
+                      {yesterdayRows.map(({ spender, chores }) => (
+                        <div key={spender.id}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Avatar className="h-5 w-5">
+                              <AvatarImage src={spender.avatar_url ?? undefined} />
+                              <AvatarFallback
+                                style={{ backgroundColor: spender.color ?? '#6366f1' }}
+                                className="text-white text-[9px] font-bold"
+                              >
+                                {spender.name[0].toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs font-medium text-muted-foreground">{spender.name}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 pl-7">
+                            {chores.map(chore => {
+                              const status = getCompletionStatus(chore.id, spender.id, yesterday);
+                              return (
+                                <div
+                                  key={chore.id}
+                                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs ${
+                                    status === 'approved' ? 'bg-gumleaf-50 text-gumleaf-600' :
+                                    status === 'pending'  ? 'bg-wattle-50 text-wattle-600' :
+                                    status === 'declined' ? 'bg-redearth-50 text-redearth-600' :
+                                    'bg-muted text-muted-foreground'
+                                  }`}
+                                >
+                                  <span>{chore.emoji ?? '📋'}</span>
+                                  <span className="font-medium">{chore.name}</span>
+                                  {status === 'approved' && <CheckCircle2 className="h-3 w-3 shrink-0" />}
+                                  {status === 'pending'  && <Clock className="h-3 w-3 shrink-0" />}
+                                  {status === 'declined' && <XCircle className="h-3 w-3 shrink-0" />}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            );
+          })()}
+
           {scheduleWeek.map(date => {
             // For each spender, find which chores are due today
             const spenderRows = allSpenders

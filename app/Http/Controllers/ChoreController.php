@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreChoreRequest;
 use App\Models\Chore;
+use App\Models\ChoreCompletion;
 use Bentonow\BentoLaravel\DataTransferObjects\EventData;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Http\Request;
@@ -15,36 +16,36 @@ class ChoreController extends Controller
     {
         $families = $request->user()
             ->families()
-            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
             ->with(['chores.spenders', 'spenders'])
             ->get();
 
-        $choreIds = $families->flatMap(fn($f) => $f->chores)->pluck('id');
+        $choreIds = $families->flatMap(fn ($f) => $f->chores)->pluck('id');
 
-        $weekCompletions = \App\Models\ChoreCompletion::whereIn('chore_id', $choreIds)
-            ->whereBetween('completed_at', [now()->startOfDay(), now()->addDays(6)->endOfDay()])
+        $weekCompletions = ChoreCompletion::whereIn('chore_id', $choreIds)
+            ->whereBetween('completed_at', [now()->subDay()->startOfDay(), now()->addDays(6)->endOfDay()])
             ->select(['id', 'chore_id', 'spender_id', 'status', 'completed_at'])
             ->get();
 
-        $pendingCompletions = \App\Models\ChoreCompletion::where('status', 'pending')
+        $pendingCompletions = ChoreCompletion::where('status', 'pending')
             ->whereIn('chore_id', $choreIds)
             ->with(['chore', 'spender'])
             ->latest('completed_at')
             ->get();
 
         return Inertia::render('Chores/Index', [
-            'families'          => $families,
-            'weekCompletions'   => $weekCompletions,
+            'families' => $families,
+            'weekCompletions' => $weekCompletions,
             'pendingCompletions' => $pendingCompletions,
         ]);
     }
 
     public function create(Request $request)
     {
-        $families  = $request->user()->families()
-            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+        $families = $request->user()->families()
+            ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
             ->with('spenders')->get();
-        $spenders  = $families->flatMap(fn($f) => $f->spenders)->values();
+        $spenders = $families->flatMap(fn ($f) => $f->spenders)->values();
 
         return Inertia::render('Chores/Create', [
             'families' => $families,
@@ -78,12 +79,12 @@ class ChoreController extends Controller
     {
         $chore->load('spenders');
         $families = auth()->user()->families()
-            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
             ->with('spenders')->get();
-        $spenders = $families->flatMap(fn($f) => $f->spenders)->values();
+        $spenders = $families->flatMap(fn ($f) => $f->spenders)->values();
 
         return Inertia::render('Chores/Edit', [
-            'chore'    => $chore,
+            'chore' => $chore,
             'families' => $families,
             'spenders' => $spenders,
         ]);
@@ -111,7 +112,7 @@ class ChoreController extends Controller
             ->paginate(30);
 
         return Inertia::render('Chores/History', [
-            'chore'       => $chore,
+            'chore' => $chore,
             'completions' => $completions,
         ]);
     }
@@ -119,6 +120,7 @@ class ChoreController extends Controller
     public function destroy(Chore $chore)
     {
         $chore->delete();
+
         return redirect()->route('chores.index');
     }
 }

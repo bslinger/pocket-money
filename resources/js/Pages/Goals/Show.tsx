@@ -124,14 +124,25 @@ export default function GoalShow({ goal }: Props) {
 
                 {/* Linked account */}
                 {goal.account && (
-                    <Card className="border-bark-200">
-                        <CardContent className="py-4">
-                            <p className="text-sm font-medium text-bark-700">Linked to: {goal.account.name}</p>
-                            <p className="text-xs text-bark-500 mt-0.5">
-                                Progress updates automatically as the account balance changes.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div>
+                        <h2 className="text-xs font-semibold text-bark-500 uppercase tracking-wide mb-2">Linked Account</h2>
+                        <Card className="border-bark-200">
+                            <CardContent className="py-4 flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-sm font-semibold text-bark-700">{goal.account.name}</p>
+                                    <p className="text-xs text-bark-500 mt-0.5">
+                                        Savings are pulled from this account's balance.
+                                    </p>
+                                </div>
+                                <div className="text-right shrink-0">
+                                    <p className="text-lg font-bold tabular-nums text-bark-700">
+                                        {formatAmount(goal.account.balance, symbol)}
+                                    </p>
+                                    <p className="text-xs text-bark-500">current balance</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 )}
 
                 {/* Completion message */}
