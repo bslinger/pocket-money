@@ -147,7 +147,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] The Add/Spend modals currently overlap the native keyboard a bit by default unless you scroll. See if you can make them fixed higher on the page on mobile. — completed 2026-03-22 11:32
 
 ## Billing Improvements
-- [ ] **Billing ownership transfer** — Allow the billing owner of a family to transfer billing responsibility to another carer via an email invite. The receiving carer must accept from their email before the transfer takes effect.
+- [x] **Billing ownership transfer** — Allow the billing owner of a family to transfer billing responsibility to another carer via an email invite. The receiving carer must accept from their email before the transfer takes effect. — completed 2026-03-23 01:15
 
 # FOR LATER. Don't tackle anything below here without explicit instructions.
 
