@@ -87,7 +87,7 @@ export default function ChoreHistory({ chore, completions }: Props) {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-bark-700">{c.spender.name}</p>
-                      <p className="text-xs text-bark-500">
+                      <p className="text-xs text-bark-500" suppressHydrationWarning>
                         {formatDistanceToNow(new Date(c.completed_at), { addSuffix: true })}
                         {c.note && <span className="ml-2 italic">"{c.note}"</span>}
                       </p>

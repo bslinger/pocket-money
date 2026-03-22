@@ -193,7 +193,7 @@ function ParentDashboard({
                         <p className={`text-sm font-medium tabular-nums ${tx.type === 'credit' ? 'text-gumleaf-400' : 'text-redearth-400'}`}>
                           {tx.type === 'credit' ? '+' : '-'}{formatAmount(tx.amount, spenderCurrencySymbol(tx.account?.spender ?? { currency_symbol: null }))}
                         </p>
-                        <p className="text-xs text-bark-500">
+                        <p className="text-xs text-bark-500" suppressHydrationWarning>
                           {formatDistanceToNow(new Date(tx.occurred_at), { addSuffix: true })}
                         </p>
                       </div>
@@ -546,7 +546,7 @@ function PendingApprovals({ initialPending }: {
                 <p className="text-sm font-medium truncate">
                   {c.chore.emoji ? `${c.chore.emoji} ` : ''}{c.chore.name}
                 </p>
-                <p className="text-xs text-bark-500">
+                <p className="text-xs text-bark-500" suppressHydrationWarning>
                   {c.spender.name} · {formatDistanceToNow(new Date(c.completed_at), { addSuffix: true })}
                 </p>
               </div>

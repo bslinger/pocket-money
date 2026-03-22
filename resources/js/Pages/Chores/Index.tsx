@@ -299,7 +299,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                             <p className="text-sm font-medium truncate">
                               {c.chore.emoji ? `${c.chore.emoji} ` : ''}{c.chore.name}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground" suppressHydrationWarning>
                               {c.spender.name} · {formatDistanceToNow(new Date(c.completed_at), { addSuffix: true })}
                               {isApproved && <span className="ml-1.5 text-gumleaf-400 font-medium">· approved</span>}
                             </p>
