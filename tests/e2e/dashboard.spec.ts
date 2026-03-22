@@ -27,11 +27,10 @@ test.describe('Dashboard', () => {
     test('kid cards show avatar and name at top left', async ({ page }) => {
         await page.goto('/dashboard');
 
-        // Each kid card should have an avatar and the name text visible
-        const card = page.locator('.rounded-xl.border.bg-card').first();
+        // Each kid card links to the spender show page
+        const card = page.locator('[class*="rounded-card"][class*="border-bark"]').first();
         await expect(card).toBeVisible();
-        // Avatar and name are in a row at the top
-        const avatar = card.locator('[class*="AvatarFallback"], img[class*="avatar"]').first();
+        // Card contains a link to the spender with their name
         const name = card.getByRole('link').first();
         await expect(name).toBeVisible();
     });
@@ -40,7 +39,7 @@ test.describe('Dashboard', () => {
         await page.goto('/dashboard');
 
         // Each spender card should have add/subtract buttons
-        const firstCard = page.locator('.rounded-xl.border.bg-card').first();
+        const firstCard = page.locator('[class*="rounded-card"][class*="border-bark"]').first();
         await expect(firstCard.getByRole('button', { name: /Add to/ })).toBeVisible();
         await expect(firstCard.getByRole('button', { name: /Subtract from/ })).toBeVisible();
     });
@@ -48,7 +47,7 @@ test.describe('Dashboard', () => {
     test('clicking + opens quick transaction modal', async ({ page }) => {
         await page.goto('/dashboard');
 
-        const firstCard = page.locator('.rounded-xl.border.bg-card').first();
+        const firstCard = page.locator('[class*="rounded-card"][class*="border-bark"]').first();
         await firstCard.getByRole('button', { name: /Add to/ }).click();
 
         // Modal should appear with Add money tab active
@@ -59,20 +58,20 @@ test.describe('Dashboard', () => {
     test('clicking - opens modal with Spend selected', async ({ page }) => {
         await page.goto('/dashboard');
 
-        const firstCard = page.locator('.rounded-xl.border.bg-card').first();
+        const firstCard = page.locator('[class*="rounded-card"][class*="border-bark"]').first();
         await firstCard.getByRole('button', { name: /Subtract from/ }).click();
 
         await expect(page.getByRole('button', { name: /^Spend$/ })).toBeVisible();
         // Debit button should be highlighted (has bg-red-500 class)
         // Use getByRole to avoid matching the card's "Subtract from" button which also contains "Spend" text
         const debitBtn = page.getByRole('button', { name: /^Spend$/ });
-        await expect(debitBtn).toHaveClass(/bg-red-500/);
+        await expect(debitBtn).toHaveClass(/bg-redearth-400/);
     });
 
     test('modal closes on X button click', async ({ page }) => {
         await page.goto('/dashboard');
 
-        const firstCard = page.locator('.rounded-xl.border.bg-card').first();
+        const firstCard = page.locator('[class*="rounded-card"][class*="border-bark"]').first();
         await firstCard.getByRole('button', { name: /Add to/ }).click();
         await expect(page.getByLabel(/Amount/)).toBeVisible();
 
@@ -83,7 +82,7 @@ test.describe('Dashboard', () => {
     test('can submit a quick credit transaction', async ({ page }) => {
         await page.goto('/dashboard');
 
-        const firstCard = page.locator('.rounded-xl.border.bg-card').first();
+        const firstCard = page.locator('[class*="rounded-card"][class*="border-bark"]').first();
         await firstCard.getByRole('button', { name: /Add to/ }).click();
 
         await page.getByLabel(/Amount/).fill('5.00');
@@ -97,7 +96,7 @@ test.describe('Dashboard', () => {
     test('can submit a quick debit transaction', async ({ page }) => {
         await page.goto('/dashboard');
 
-        const firstCard = page.locator('.rounded-xl.border.bg-card').first();
+        const firstCard = page.locator('[class*="rounded-card"][class*="border-bark"]').first();
         await firstCard.getByRole('button', { name: /Subtract from/ }).click();
 
         await page.getByLabel(/Amount/).fill('1.00');

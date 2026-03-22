@@ -146,6 +146,6 @@ test.describe('Currency pluralization — account create currency override', () 
 
         // Select £ and verify it is highlighted
         await page.click('button:has-text("£")');
-        await expect(page.locator('button:has-text("£")')).toHaveClass(/border-primary/);
+        await expect(page.locator('button:has-text("£")')).toHaveClass(/border-eucalyptus-400/);
     });
 });

@@ -10,6 +10,7 @@ test.describe('Kid view (parent preview)', () => {
         if (await backBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
             await backBtn.click();
             await page.waitForURL('/dashboard');
+            await expect(page.getByText('Family Balance')).toBeVisible({ timeout: 5000 });
         }
     });
 
@@ -18,6 +19,7 @@ test.describe('Kid view (parent preview)', () => {
         await page.waitForURL(/spenders\//);
         await page.getByRole('button', { name: /View as/i }).click();
         await page.waitForURL('/dashboard');
+        await expect(page.getByText("Emma's view")).toBeVisible({ timeout: 5000 });
     }
 
     test("header shows kid's name, not Quiddo", async ({ page }) => {
