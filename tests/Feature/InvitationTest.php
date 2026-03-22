@@ -1,12 +1,10 @@
 <?php
 
-use App\Enums\FamilyRole;
-use App\Models\Family;
+use App\Mail\FamilyInvitation;
 use App\Models\FamilyUser;
 use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\FamilyInvitation;
 
 describe('invitations', function () {
 
@@ -36,7 +34,7 @@ describe('invitations', function () {
                 ->post(route('families.invite', $family), ['email' => 'stranger@example.com'])
                 ->assertRedirect();
 
-            Mail::assertSent(FamilyInvitation::class, fn($mail) => $mail->hasTo('stranger@example.com'));
+            Mail::assertSent(FamilyInvitation::class, fn ($mail) => $mail->hasTo('stranger@example.com'));
 
             expect(Invitation::where('email', 'stranger@example.com')
                 ->where('family_id', $family->id)
@@ -58,16 +56,33 @@ describe('invitations', function () {
         });
     });
 
+    describe('accept invitation (unauthenticated)', function () {
+        it('redirects unauthenticated users to login', function () {
+            [$_admin, $family] = parentWithFamily();
+
+            Invitation::create([
+                'family_id' => $family->id,
+                'email' => 'invitee@example.com',
+                'token' => 'guest_token',
+                'role' => 'member',
+                'expires_at' => now()->addDays(7),
+            ]);
+
+            $this->get(route('invitations.accept', 'guest_token'))
+                ->assertRedirect(route('login'));
+        });
+    });
+
     describe('accept invitation', function () {
         it('adds the user to the family when they accept with matching email', function () {
             [$admin, $family] = parentWithFamily();
             $invitee = User::factory()->create(['email' => 'invitee@example.com']);
 
             $invitation = Invitation::create([
-                'family_id'  => $family->id,
-                'email'      => 'invitee@example.com',
-                'token'      => 'abc123token',
-                'role'       => 'member',
+                'family_id' => $family->id,
+                'email' => 'invitee@example.com',
+                'token' => 'abc123token',
+                'role' => 'member',
                 'expires_at' => now()->addDays(7),
             ]);
 
@@ -84,10 +99,10 @@ describe('invitations', function () {
             $invitee = User::factory()->create(['email' => 'invitee@example.com']);
 
             Invitation::create([
-                'family_id'  => $family->id,
-                'email'      => 'invitee@example.com',
-                'token'      => 'expired_token',
-                'role'       => 'member',
+                'family_id' => $family->id,
+                'email' => 'invitee@example.com',
+                'token' => 'expired_token',
+                'role' => 'member',
                 'expires_at' => now()->subDay(),
             ]);
 
@@ -103,10 +118,10 @@ describe('invitations', function () {
             $wrongUser = User::factory()->create(['email' => 'wrong@example.com']);
 
             Invitation::create([
-                'family_id'  => $family->id,
-                'email'      => 'invitee@example.com',
-                'token'      => 'mismatch_token',
-                'role'       => 'member',
+                'family_id' => $family->id,
+                'email' => 'invitee@example.com',
+                'token' => 'mismatch_token',
+                'role' => 'member',
                 'expires_at' => now()->addDays(7),
             ]);
 

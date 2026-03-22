@@ -12,10 +12,10 @@ describe('recurring transactions', function () {
 
             $this->actingAs($user)
                 ->post(route('accounts.recurring.store', $account), [
-                    'type'        => 'credit',
-                    'amount'      => '5.00',
+                    'type' => 'credit',
+                    'amount' => '5.00',
                     'description' => 'Pocket money',
-                    'frequency'   => 'weekly',
+                    'frequency' => 'weekly',
                     'next_run_at' => now()->addWeek()->toDateTimeString(),
                 ])
                 ->assertRedirect(route('accounts.recurring.index', $account));
@@ -35,7 +35,7 @@ describe('recurring transactions', function () {
         it('requires parent role', function () {
             [$_user, , $spenders] = parentWithFamily(['Emma']);
             $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
-            $child   = childLinkedTo($spenders->first());
+            $child = childLinkedTo($spenders->first());
 
             $this->actingAs($child)
                 ->post(route('accounts.recurring.store', $account), [])
@@ -46,14 +46,14 @@ describe('recurring transactions', function () {
     describe('update', function () {
         it('updates a recurring transaction', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
-            $account   = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
             $recurring = RecurringTransaction::factory()->create(['account_id' => $account->id, 'amount' => 5]);
 
             $this->actingAs($user)
                 ->patch(route('accounts.recurring.update', [$account, $recurring]), [
-                    'type'        => 'credit',
-                    'amount'      => '10.00',
-                    'frequency'   => 'monthly',
+                    'type' => 'credit',
+                    'amount' => '10.00',
+                    'frequency' => 'monthly',
                     'next_run_at' => now()->addMonth()->toDateTimeString(),
                 ])
                 ->assertRedirect(route('accounts.recurring.index', $account));
@@ -65,7 +65,7 @@ describe('recurring transactions', function () {
     describe('destroy', function () {
         it('deletes a recurring transaction', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
-            $account   = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
             $recurring = RecurringTransaction::factory()->create(['account_id' => $account->id]);
 
             $this->actingAs($user)
@@ -73,6 +73,55 @@ describe('recurring transactions', function () {
                 ->assertRedirect(route('accounts.recurring.index', $account));
 
             expect(RecurringTransaction::find($recurring->id))->toBeNull();
+        });
+    });
+
+    describe('index', function () {
+        it('renders the recurring transactions index page', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            RecurringTransaction::factory()->create(['account_id' => $account->id]);
+
+            $this->actingAs($user)
+                ->get(route('accounts.recurring.index', $account))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Recurring/Index')
+                    ->has('account')
+                    ->has('recurrings', 1)
+                );
+        });
+    });
+
+    describe('create', function () {
+        it('renders the create form', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+
+            $this->actingAs($user)
+                ->get(route('accounts.recurring.create', $account))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Recurring/Create')
+                    ->has('account')
+                );
+        });
+    });
+
+    describe('edit', function () {
+        it('renders the edit form', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+            $account = Account::factory()->create(['spender_id' => $spenders->first()->id]);
+            $recurring = RecurringTransaction::factory()->create(['account_id' => $account->id]);
+
+            $this->actingAs($user)
+                ->get(route('accounts.recurring.edit', [$account, $recurring]))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Recurring/Edit')
+                    ->has('account')
+                    ->has('recurring')
+                );
         });
     });
 });

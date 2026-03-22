@@ -1,10 +1,11 @@
 <?php
 
+use App\Enums\FamilyRole;
+use App\Mail\FamilyInvitation;
 use App\Models\Family;
 use App\Models\FamilyUser;
 use App\Models\Invitation;
 use App\Models\User;
-use App\Enums\FamilyRole;
 use Illuminate\Support\Facades\Mail;
 
 describe('families', function () {
@@ -16,7 +17,7 @@ describe('families', function () {
             $this->actingAs($user)
                 ->get(route('families.index'))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page
+                ->assertInertia(fn ($page) => $page
                     ->component('Families/Index')
                     ->has('families', 1)
                 );
@@ -34,7 +35,7 @@ describe('families', function () {
             $this->actingAs($user)
                 ->get(route('families.create'))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Families/Create'));
+                ->assertInertia(fn ($page) => $page->component('Families/Create'));
         });
 
         it('creates a family and assigns the user as admin', function () {
@@ -53,12 +54,44 @@ describe('families', function () {
             expect($pivot->role)->toBe(FamilyRole::Admin);
         });
 
+        it('creates spenders and accounts when spenders are included', function () {
+            $user = User::factory()->create();
+
+            $this->actingAs($user)
+                ->post(route('families.store'), [
+                    'name' => 'The Joneses',
+                    'spenders' => [
+                        ['name' => 'Alice', 'color' => '#ff0000'],
+                        ['name' => 'Bob'],
+                    ],
+                ])
+                ->assertRedirect();
+
+            $family = Family::where('name', 'The Joneses')->first();
+            expect($family)->not->toBeNull();
+            expect($family->spenders()->count())->toBe(2);
+        });
+
         it('validates that name is required', function () {
             $user = User::factory()->create();
 
             $this->actingAs($user)
                 ->post(route('families.store'), [])
                 ->assertSessionHasErrors('name');
+        });
+    });
+
+    describe('edit', function () {
+        it('renders the edit form for a family member', function () {
+            [$user, $family] = parentWithFamily();
+
+            $this->actingAs($user)
+                ->get(route('families.edit', $family))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Families/Edit')
+                    ->has('family')
+                );
         });
     });
 
@@ -69,7 +102,7 @@ describe('families', function () {
             $this->actingAs($user)
                 ->get(route('families.show', $family))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Families/Show'));
+                ->assertInertia(fn ($page) => $page->component('Families/Show'));
         });
     });
 
@@ -103,8 +136,8 @@ describe('families', function () {
 
             $this->actingAs($user)
                 ->patch(route('families.update', $family), [
-                    'name'            => $family->name,
-                    'currency_name'   => 'Star',
+                    'name' => $family->name,
+                    'currency_name' => 'Star',
                     'currency_symbol' => '⭐',
                 ])
                 ->assertRedirect();
@@ -228,7 +261,7 @@ describe('families', function () {
                 ->exists()
             )->toBeTrue();
 
-            Mail::assertSent(\App\Mail\FamilyInvitation::class);
+            Mail::assertSent(FamilyInvitation::class);
         });
 
         it('does not duplicate an existing member', function () {

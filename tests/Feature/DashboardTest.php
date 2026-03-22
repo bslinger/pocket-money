@@ -1,11 +1,11 @@
 <?php
 
+use App\Enums\CompletionStatus;
 use App\Models\Account;
-use App\Models\ChoreCompletion;
 use App\Models\Chore;
+use App\Models\ChoreCompletion;
 use App\Models\Transaction;
 use App\Models\User;
-use App\Enums\CompletionStatus;
 
 describe('dashboard', function () {
 
@@ -13,17 +13,17 @@ describe('dashboard', function () {
         [$user, $family, $spenders] = parentWithFamily(['Emma']);
         $spender = $spenders->first();
         $account = Account::factory()->create(['spender_id' => $spender->id]);
-        $chore   = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
+        $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
         ChoreCompletion::factory()->create([
-            'chore_id'   => $chore->id,
+            'chore_id' => $chore->id,
             'spender_id' => $spender->id,
-            'status'     => CompletionStatus::Pending,
+            'status' => CompletionStatus::Pending,
         ]);
 
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertInertia(fn($page) => $page
+            ->assertInertia(fn ($page) => $page
                 ->component('Dashboard')
                 ->where('isParent', true)
                 ->has('families', 1)
@@ -39,7 +39,7 @@ describe('dashboard', function () {
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertInertia(fn($page) => $page->where('totalBalance', '130.00'));
+            ->assertInertia(fn ($page) => $page->where('totalBalance', '130.00'));
     });
 
     it('calculates paidThisMonth from current month credits', function () {
@@ -48,20 +48,20 @@ describe('dashboard', function () {
         $account = Account::factory()->withBalance(50)->create(['spender_id' => $spender->id]);
 
         Transaction::factory()->credit()->create([
-            'account_id'  => $account->id,
-            'amount'      => 20,
+            'account_id' => $account->id,
+            'amount' => 20,
             'occurred_at' => now(),
         ]);
         // Last month — should not count
         Transaction::factory()->credit()->create([
-            'account_id'  => $account->id,
-            'amount'      => 999,
+            'account_id' => $account->id,
+            'amount' => 999,
             'occurred_at' => now()->subMonth(),
         ]);
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertInertia(fn($page) => $page->where('paidThisMonth', '20.00'));
+            ->assertInertia(fn ($page) => $page->where('paidThisMonth', '20.00'));
     });
 
     it('shows child dashboard for a child user', function () {
@@ -71,7 +71,7 @@ describe('dashboard', function () {
         $this->actingAs($child)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertInertia(fn($page) => $page
+            ->assertInertia(fn ($page) => $page
                 ->component('Dashboard')
                 ->where('isParent', false)
                 ->has('spenders', 1)
@@ -88,5 +88,28 @@ describe('dashboard', function () {
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertRedirect(route('verification.notice'));
+    });
+
+    it('redirects verified user with no family or child links to onboarding', function () {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('onboarding'));
+    });
+
+    it('shows child-mode dashboard when a parent is viewing as a spender', function () {
+        [$user, , $spenders] = parentWithFamily(['Emma']);
+        $spender = $spenders->first();
+
+        $this->actingAs($user)
+            ->withSession(['viewing_as_spender_id' => $spender->id])
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Dashboard')
+                ->where('isParent', false)
+                ->has('spenders', 1)
+            );
     });
 });

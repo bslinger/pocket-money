@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\ChildInvitationMail;
 use App\Models\ChildInvitation;
 use App\Models\Spender;
 use App\Models\SpenderUser;
@@ -8,6 +9,44 @@ use Illuminate\Support\Facades\Mail;
 
 describe('spenders', function () {
 
+    describe('index', function () {
+        it('shows the spenders index page for a parent', function () {
+            [$user] = parentWithFamily(['Emma', 'Jack']);
+
+            $this->actingAs($user)
+                ->get(route('spenders.index'))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Spenders/Index')
+                    ->has('family')
+                    ->has('spenders', 2)
+                );
+        });
+
+        it('redirects to family create when no family exists', function () {
+            $user = User::factory()->create();
+
+            $this->actingAs($user)
+                ->get(route('spenders.index'))
+                ->assertForbidden();
+        });
+    });
+
+    describe('edit', function () {
+        it('renders the edit form for a parent', function () {
+            [$user, , $spenders] = parentWithFamily(['Emma']);
+
+            $this->actingAs($user)
+                ->get(route('spenders.edit', $spenders->first()))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Spenders/Edit')
+                    ->has('spender')
+                    ->has('family')
+                );
+        });
+    });
+
     describe('create / store', function () {
         it('shows the create form to a parent', function () {
             [$user] = parentWithFamily();
@@ -15,7 +54,7 @@ describe('spenders', function () {
             $this->actingAs($user)
                 ->get(route('spenders.create'))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Spenders/Create'));
+                ->assertInertia(fn ($page) => $page->component('Spenders/Create'));
         });
 
         it('requires parent role', function () {
@@ -32,8 +71,8 @@ describe('spenders', function () {
             $this->actingAs($user)
                 ->post(route('spenders.store'), [
                     'family_id' => $family->id,
-                    'name'      => 'Emma',
-                    'color'     => '#6366f1',
+                    'name' => 'Emma',
+                    'color' => '#6366f1',
                 ])
                 ->assertRedirect();
 
@@ -56,7 +95,7 @@ describe('spenders', function () {
             $this->actingAs($user)
                 ->get(route('spenders.show', $spenders->first()))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Spenders/Show'));
+                ->assertInertia(fn ($page) => $page->component('Spenders/Show'));
         });
 
         it('allows a linked child to view their spender', function () {
@@ -85,8 +124,8 @@ describe('spenders', function () {
             $this->actingAs($user)
                 ->patch(route('spenders.update', $spenders->first()), [
                     'family_id' => $spenders->first()->family_id,
-                    'name'      => 'Emma-Updated',
-                    'color'     => '#ff0000',
+                    'name' => 'Emma-Updated',
+                    'color' => '#ff0000',
                 ])
                 ->assertRedirect();
 
@@ -148,7 +187,7 @@ describe('spenders', function () {
                 ->exists()
             )->toBeTrue();
 
-            Mail::assertSent(\App\Mail\ChildInvitationMail::class);
+            Mail::assertSent(ChildInvitationMail::class);
         });
 
         it('does not create duplicate links', function () {
@@ -212,7 +251,7 @@ describe('spenders', function () {
             $this->actingAs($user)
                 ->withSession([
                     'viewing_as_spender_id' => $spender->id,
-                    'view_as_return_url'    => $returnUrl,
+                    'view_as_return_url' => $returnUrl,
                 ])
                 ->delete(route('dashboard.exit-view-as'))
                 ->assertRedirect($returnUrl);
