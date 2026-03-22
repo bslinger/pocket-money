@@ -7,6 +7,7 @@ use App\Models\Chore;
 use App\Models\ChoreCompletion;
 use Bentonow\BentoLaravel\DataTransferObjects\EventData;
 use Bentonow\BentoLaravel\Facades\Bento;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -122,5 +123,30 @@ class ChoreController extends Controller
         $chore->delete();
 
         return redirect()->route('chores.index');
+    }
+
+    /**
+     * Return completions for a specific date (JSON endpoint for lazy-loading past days).
+     */
+    public function completionsForDate(Request $request)
+    {
+        $request->validate(['date' => 'required|date']);
+
+        $date = Carbon::parse($request->input('date'));
+
+        $choreIds = $request->user()
+            ->families()
+            ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
+            ->with('chores')
+            ->get()
+            ->flatMap(fn ($f) => $f->chores)
+            ->pluck('id');
+
+        $completions = ChoreCompletion::whereIn('chore_id', $choreIds)
+            ->whereBetween('completed_at', [$date->copy()->startOfDay(), $date->copy()->endOfDay()])
+            ->select(['id', 'chore_id', 'spender_id', 'status', 'completed_at'])
+            ->get();
+
+        return response()->json($completions);
     }
 }

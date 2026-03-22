@@ -94,6 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('chores', ChoreController::class)->except('show');
         Route::get('/chores/{chore}/history', [ChoreController::class, 'history'])->name('chores.history');
+        Route::get('/chores-completions-for-date', [ChoreController::class, 'completionsForDate'])->name('chores.completions-for-date');
         Route::patch('/chore-completions/{completion}/approve', [ChoreCompletionController::class, 'approve'])->name('chore-completions.approve');
         Route::patch('/chore-completions/{completion}/unapprove', [ChoreCompletionController::class, 'unapprove'])->name('chore-completions.unapprove');
         Route::patch('/chore-completions/{completion}/decline', [ChoreCompletionController::class, 'decline'])->name('chore-completions.decline');

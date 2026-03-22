@@ -206,8 +206,61 @@ class DatabaseSeeder extends Seeder
             ['status' => CompletionStatus::Declined, 'reviewed_at' => now()->subHours(2), 'reviewed_by' => $user->id]
         );
 
-        // Wash the dishes: emma today — not yet submitted (no completion record needed)
-        // Make bed: not done by anyone today — no completion record needed
+        // ── Past week completions (for schedule history testing) ─────────
+
+        // Daily chores: make bed + dishes over the past 7 days
+        foreach (range(2, 7) as $daysAgo) {
+            $day = now()->subDays($daysAgo)->startOfDay();
+
+            // Emma: made bed every day, did dishes most days
+            ChoreCompletion::firstOrCreate(
+                ['chore_id' => $makebed->id, 'spender_id' => $emma->id, 'completed_at' => $day->copy()->addHours(7)],
+                ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(8), 'reviewed_by' => $user->id]
+            );
+            if ($daysAgo !== 4) { // skipped dishes 4 days ago
+                ChoreCompletion::firstOrCreate(
+                    ['chore_id' => $dishes->id, 'spender_id' => $emma->id, 'completed_at' => $day->copy()->addHours(18)],
+                    ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(19), 'reviewed_by' => $user->id]
+                );
+            }
+
+            // Jack: made bed some days, did dishes occasionally
+            if ($daysAgo % 2 === 0) {
+                ChoreCompletion::firstOrCreate(
+                    ['chore_id' => $makebed->id, 'spender_id' => $jack->id, 'completed_at' => $day->copy()->addHours(8)],
+                    ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(9), 'reviewed_by' => $user->id]
+                );
+            }
+            if ($daysAgo >= 5) {
+                ChoreCompletion::firstOrCreate(
+                    ['chore_id' => $dishes->id, 'spender_id' => $jack->id, 'completed_at' => $day->copy()->addHours(19)],
+                    ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(20), 'reviewed_by' => $user->id]
+                );
+            }
+
+            // Theodore: did dishes most days
+            if ($daysAgo !== 6) {
+                ChoreCompletion::firstOrCreate(
+                    ['chore_id' => $dishes->id, 'spender_id' => $theodore->id, 'completed_at' => $day->copy()->addHours(17)],
+                    ['status' => $daysAgo === 3 ? CompletionStatus::Declined : CompletionStatus::Approved,
+                        'reviewed_at' => $day->copy()->addHours(18), 'reviewed_by' => $user->id]
+                );
+            }
+        }
+
+        // Weekly chores scattered through the past week
+        ChoreCompletion::firstOrCreate(
+            ['chore_id' => $vacuum->id, 'spender_id' => $emma->id, 'completed_at' => now()->subDays(5)->startOfDay()->addHours(10)],
+            ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(5)->startOfDay()->addHours(11), 'reviewed_by' => $user->id]
+        );
+        ChoreCompletion::firstOrCreate(
+            ['chore_id' => $bins->id, 'spender_id' => $jack->id, 'completed_at' => now()->subDays(4)->startOfDay()->addHours(16)],
+            ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(4)->startOfDay()->addHours(17), 'reviewed_by' => $user->id]
+        );
+        ChoreCompletion::firstOrCreate(
+            ['chore_id' => $laundry->id, 'spender_id' => $theodore->id, 'completed_at' => now()->subDays(6)->startOfDay()->addHours(14)],
+            ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(6)->startOfDay()->addHours(15), 'reviewed_by' => $user->id]
+        );
 
         // ── Second family: Pocket Money Scheduler Test ───────────────────────
         // Designed to exercise the pocket-money:run command in all scenarios.

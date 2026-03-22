@@ -9,8 +9,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import { PlusCircle, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, History, Calendar, List, CheckCircle2, Clock, XCircle, Check, CheckCheck, Undo2 } from 'lucide-react';
 import { formatAmount } from '@/lib/utils';
 import { CHORE_TYPE_INFO } from '@/lib/choreTypes';
-import { useState } from 'react';
-import { format, addDays, subDays, isToday, isTomorrow, formatDistanceToNow } from 'date-fns';
+import { useState, useCallback } from 'react';
+import { format, addDays, subDays, isToday, isTomorrow, formatDistanceToNow, isYesterday } from 'date-fns';
 
 interface WeekCompletion {
   id: string;
@@ -86,13 +86,187 @@ const frequencyLabel = (f: Chore['frequency']) => {
   return map[f];
 };
 
+/**
+ * Lazily-loaded past day summary. Shows a compact row for `daysBack` days ago.
+ * When expanded, shows the full chore card for that day and renders another
+ * PastDaySummary for the next day back.
+ */
+function PastDaySummary({ daysBack, allChores, allSpenders, initialCompletions }: {
+  daysBack: number;
+  allChores: (Chore & { spenders: Spender[] })[];
+  allSpenders: Spender[];
+  initialCompletions: WeekCompletion[];
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [completions, setCompletions] = useState<WeekCompletion[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const date = subDays(new Date(), daysBack);
+  const dateKey = format(date, 'yyyy-MM-dd');
+  const label = isYesterday(date) ? 'Yesterday' : format(date, 'EEE d MMM');
+
+  // Build completion lookup from either initial data or fetched data
+  const activeCompletions = completions ?? initialCompletions;
+  const completionMap = new Map<string, 'pending' | 'approved' | 'declined'>();
+  for (const c of activeCompletions) {
+    const key = `${c.chore_id}-${c.spender_id}-${format(new Date(c.completed_at), 'yyyy-MM-dd')}`;
+    completionMap.set(key, c.status);
+  }
+
+  function getStatus(choreId: string, spenderId: string) {
+    return completionMap.get(`${choreId}-${spenderId}-${dateKey}`);
+  }
+
+  const spenderRows = allSpenders
+    .map(spender => {
+      const spenderChores = allChores.filter(chore =>
+        (chore.up_for_grabs || chore.spenders?.some(s => s.id === spender.id)) &&
+        isChoreScheduledOnDate(chore, date)
+      );
+      const total = spenderChores.length;
+      const completed = spenderChores.filter(chore => {
+        const status = getStatus(chore.id, spender.id);
+        return status === 'approved' || status === 'pending';
+      }).length;
+      return { spender, chores: spenderChores, total, completed };
+    })
+    .filter(row => row.total > 0);
+
+  async function toggle() {
+    if (!expanded && completions === null && daysBack > 1) {
+      // Fetch completions for this date on first expand (day 1 = yesterday is already in initialCompletions)
+      setLoading(true);
+      try {
+        const res = await fetch(route('chores.completions-for-date') + `?date=${dateKey}`, {
+          headers: { 'Accept': 'application/json' },
+        });
+        if (res.ok) {
+          setCompletions(await res.json());
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    setExpanded(e => !e);
+  }
+
+  if (spenderRows.length === 0 && !expanded) return null;
+
+  return (
+    <div>
+      {/* Compact summary bar */}
+      <button type="button" onClick={toggle} className="w-full text-left">
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-lg border border-dashed border-bark-200 bg-bark-50 hover:bg-bark-100 transition-colors">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-bark-500 uppercase tracking-wide">{label}</span>
+            {!isYesterday(date) && (
+              <span className="text-xs text-bark-400">{format(date, 'EEEE d MMMM')}</span>
+            )}
+            {isYesterday(date) && (
+              <span className="text-xs text-bark-400">{format(date, 'EEE d MMM')}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {spenderRows.map(({ spender, completed, total }) => (
+              <div key={spender.id} className="flex items-center gap-1.5 text-xs text-bark-500">
+                <Avatar className="h-4 w-4">
+                  <AvatarImage src={spender.avatar_url ?? undefined} />
+                  <AvatarFallback
+                    style={{ backgroundColor: spender.color ?? '#6366f1' }}
+                    className="text-white text-[8px] font-bold"
+                  >
+                    {spender.name[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className={completed === total ? 'text-gumleaf-600 font-medium' : ''}>
+                  {completed}/{total}
+                </span>
+              </div>
+            ))}
+            {loading && <span className="text-bark-400 text-xs">…</span>}
+            {!loading && <span className="text-bark-400 text-xs">{expanded ? '▲' : '▼'}</span>}
+          </div>
+        </div>
+      </button>
+
+      {/* Expanded full card */}
+      {expanded && (
+        <>
+          <Card className="mt-2 border-bark-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold text-muted-foreground">
+                {label}
+                <span className="ml-2 font-normal text-xs text-muted-foreground">
+                  {format(date, 'EEEE d MMMM')}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-3">
+              {spenderRows.length === 0 && (
+                <p className="text-xs text-bark-400">No chores scheduled for this day.</p>
+              )}
+              {spenderRows.map(({ spender, chores }) => (
+                <div key={spender.id}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={spender.avatar_url ?? undefined} />
+                      <AvatarFallback
+                        style={{ backgroundColor: spender.color ?? '#6366f1' }}
+                        className="text-white text-[9px] font-bold"
+                      >
+                        {spender.name[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium text-muted-foreground">{spender.name}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pl-7">
+                    {chores.map(chore => {
+                      const status = getStatus(chore.id, spender.id);
+                      return (
+                        <div
+                          key={chore.id}
+                          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs ${
+                            status === 'approved' ? 'bg-gumleaf-50 text-gumleaf-600' :
+                            status === 'pending'  ? 'bg-wattle-50 text-wattle-600' :
+                            status === 'declined' ? 'bg-redearth-50 text-redearth-600' :
+                            'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          <span>{chore.emoji ?? '📋'}</span>
+                          <span className="font-medium">{chore.name}</span>
+                          {status === 'approved' && <CheckCircle2 className="h-3 w-3 shrink-0" />}
+                          {status === 'pending'  && <Clock className="h-3 w-3 shrink-0" />}
+                          {status === 'declined' && <XCircle className="h-3 w-3 shrink-0" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Next day back */}
+          <div className="mt-3">
+            <PastDaySummary
+              daysBack={daysBack + 1}
+              allChores={allChores}
+              allSpenders={allSpenders}
+              initialCompletions={[]}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function ChoresIndex({ families, weekCompletions, pendingCompletions: initialPending }: Props) {
   const [tab, setTab] = useState<Tab>('approval');
   const [pending, setPending] = useState(initialPending);
   // IDs of completions approved this session (shown with Unapprove button until page reload)
   const [localApproved, setLocalApproved] = useState<Set<string>>(new Set());
   const [filterSpenderId, setFilterSpenderId] = useState<string>('');
-  const [yesterdayExpanded, setYesterdayExpanded] = useState(false);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
@@ -499,117 +673,13 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
 
       {tab === 'schedule' && allChores.length > 0 && (
         <div className="space-y-4">
-          {/* Yesterday summary */}
-          {(() => {
-            const yesterday = subDays(new Date(), 1);
-            const yesterdayRows = allSpenders
-              .map(spender => {
-                const spenderChores = allChores.filter(chore =>
-                  (chore.up_for_grabs || chore.spenders?.some(s => s.id === spender.id)) &&
-                  isChoreScheduledOnDate(chore, yesterday)
-                );
-                const total = spenderChores.length;
-                const completed = spenderChores.filter(chore => {
-                  const status = getCompletionStatus(chore.id, spender.id, yesterday);
-                  return status === 'approved' || status === 'pending';
-                }).length;
-                return { spender, chores: spenderChores, total, completed };
-              })
-              .filter(row => row.total > 0);
-
-            if (yesterdayRows.length === 0) return null;
-
-            return (
-              <div>
-                {/* Compact summary — always visible */}
-                <button
-                  type="button"
-                  onClick={() => setYesterdayExpanded(e => !e)}
-                  className="w-full text-left"
-                >
-                  <div className="flex items-center justify-between px-4 py-2.5 rounded-lg border border-dashed border-bark-200 bg-bark-50 hover:bg-bark-100 transition-colors">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-bark-500 uppercase tracking-wide">Yesterday</span>
-                      <span className="text-xs text-bark-400">{format(yesterday, 'EEE d MMM')}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {yesterdayRows.map(({ spender, completed, total }) => (
-                        <div key={spender.id} className="flex items-center gap-1.5 text-xs text-bark-500">
-                          <Avatar className="h-4 w-4">
-                            <AvatarImage src={spender.avatar_url ?? undefined} />
-                            <AvatarFallback
-                              style={{ backgroundColor: spender.color ?? '#6366f1' }}
-                              className="text-white text-[8px] font-bold"
-                            >
-                              {spender.name[0].toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className={completed === total ? 'text-gumleaf-600 font-medium' : ''}>
-                            {completed}/{total}
-                          </span>
-                        </div>
-                      ))}
-                      <span className="text-bark-400 text-xs">{yesterdayExpanded ? '▲' : '▼'}</span>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Expanded full card */}
-                {yesterdayExpanded && (
-                  <Card className="mt-2 border-bark-200">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold text-muted-foreground">
-                        Yesterday
-                        <span className="ml-2 font-normal text-xs text-muted-foreground">
-                          {format(yesterday, 'EEEE d MMMM')}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 space-y-3">
-                      {yesterdayRows.map(({ spender, chores }) => (
-                        <div key={spender.id}>
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <Avatar className="h-5 w-5">
-                              <AvatarImage src={spender.avatar_url ?? undefined} />
-                              <AvatarFallback
-                                style={{ backgroundColor: spender.color ?? '#6366f1' }}
-                                className="text-white text-[9px] font-bold"
-                              >
-                                {spender.name[0].toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-xs font-medium text-muted-foreground">{spender.name}</span>
-                          </div>
-                          <div className="flex flex-wrap gap-2 pl-7">
-                            {chores.map(chore => {
-                              const status = getCompletionStatus(chore.id, spender.id, yesterday);
-                              return (
-                                <div
-                                  key={chore.id}
-                                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs ${
-                                    status === 'approved' ? 'bg-gumleaf-50 text-gumleaf-600' :
-                                    status === 'pending'  ? 'bg-wattle-50 text-wattle-600' :
-                                    status === 'declined' ? 'bg-redearth-50 text-redearth-600' :
-                                    'bg-muted text-muted-foreground'
-                                  }`}
-                                >
-                                  <span>{chore.emoji ?? '📋'}</span>
-                                  <span className="font-medium">{chore.name}</span>
-                                  {status === 'approved' && <CheckCircle2 className="h-3 w-3 shrink-0" />}
-                                  {status === 'pending'  && <Clock className="h-3 w-3 shrink-0" />}
-                                  {status === 'declined' && <XCircle className="h-3 w-3 shrink-0" />}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            );
-          })()}
+          {/* Past day summaries — lazy-loaded, expandable chain */}
+          <PastDaySummary
+            daysBack={1}
+            allChores={allChores}
+            allSpenders={allSpenders}
+            initialCompletions={weekCompletions}
+          />
 
           {scheduleWeek.map(date => {
             // For each spender, find which chores are due today
