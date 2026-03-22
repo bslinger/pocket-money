@@ -16,6 +16,7 @@ use App\Models\SavingsGoal;
 use App\Models\Spender;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -311,6 +312,110 @@ class DatabaseSeeder extends Seeder
                 'next_run_at' => now()->subMinutes(1), // overdue — will pay (responsibilities met)
                 'created_by' => $user->id,
             ]
+        );
+
+        // ── Billing test families ──────────────────────────────────────────────
+
+        $this->seedBillingFamilies($user);
+    }
+
+    /**
+     * Create four families to test different billing states.
+     * All attached to the same user so you can switch between them.
+     */
+    private function seedBillingFamilies(User $user): void
+    {
+        // 1. Trial expiring soon (2 days left)
+        $trialExpiring = Family::firstOrCreate(
+            ['name' => 'Trial Expiring Soon'],
+        );
+        $trialExpiring->forceFill(['trial_ends_at' => now()->addDays(2)])->save();
+
+        FamilyUser::firstOrCreate(
+            ['family_id' => $trialExpiring->id, 'user_id' => $user->id],
+            ['role' => FamilyRole::Admin]
+        );
+        $this->seedFamilyKid($trialExpiring, 'Mia', '#ec4899', '8.00');
+
+        // 2. Trial just expired (yesterday)
+        $trialExpired = Family::firstOrCreate(
+            ['name' => 'Trial Expired'],
+        );
+        $trialExpired->forceFill(['trial_ends_at' => now()->subDay()])->save();
+
+        FamilyUser::firstOrCreate(
+            ['family_id' => $trialExpired->id, 'user_id' => $user->id],
+            ['role' => FamilyRole::Admin]
+        );
+        $this->seedFamilyKid($trialExpired, 'Noah', '#3b82f6', '15.00');
+
+        // 3. Active subscription
+        $activeSubscription = Family::firstOrCreate(
+            ['name' => 'Active Subscriber'],
+        );
+        $activeSubscription->forceFill([
+            'trial_ends_at' => now()->subMonth(), // trial long over
+        ])->save();
+
+        FamilyUser::firstOrCreate(
+            ['family_id' => $activeSubscription->id, 'user_id' => $user->id],
+            ['role' => FamilyRole::Admin]
+        );
+        $this->seedFamilyKid($activeSubscription, 'Olivia', '#f59e0b', '22.50');
+
+        // Fake an active subscription record
+        DB::table('subscriptions')->insertOrIgnore([
+            'family_id' => $activeSubscription->id,
+            'type' => 'default',
+            'stripe_id' => 'sub_fake_active_'.substr($activeSubscription->id, 0, 8),
+            'stripe_status' => 'active',
+            'stripe_price' => 'price_fake_monthly',
+            'quantity' => 1,
+            'trial_ends_at' => null,
+            'ends_at' => null,
+            'created_at' => now()->subMonth(),
+            'updated_at' => now(),
+        ]);
+
+        // 4. Lapsed subscription (past_due — billing failed)
+        $lapsedSubscription = Family::firstOrCreate(
+            ['name' => 'Lapsed Subscriber'],
+        );
+        $lapsedSubscription->forceFill([
+            'trial_ends_at' => now()->subMonths(2),
+        ])->save();
+
+        FamilyUser::firstOrCreate(
+            ['family_id' => $lapsedSubscription->id, 'user_id' => $user->id],
+            ['role' => FamilyRole::Admin]
+        );
+        $this->seedFamilyKid($lapsedSubscription, 'Liam', '#ef4444', '30.00');
+
+        // Fake a past_due subscription record
+        DB::table('subscriptions')->insertOrIgnore([
+            'family_id' => $lapsedSubscription->id,
+            'type' => 'default',
+            'stripe_id' => 'sub_fake_lapsed_'.substr($lapsedSubscription->id, 0, 8),
+            'stripe_status' => 'past_due',
+            'stripe_price' => 'price_fake_monthly',
+            'quantity' => 1,
+            'trial_ends_at' => null,
+            'ends_at' => null,
+            'created_at' => now()->subMonths(2),
+            'updated_at' => now()->subWeek(),
+        ]);
+    }
+
+    private function seedFamilyKid(Family $family, string $name, string $color, string $balance): void
+    {
+        $spender = Spender::firstOrCreate(
+            ['family_id' => $family->id, 'name' => $name],
+            ['color' => $color]
+        );
+
+        Account::firstOrCreate(
+            ['spender_id' => $spender->id, 'name' => 'Savings'],
+            ['balance' => $balance]
         );
     }
 }
