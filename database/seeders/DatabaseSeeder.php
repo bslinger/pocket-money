@@ -34,10 +34,13 @@ class DatabaseSeeder extends Seeder
 
         $family = Family::firstOrCreate(
             ['name' => "Ben's Family"],
-            ['billing_user_id' => $user->id]
+            ['billing_user_id' => $user->id, 'trial_ends_at' => now()->addDays(14)]
         );
         if (! $family->billing_user_id) {
             $family->update(['billing_user_id' => $user->id]);
+        }
+        if (! $family->trial_ends_at || $family->trial_ends_at->isPast()) {
+            $family->update(['trial_ends_at' => now()->addDays(14)]);
         }
 
         FamilyUser::firstOrCreate(
