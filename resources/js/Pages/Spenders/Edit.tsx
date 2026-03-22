@@ -7,12 +7,8 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { cn } from '@/lib/utils';
 import ImageUpload from '@/Components/ImageUpload';
+import ColorPicker, { COLOURS } from '@/Components/ColorPicker';
 import { Trash2 } from 'lucide-react';
-
-const COLOURS = [
-    '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316',
-    '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#64748b',
-];
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -72,21 +68,7 @@ export default function SpenderEdit({ spender, family, pocketMoneySchedule, chor
 
                         <div className="space-y-2">
                             <Label>Colour</Label>
-                            <div className="flex flex-wrap gap-2">
-                                {COLOURS.map(c => (
-                                    <button
-                                        key={c}
-                                        type="button"
-                                        onClick={() => setData('color', c)}
-                                        className={cn(
-                                            'h-8 w-8 rounded-full transition-transform',
-                                            data.color === c ? 'ring-2 ring-offset-2 ring-ring scale-110' : 'hover:scale-105'
-                                        )}
-                                        style={{ backgroundColor: c }}
-                                        aria-label={c}
-                                    />
-                                ))}
-                            </div>
+                            <ColorPicker value={data.color} onChange={c => setData('color', c)} />
                         </div>
                     </CardContent>
                 </Card>

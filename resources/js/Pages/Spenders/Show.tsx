@@ -304,42 +304,64 @@ export default function SpenderShow({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {spender.accounts?.map(account => {
                                     const acctSymbol = accountCurrencySymbol(account, family);
+                                    const accountGoals = (spender.savings_goals ?? []).filter(
+                                        g => g.account_id === account.id && !g.is_completed
+                                    );
                                     return (
                                         <Card key={account.id} className="overflow-hidden">
-                                            <Link href={route('accounts.show', account.id)} prefetch className="block hover:bg-muted/30 transition-colors">
-                                                <CardContent className="pt-4 pb-3">
-                                                    <p className="text-sm font-medium mb-1">{account.name}</p>
-                                                    <p className="text-2xl font-bold tabular-nums">
-                                                        {formatAmount(account.balance, acctSymbol)}
-                                                    </p>
-                                                    {(account.transactions?.length ?? 0) > 0 && (
-                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                            {account.transactions!.length} recent transaction{account.transactions!.length !== 1 ? 's' : ''}
+                                            <div className="flex">
+                                                {/* Main content — links to account detail */}
+                                                <Link href={route('accounts.show', account.id)} prefetch className="flex-1 hover:bg-muted/30 transition-colors min-w-0">
+                                                    <CardContent className="pt-4 pb-3 pr-3">
+                                                        <p className="text-sm font-medium mb-1">{account.name}</p>
+                                                        <p className="text-2xl font-bold tabular-nums">
+                                                            {formatAmount(account.balance, acctSymbol)}
                                                         </p>
-                                                    )}
-                                                </CardContent>
-                                            </Link>
-                                            {isParent && (
-                                                <div className="flex border-t">
-                                                    <button
-                                                        onClick={() => setQuickTxModal({ account, type: 'debit' })}
-                                                        className="flex-1 flex items-center justify-center gap-1 py-2 text-redearth-400 hover:bg-redearth-50 transition-colors"
-                                                        aria-label={`Spend from ${account.name}`}
-                                                    >
-                                                        <Minus className="h-3.5 w-3.5" />
-                                                        <span className="text-xs font-medium">Spend</span>
-                                                    </button>
-                                                    <div className="w-px bg-border" />
-                                                    <button
-                                                        onClick={() => setQuickTxModal({ account, type: 'credit' })}
-                                                        className="flex-1 flex items-center justify-center gap-1 py-2 text-gumleaf-400 hover:bg-gumleaf-50 transition-colors"
-                                                        aria-label={`Add to ${account.name}`}
-                                                    >
-                                                        <Plus className="h-3.5 w-3.5" />
-                                                        <span className="text-xs font-medium">Add</span>
-                                                    </button>
-                                                </div>
-                                            )}
+                                                        {accountGoals.length > 0 && (
+                                                            <div className="mt-2 space-y-1.5">
+                                                                {accountGoals.map(goal => {
+                                                                    const current = parseFloat(goal.allocated_amount ?? '0');
+                                                                    const target = parseFloat(goal.target_amount);
+                                                                    const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
+                                                                    return (
+                                                                        <div key={goal.id}>
+                                                                            <div className="flex justify-between text-xs text-muted-foreground mb-0.5">
+                                                                                <span className="truncate mr-2">{goal.name}</span>
+                                                                                <span className="shrink-0 tabular-nums">{Math.round(pct)}%</span>
+                                                                            </div>
+                                                                            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                                                                                <div className="h-1.5 bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </CardContent>
+                                                </Link>
+                                                {/* Vertically stacked Spend / Add buttons */}
+                                                {isParent && (
+                                                    <div className="flex flex-col border-l shrink-0">
+                                                        <button
+                                                            onClick={() => setQuickTxModal({ account, type: 'debit' })}
+                                                            className="flex-1 flex flex-col items-center justify-center gap-0.5 px-3 text-redearth-400 hover:bg-redearth-50 transition-colors"
+                                                            aria-label={`Spend from ${account.name}`}
+                                                        >
+                                                            <Minus className="h-3.5 w-3.5" />
+                                                            <span className="text-xs font-medium">Spend</span>
+                                                        </button>
+                                                        <div className="h-px bg-border" />
+                                                        <button
+                                                            onClick={() => setQuickTxModal({ account, type: 'credit' })}
+                                                            className="flex-1 flex flex-col items-center justify-center gap-0.5 px-3 text-gumleaf-400 hover:bg-gumleaf-50 transition-colors"
+                                                            aria-label={`Add to ${account.name}`}
+                                                        >
+                                                            <Plus className="h-3.5 w-3.5" />
+                                                            <span className="text-xs font-medium">Add</span>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </Card>
                                     );
                                 })}
@@ -359,7 +381,7 @@ export default function SpenderShow({
 
             {/* Chores tab */}
             {activeTab === 'chores' && (
-                <ChoresTab spender={spender} />
+                <ChoresTab spender={spender} isParent={isParent} />
             )}
 
             {/* Transactions tab */}
@@ -385,10 +407,9 @@ export default function SpenderShow({
 }
 
 function GoalsTab({ spender, currencySymbol }: { spender: Spender; currencySymbol: string }) {
-    const activeGoals = spender.savings_goals?.filter(g => !g.is_completed) ?? [];
-    const completedGoals = spender.savings_goals?.filter(g => g.is_completed) ?? [];
+    const allGoals = spender.savings_goals ?? [];
 
-    if ((spender.savings_goals?.length ?? 0) === 0) {
+    if (allGoals.length === 0) {
         return (
             <Card>
                 <CardContent className="py-10 text-center text-muted-foreground text-sm">
@@ -398,63 +419,89 @@ function GoalsTab({ spender, currencySymbol }: { spender: Spender; currencySymbo
         );
     }
 
+    // Group goals by account
+    const accountMap = new Map<string | null, { name: string; goals: typeof allGoals }>();
+    for (const goal of allGoals) {
+        const key = goal.account_id ?? null;
+        if (!accountMap.has(key)) {
+            accountMap.set(key, { name: goal.account?.name ?? 'Unlinked', goals: [] });
+        }
+        accountMap.get(key)!.goals.push(goal);
+    }
+
     return (
         <div className="space-y-6">
-            {activeGoals.length > 0 && (
-                <div>
-                    <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Active Goals</h2>
-                    <Card>
-                        <CardContent className="pt-4 space-y-4">
-                            {activeGoals.map(goal => {
-                                const current = parseFloat(goal.allocated_amount);
-                                const target = parseFloat(goal.target_amount);
-                                const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
-                                return (
-                                    <Link key={goal.id} href={route('goals.show', goal.id)} className="block group">
-                                        <div className="flex justify-between text-sm mb-1.5">
-                                            <span className="font-medium group-hover:underline">{goal.name}</span>
-                                            <span className="text-muted-foreground tabular-nums">
-                                                {formatAmount(current, currencySymbol)} of {formatAmount(target, currencySymbol)} ({Math.round(pct)}%)
-                                            </span>
-                                        </div>
-                                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                            <div className="h-2 bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
-                                        </div>
-                                        {goal.target_date && (
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                Target: {new Date(goal.target_date).toLocaleDateString()}
-                                            </p>
-                                        )}
+            {[...accountMap.entries()].map(([accountId, { name, goals }]) => {
+                const active = goals.filter(g => !g.is_completed);
+                const completed = goals.filter(g => g.is_completed);
+                return (
+                    <div key={accountId ?? 'unlinked'}>
+                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">{name}</h2>
+                        <Card>
+                            <CardContent className="pt-4 space-y-4">
+                                {active.map(goal => {
+                                    const current = parseFloat(goal.allocated_amount ?? '0');
+                                    const target = parseFloat(goal.target_amount);
+                                    const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
+                                    return (
+                                        <Link key={goal.id} href={route('goals.show', goal.id)} className="block group">
+                                            <div className="flex justify-between text-sm mb-1.5">
+                                                <span className="font-medium group-hover:underline">{goal.name}</span>
+                                                <span className="text-muted-foreground tabular-nums">
+                                                    {formatAmount(current, currencySymbol)} of {formatAmount(target, currencySymbol)} ({Math.round(pct)}%)
+                                                </span>
+                                            </div>
+                                            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                                                <div className="h-2 bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                            </div>
+                                            {goal.target_date && (
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Target: {new Date(goal.target_date).toLocaleDateString()}
+                                                </p>
+                                            )}
+                                        </Link>
+                                    );
+                                })}
+                                {completed.map(goal => (
+                                    <Link key={goal.id} href={route('goals.show', goal.id)} className="flex items-center justify-between gap-2 group">
+                                        <span className="text-sm font-medium group-hover:underline text-muted-foreground">{goal.name}</span>
+                                        <Badge variant="outline" className="text-gumleaf-600 border-gumleaf-200 shrink-0">
+                                            <Check className="h-3 w-3 mr-1" /> Reached
+                                        </Badge>
                                     </Link>
-                                );
-                            })}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {completedGoals.length > 0 && (
-                <div>
-                    <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Completed Goals</h2>
-                    <Card>
-                        <CardContent className="pt-4 space-y-3">
-                            {completedGoals.map(goal => (
-                                <Link key={goal.id} href={route('goals.show', goal.id)} className="flex items-center justify-between gap-2 group">
-                                    <span className="text-sm font-medium group-hover:underline">{goal.name}</span>
-                                    <Badge variant="outline" className="text-gumleaf-600 border-gumleaf-200 shrink-0">
-                                        <Check className="h-3 w-3 mr-1" /> Reached
-                                    </Badge>
-                                </Link>
-                            ))}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
+                                ))}
+                            </CardContent>
+                        </Card>
+                    </div>
+                );
+            })}
         </div>
     );
 }
 
-function ChoresTab({ spender }: { spender: Spender }) {
+/** Returns true if the completion date falls within the chore's current period. */
+function isInCurrentPeriod(completedAt: string, frequency: string): boolean {
+    const date = new Date(completedAt);
+    const now = new Date();
+    if (frequency === 'daily') {
+        return date.toDateString() === now.toDateString();
+    }
+    if (frequency === 'weekly') {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+        startOfWeek.setHours(0, 0, 0, 0);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 7);
+        return date >= startOfWeek && date < endOfWeek;
+    }
+    if (frequency === 'monthly') {
+        return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+    }
+    // For other frequencies fall back to checking the completion exists at all
+    return true;
+}
+
+function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean }) {
     const chores: Chore[] = spender.chores ?? [];
     const completions: (ChoreCompletion & { chore?: Chore })[] = spender.chore_completions ?? [];
 
@@ -468,11 +515,13 @@ function ChoresTab({ spender }: { spender: Spender }) {
         );
     }
 
-    // Map most recent completion per chore
-    const latestCompletion = new Map<string, ChoreCompletion>();
+    // Find the most recent completion within the current period per chore
+    const currentPeriodCompletion = new Map<string, ChoreCompletion>();
     for (const c of completions) {
-        if (!latestCompletion.has(c.chore_id)) {
-            latestCompletion.set(c.chore_id, c);
+        if (isInCurrentPeriod(c.completed_at, chores.find(ch => ch.id === c.chore_id)?.frequency ?? 'daily')) {
+            if (!currentPeriodCompletion.has(c.chore_id)) {
+                currentPeriodCompletion.set(c.chore_id, c);
+            }
         }
     }
 
@@ -480,39 +529,50 @@ function ChoresTab({ spender }: { spender: Spender }) {
         <Card>
             <CardContent className="pt-4 divide-y">
                 {chores.map(chore => {
-                    const latest = latestCompletion.get(chore.id);
+                    const current = currentPeriodCompletion.get(chore.id);
                     return (
                         <div key={chore.id} className="py-3 flex items-center justify-between gap-3">
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium">
                                     {chore.emoji ? `${chore.emoji} ` : ''}{chore.name}
                                 </p>
                                 <p className="text-xs text-muted-foreground capitalize">{chore.frequency}</p>
                             </div>
-                            <div className="shrink-0">
-                                {latest ? (
-                                    <div className="text-right">
-                                        {latest.status === 'approved' && (
-                                            <Badge className="bg-gumleaf-50 text-gumleaf-700 border-gumleaf-200">
-                                                <Check className="h-3 w-3 mr-1" /> Approved
-                                            </Badge>
-                                        )}
-                                        {latest.status === 'pending' && (
-                                            <Badge variant="outline" className="text-wattle-600 border-wattle-200">
-                                                <Clock className="h-3 w-3 mr-1" /> Pending
-                                            </Badge>
-                                        )}
-                                        {latest.status === 'declined' && (
-                                            <Badge variant="outline" className="text-redearth-500 border-redearth-200">
-                                                Declined
-                                            </Badge>
-                                        )}
-                                        <p className="text-xs text-muted-foreground mt-0.5" suppressHydrationWarning>
-                                            {formatDistanceToNow(new Date(latest.completed_at), { addSuffix: true })}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <span className="text-xs text-muted-foreground">Not done yet</span>
+                            <div className="shrink-0 flex items-center gap-2">
+                                <div className="text-right">
+                                    {current ? (
+                                        <>
+                                            {current.status === 'approved' && (
+                                                <Badge className="bg-gumleaf-50 text-gumleaf-700 border-gumleaf-200">
+                                                    <Check className="h-3 w-3 mr-1" /> Approved
+                                                </Badge>
+                                            )}
+                                            {current.status === 'pending' && (
+                                                <Badge variant="outline" className="text-wattle-600 border-wattle-200">
+                                                    <Clock className="h-3 w-3 mr-1" /> Pending
+                                                </Badge>
+                                            )}
+                                            {current.status === 'declined' && (
+                                                <Badge variant="outline" className="text-redearth-500 border-redearth-200">
+                                                    Declined
+                                                </Badge>
+                                            )}
+                                            <p className="text-xs text-muted-foreground mt-0.5" suppressHydrationWarning>
+                                                {formatDistanceToNow(new Date(current.completed_at), { addSuffix: true })}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground">Not done yet</span>
+                                    )}
+                                </div>
+                                {isParent && (
+                                    <Link
+                                        href={route('chores.edit', chore.id)}
+                                        className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                                        aria-label={`Edit ${chore.name}`}
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                    </Link>
                                 )}
                             </div>
                         </div>

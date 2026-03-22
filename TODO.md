@@ -22,7 +22,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Archive / deactivate a kid** — soft-delete so history is preserved when a child ages out — completed 2026-03-20 20:13
 - [x] **Family settings page** — consolidate currency, pocket money day, and member management into one place — completed 2026-03-20 17:22
 - [x] Add an edit button to kid pages — completed 2026-03-22 11:03
--
+- [x] When setting up a kid (in either onboarding or on edit page), provide a larger array of colours in various nice palettes. Have 10 visible like now, the rest in a popup that can be opened or expanded — completed 2026-03-22
 
 ---
 
@@ -62,6 +62,9 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Give parents the ability to completely destroy an abandoned goal. — completed 2026-03-22 01:06
 - [x] On the Savings Goal page, I want the account sections to be more obvious. Make the headings clearer.
 - [x] On the Kids page, order accounts by the amount of money in them, per kid
+- [x] On the Accounts tab of the Kid specific page, change the Spend/Add button to be vertically stacked on the right side of each card, and add the savings goals to each card as well. — completed 2026-03-22
+- [x] On the Goals tab, group the goals by account — completed 2026-03-22
+- [x] On the Chores tab, add an edit button for each chore. If a chore hasn't been completed in the current time period (ie. today, if it's Daily; this week if it's weekly), show it as not done, even if there are completions from previous days. — completed 2026-03-22
 
 ---
 
@@ -97,6 +100,7 @@ Organised by strategic area, with specific tasks nested under each.
 
 - [x] **Spender Create page** — add optional currency override (currently only on Edit) — completed 2026-03-20 20:13
 - [x] **PHPStan** — keep at level 5; run after every PHP change — completed 2026-03-20 16:37
+- [x] Add a new family to the seeders, still attached to the ben@example.com user. Seed data for that family in a way that will help test the scheduled tasks. So have some kids with pocket money due that should have a transaction added the next time the scheduled task is done, some that would have the transaction added but they haven't completed all their responsibilities, etc. — completed 2026-03-22
 
 ## Chore Improvements
 - [x] Ticking off a chore from the kids view (parent logged in) is throwing an error — completed 2026-03-21 05:36
