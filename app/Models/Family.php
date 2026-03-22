@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Cashier\Billable;
@@ -19,6 +20,7 @@ class Family extends Model
 
     protected $fillable = [
         'name',
+        'billing_user_id',
         'avatar_url',
         'currency_name',
         'currency_name_plural',
@@ -31,21 +33,37 @@ class Family extends Model
         'trial_ends_at' => 'datetime',
     ];
 
-    protected static function booted(): void
-    {
-        static::creating(function (Family $family) {
-            if ($family->trial_ends_at === null && $family->stripe_id === null) {
-                $family->trial_ends_at = now()->addDays(14);
-            }
-        });
-    }
-
     /**
      * Whether this family has an active subscription or is on trial.
      */
     public function hasActiveAccess(): bool
     {
         return $this->onTrial() || $this->subscribed('default');
+    }
+
+    /**
+     * Grant a 14-day free trial if the user has never had a trial on any family.
+     */
+    public function grantTrialIfEligible(User $user): void
+    {
+        $hasHadTrial = $user->families()
+            ->whereNotNull('trial_ends_at')
+            ->where('families.id', '!=', $this->id)
+            ->exists();
+
+        if (! $hasHadTrial) {
+            $this->forceFill(['trial_ends_at' => now()->addDays(14)])->save();
+        }
+    }
+
+    public function billingUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'billing_user_id');
+    }
+
+    public function isBillingUser(User $user): bool
+    {
+        return $this->billing_user_id === $user->id;
     }
 
     public function users(): BelongsToMany

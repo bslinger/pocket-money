@@ -11,22 +11,31 @@ class BillingController extends Controller
 {
     public function index(): Response
     {
-        $family = $this->activeFamily();
-        $subscription = $family?->subscription('default');
-        $onTrial = $family?->onTrial() ?? false;
+        $user = auth()->user();
+        $families = $user->families()->where('billing_user_id', $user->id)->get();
+
+        $familyBilling = $families->map(function (Family $family) {
+            $subscription = $family->subscription('default');
+            $onTrial = $family->onTrial();
+
+            return [
+                'id' => $family->id,
+                'name' => $family->name,
+                'on_trial' => $onTrial,
+                'trial_ends_at' => $onTrial ? $family->trial_ends_at->toIso8601String() : null,
+                'frozen' => ! $family->hasActiveAccess(),
+                'subscription' => $subscription ? [
+                    'status' => $subscription->stripe_status,
+                    'plan_name' => $subscription->stripe_price === config('services.stripe.price_yearly')
+                        ? 'Annual' : 'Monthly',
+                    'current_period_end' => $subscription->ends_at?->toIso8601String(),
+                    'cancel_at_period_end' => $subscription->canceled(),
+                ] : null,
+            ];
+        });
 
         return Inertia::render('Billing/Index', [
-            'subscription' => $subscription ? [
-                'status' => $subscription->stripe_status,
-                'plan_name' => $subscription->stripe_price === config('services.stripe.price_yearly')
-                    ? 'Annual' : 'Monthly',
-                'current_period_end' => $subscription->ends_at?->toIso8601String(),
-                'cancel_at_period_end' => $subscription->canceled(),
-                'on_grace_period' => $subscription->onGracePeriod(),
-            ] : null,
-            'on_trial' => $onTrial,
-            'trial_ends_at' => $onTrial ? $family->trial_ends_at->toIso8601String() : null,
-            'frozen' => $family && ! $family->hasActiveAccess(),
+            'families' => $familyBilling,
             'prices' => [
                 'monthly' => [
                     'amount' => '$1.99',
@@ -47,10 +56,13 @@ class BillingController extends Controller
     {
         $request->validate([
             'plan' => 'required|in:monthly,yearly',
+            'family_id' => 'required|string',
         ]);
 
-        $family = $this->activeFamily();
-        abort_unless($family !== null, 404);
+        $family = auth()->user()->families()
+            ->where('families.id', $request->input('family_id'))
+            ->where('billing_user_id', auth()->id())
+            ->firstOrFail();
 
         $priceId = $request->input('plan') === 'yearly'
             ? config('services.stripe.price_yearly')
@@ -66,23 +78,17 @@ class BillingController extends Controller
             ]);
     }
 
-    public function portal()
+    public function portal(Request $request)
     {
-        $family = $this->activeFamily();
-        abort_unless($family !== null, 404);
+        $request->validate([
+            'family_id' => 'required|string',
+        ]);
+
+        $family = auth()->user()->families()
+            ->where('families.id', $request->input('family_id'))
+            ->where('billing_user_id', auth()->id())
+            ->firstOrFail();
 
         return $family->redirectToBillingPortal(route('billing'));
-    }
-
-    private function activeFamily(): ?Family
-    {
-        $user = auth()->user();
-        $familyId = session('active_family_id');
-
-        if ($familyId) {
-            return Family::find($familyId);
-        }
-
-        return $user->families()->first();
     }
 }

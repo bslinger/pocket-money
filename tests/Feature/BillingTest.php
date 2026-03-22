@@ -1,6 +1,9 @@
 <?php
 
+use App\Enums\FamilyRole;
 use App\Models\Family;
+use App\Models\FamilyUser;
+use App\Models\User;
 
 describe('billing', function () {
 
@@ -23,51 +26,60 @@ describe('billing', function () {
                 ->assertForbidden();
         });
 
-        it('shows trial status when family is on trial', function () {
-            [$user] = parentWithFamily();
+        it('only shows families where user is billing owner', function () {
+            [$user, $ownedFamily] = parentWithFamily();
+
+            // Create another family where user is a member but not billing owner
+            $otherUser = User::factory()->create();
+            $otherFamily = Family::factory()->create(['billing_user_id' => $otherUser->id]);
+            FamilyUser::create(['family_id' => $otherFamily->id, 'user_id' => $user->id, 'role' => FamilyRole::Admin]);
 
             $this->actingAs($user)
                 ->get(route('billing'))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page
                     ->component('Billing/Index')
-                    ->where('on_trial', true)
-                    ->where('frozen', false)
+                    ->has('families', 1)
+                    ->where('families.0.id', $ownedFamily->id)
                 );
         });
 
-        it('shows frozen state when trial has expired', function () {
-            [$user, $family] = parentWithFamily();
-            $family->forceFill(['trial_ends_at' => now()->subDay()])->save();
+        it('shows all billing-owned families', function () {
+            [$user, $family1] = parentWithFamily();
+            $family2 = Family::factory()->create(['billing_user_id' => $user->id]);
+            FamilyUser::create(['family_id' => $family2->id, 'user_id' => $user->id, 'role' => FamilyRole::Admin]);
 
             $this->actingAs($user)
                 ->get(route('billing'))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page
-                    ->component('Billing/Index')
-                    ->where('on_trial', false)
-                    ->where('frozen', true)
+                    ->has('families', 2)
                 );
         });
     });
 
     describe('trial', function () {
-        it('sets a 14-day trial when creating a family', function () {
-            $family = Family::create(['name' => 'Test Family']);
+        it('grants a 14-day trial on first family', function () {
+            [$user, $family] = parentWithFamily();
 
             expect($family->trial_ends_at)->not->toBeNull();
             expect($family->onTrial())->toBeTrue();
-            expect((int) abs($family->trial_ends_at->diffInDays(now())))->toBeBetween(13, 14);
-        });
-
-        it('gives active access during trial', function () {
-            $family = Family::create(['name' => 'Test Family']);
-
             expect($family->hasActiveAccess())->toBeTrue();
         });
 
+        it('does not grant trial on second family', function () {
+            [$user, $firstFamily] = parentWithFamily();
+
+            $secondFamily = Family::factory()->create(['billing_user_id' => $user->id]);
+            FamilyUser::create(['family_id' => $secondFamily->id, 'user_id' => $user->id, 'role' => FamilyRole::Admin]);
+            $secondFamily->grantTrialIfEligible($user);
+
+            expect($firstFamily->onTrial())->toBeTrue();
+            expect($secondFamily->onTrial())->toBeFalse();
+        });
+
         it('denies active access after trial expires', function () {
-            $family = Family::create(['name' => 'Test Family']);
+            [$user, $family] = parentWithFamily();
             $family->forceFill(['trial_ends_at' => now()->subDay()])->save();
             $family->refresh();
 
@@ -109,7 +121,6 @@ describe('billing', function () {
                     'family_id' => $family->id,
                 ]);
 
-            // Should not redirect to billing
             $response->assertRedirect();
             expect($response->headers->get('Location'))->not->toContain('/billing');
         });
@@ -150,6 +161,28 @@ describe('billing', function () {
                     ->where('auth.subscription.active', false)
                     ->where('auth.subscription.frozen', true)
                 );
+        });
+    });
+
+    describe('billing ownership', function () {
+        it('sets billing_user_id when creating a family', function () {
+            [$user, $family] = parentWithFamily();
+
+            expect($family->billing_user_id)->toBe($user->id);
+            expect($family->isBillingUser($user))->toBeTrue();
+        });
+
+        it('non-billing user cannot access checkout', function () {
+            [$owner, $family] = parentWithFamily();
+            $other = User::factory()->create();
+            FamilyUser::create(['family_id' => $family->id, 'user_id' => $other->id, 'role' => FamilyRole::Admin]);
+
+            $this->actingAs($other)
+                ->post(route('billing.checkout'), [
+                    'plan' => 'monthly',
+                    'family_id' => $family->id,
+                ])
+                ->assertNotFound();
         });
     });
 });

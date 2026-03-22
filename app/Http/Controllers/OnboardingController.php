@@ -10,6 +10,7 @@ use App\Models\Family;
 use App\Models\FamilyUser;
 use App\Models\PocketMoneySchedule;
 use App\Models\Spender;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -39,24 +40,27 @@ class OnboardingController extends Controller
         $spendersData = $validated['spenders'] ?? [];
         unset($validated['spenders']);
 
+        $validated['billing_user_id'] = auth()->id();
         $family = Family::create($validated);
         FamilyUser::create([
             'family_id' => $family->id,
-            'user_id'   => auth()->id(),
-            'role'      => FamilyRole::Admin,
+            'user_id' => auth()->id(),
+            'role' => FamilyRole::Admin,
         ]);
+
+        $family->grantTrialIfEligible(auth()->user());
 
         foreach ($spendersData as $spenderInput) {
             /** @var array{name: string, color?: string|null, balance?: string|float|null} $spenderInput */
             $spender = Spender::create([
                 'family_id' => $family->id,
-                'name'      => $spenderInput['name'],
-                'color'     => $spenderInput['color'] ?? '#6366f1',
+                'name' => $spenderInput['name'],
+                'color' => $spenderInput['color'] ?? '#6366f1',
             ]);
             Account::create([
                 'spender_id' => $spender->id,
-                'name'       => 'Savings',
-                'balance'    => (float) ($spenderInput['balance'] ?? 0),
+                'name' => 'Savings',
+                'balance' => (float) ($spenderInput['balance'] ?? 0),
             ]);
         }
 
@@ -65,7 +69,7 @@ class OnboardingController extends Controller
 
     public function showContinue(Family $family): Response|RedirectResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
 
         abort_unless(
@@ -82,17 +86,17 @@ class OnboardingController extends Controller
 
     public function storePocketMoney(Request $request, Family $family): RedirectResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
         abort_unless($user->families()->where('families.id', $family->id)->exists(), 403);
 
         $validated = $request->validate([
-            'schedules'                   => ['nullable', 'array'],
-            'schedules.*.spender_id'      => ['required', 'uuid', 'exists:spenders,id'],
-            'schedules.*.amount'          => ['required', 'numeric', 'min:0.01'],
-            'schedules.*.frequency'       => ['required', 'in:weekly,monthly'],
-            'schedules.*.day_of_week'     => ['nullable', 'integer', 'min:0', 'max:6'],
-            'schedules.*.day_of_month'    => ['nullable', 'integer', 'min:1', 'max:28'],
+            'schedules' => ['nullable', 'array'],
+            'schedules.*.spender_id' => ['required', 'uuid', 'exists:spenders,id'],
+            'schedules.*.amount' => ['required', 'numeric', 'min:0.01'],
+            'schedules.*.frequency' => ['required', 'in:weekly,monthly'],
+            'schedules.*.day_of_week' => ['nullable', 'integer', 'min:0', 'max:6'],
+            'schedules.*.day_of_month' => ['nullable', 'integer', 'min:1', 'max:28'],
         ]);
 
         foreach ($validated['schedules'] ?? [] as $schedule) {
@@ -102,18 +106,18 @@ class OnboardingController extends Controller
                 ->update(['is_active' => false]);
 
             PocketMoneySchedule::create([
-                'spender_id'   => $schedule['spender_id'],
-                'amount'       => $schedule['amount'],
-                'frequency'    => $schedule['frequency'],
-                'day_of_week'  => $schedule['day_of_week'] ?? null,
+                'spender_id' => $schedule['spender_id'],
+                'amount' => $schedule['amount'],
+                'frequency' => $schedule['frequency'],
+                'day_of_week' => $schedule['day_of_week'] ?? null,
                 'day_of_month' => $schedule['day_of_month'] ?? null,
-                'is_active'    => true,
-                'next_run_at'  => PocketMoneySchedule::computeNextRunAt(
+                'is_active' => true,
+                'next_run_at' => PocketMoneySchedule::computeNextRunAt(
                     $schedule['frequency'],
                     $schedule['day_of_week'] ?? null,
                     $schedule['day_of_month'] ?? null,
                 ),
-                'created_by'   => $user->id,
+                'created_by' => $user->id,
             ]);
         }
 
@@ -122,19 +126,19 @@ class OnboardingController extends Controller
 
     public function storeChores(Request $request, Family $family): RedirectResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = auth()->user();
         abort_unless($user->families()->where('families.id', $family->id)->exists(), 403);
 
         $validated = $request->validate([
-            'chores'                      => ['nullable', 'array'],
-            'chores.*.name'               => ['required', 'string', 'max:255'],
-            'chores.*.emoji'              => ['nullable', 'string', 'max:10'],
-            'chores.*.reward_type'        => ['required', 'in:earns,responsibility,no_reward'],
-            'chores.*.amount'             => ['required_if:chores.*.reward_type,earns', 'nullable', 'numeric', 'min:0.01'],
-            'chores.*.frequency'          => ['required', 'in:daily,weekly,monthly,one_off'],
-            'chores.*.spender_ids'        => ['required', 'array', 'min:1'],
-            'chores.*.spender_ids.*'      => ['uuid', 'exists:spenders,id'],
+            'chores' => ['nullable', 'array'],
+            'chores.*.name' => ['required', 'string', 'max:255'],
+            'chores.*.emoji' => ['nullable', 'string', 'max:10'],
+            'chores.*.reward_type' => ['required', 'in:earns,responsibility,no_reward'],
+            'chores.*.amount' => ['required_if:chores.*.reward_type,earns', 'nullable', 'numeric', 'min:0.01'],
+            'chores.*.frequency' => ['required', 'in:daily,weekly,monthly,one_off'],
+            'chores.*.spender_ids' => ['required', 'array', 'min:1'],
+            'chores.*.spender_ids.*' => ['uuid', 'exists:spenders,id'],
         ]);
 
         foreach ($validated['chores'] ?? [] as $choreData) {
@@ -143,11 +147,11 @@ class OnboardingController extends Controller
             unset($choreData['spender_ids']);
 
             $chore = Chore::create(array_merge($choreData, [
-                'family_id'         => $family->id,
-                'is_active'         => true,
+                'family_id' => $family->id,
+                'is_active' => true,
                 'requires_approval' => false,
-                'up_for_grabs'      => false,
-                'created_by'        => $user->id,
+                'up_for_grabs' => false,
+                'created_by' => $user->id,
             ]));
             $chore->spenders()->sync($spenderIds);
         }

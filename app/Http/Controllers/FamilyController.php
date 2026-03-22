@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FamilyRole;
 use App\Http\Requests\StoreFamilyRequest;
 use App\Mail\FamilyInvitation;
 use App\Models\Account;
@@ -10,7 +11,6 @@ use App\Models\FamilyUser;
 use App\Models\Invitation;
 use App\Models\Spender;
 use App\Models\User;
-use App\Enums\FamilyRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -37,24 +37,27 @@ class FamilyController extends Controller
         $spendersData = $validated['spenders'] ?? [];
         unset($validated['spenders']);
 
+        $validated['billing_user_id'] = auth()->id();
         $family = Family::create($validated);
         FamilyUser::create([
             'family_id' => $family->id,
-            'user_id'   => auth()->id(),
-            'role'      => FamilyRole::Admin,
+            'user_id' => auth()->id(),
+            'role' => FamilyRole::Admin,
         ]);
+
+        $family->grantTrialIfEligible(auth()->user());
 
         foreach ($spendersData as $spenderInput) {
             /** @var array{name: string, color?: string|null} $spenderInput */
             $spender = Spender::create([
                 'family_id' => $family->id,
-                'name'      => $spenderInput['name'],
-                'color'     => $spenderInput['color'] ?? '#6366f1',
+                'name' => $spenderInput['name'],
+                'color' => $spenderInput['color'] ?? '#6366f1',
             ]);
             Account::create([
                 'spender_id' => $spender->id,
-                'name'       => 'Savings',
-                'balance'    => 0,
+                'name' => 'Savings',
+                'balance' => 0,
             ]);
         }
 
@@ -69,7 +72,7 @@ class FamilyController extends Controller
         );
 
         return Inertia::render('Families/Show', [
-            'family'     => $family,
+            'family' => $family,
             'authUserId' => auth()->id(),
         ]);
     }
@@ -109,6 +112,7 @@ class FamilyController extends Controller
                 ['family_id' => $family->id, 'user_id' => $existingUser->id],
                 ['role' => FamilyRole::Member]
             );
+
             return back()->with('success', 'Member added to the family.');
         }
 
@@ -117,8 +121,8 @@ class FamilyController extends Controller
         $invitation = Invitation::updateOrCreate(
             ['family_id' => $family->id, 'email' => $email],
             [
-                'token'      => Str::random(64),
-                'role'       => 'member',
+                'token' => Str::random(64),
+                'role' => 'member',
                 'expires_at' => now()->addDays(7),
             ]
         );
@@ -130,7 +134,7 @@ class FamilyController extends Controller
 
         Mail::to($email)->send(new FamilyInvitation($invitation, $inviterName));
 
-        return back()->with('success', 'Invitation email sent to ' . $email . '.');
+        return back()->with('success', 'Invitation email sent to '.$email.'.');
     }
 
     public function switchActive(Family $family): RedirectResponse

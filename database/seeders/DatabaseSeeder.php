@@ -32,7 +32,13 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $family = Family::firstOrCreate(['name' => "Ben's Family"]);
+        $family = Family::firstOrCreate(
+            ['name' => "Ben's Family"],
+            ['billing_user_id' => $user->id]
+        );
+        if (! $family->billing_user_id) {
+            $family->update(['billing_user_id' => $user->id]);
+        }
 
         FamilyUser::firstOrCreate(
             ['family_id' => $family->id, 'user_id' => $user->id],
@@ -206,7 +212,13 @@ class DatabaseSeeder extends Seeder
         // ── Second family: Pocket Money Scheduler Test ───────────────────────
         // Designed to exercise the pocket-money:run command in all scenarios.
 
-        $testFamily = Family::firstOrCreate(['name' => 'Scheduler Test Family']);
+        $testFamily = Family::firstOrCreate(
+            ['name' => 'Scheduler Test Family'],
+            ['billing_user_id' => $user->id]
+        );
+        if (! $testFamily->billing_user_id) {
+            $testFamily->update(['billing_user_id' => $user->id]);
+        }
 
         FamilyUser::firstOrCreate(
             ['family_id' => $testFamily->id, 'user_id' => $user->id],
@@ -328,8 +340,9 @@ class DatabaseSeeder extends Seeder
         // 1. Trial expiring soon (2 days left)
         $trialExpiring = Family::firstOrCreate(
             ['name' => 'Trial Expiring Soon'],
+            ['billing_user_id' => $user->id],
         );
-        $trialExpiring->forceFill(['trial_ends_at' => now()->addDays(2)])->save();
+        $trialExpiring->forceFill(['trial_ends_at' => now()->addDays(2), 'billing_user_id' => $user->id])->save();
 
         FamilyUser::firstOrCreate(
             ['family_id' => $trialExpiring->id, 'user_id' => $user->id],
@@ -340,8 +353,9 @@ class DatabaseSeeder extends Seeder
         // 2. Trial just expired (yesterday)
         $trialExpired = Family::firstOrCreate(
             ['name' => 'Trial Expired'],
+            ['billing_user_id' => $user->id],
         );
-        $trialExpired->forceFill(['trial_ends_at' => now()->subDay()])->save();
+        $trialExpired->forceFill(['trial_ends_at' => now()->subDay(), 'billing_user_id' => $user->id])->save();
 
         FamilyUser::firstOrCreate(
             ['family_id' => $trialExpired->id, 'user_id' => $user->id],
@@ -352,9 +366,11 @@ class DatabaseSeeder extends Seeder
         // 3. Active subscription
         $activeSubscription = Family::firstOrCreate(
             ['name' => 'Active Subscriber'],
+            ['billing_user_id' => $user->id],
         );
         $activeSubscription->forceFill([
-            'trial_ends_at' => now()->subMonth(), // trial long over
+            'trial_ends_at' => now()->subMonth(),
+            'billing_user_id' => $user->id,
         ])->save();
 
         FamilyUser::firstOrCreate(
@@ -380,9 +396,11 @@ class DatabaseSeeder extends Seeder
         // 4. Lapsed subscription (past_due — billing failed)
         $lapsedSubscription = Family::firstOrCreate(
             ['name' => 'Lapsed Subscriber'],
+            ['billing_user_id' => $user->id],
         );
         $lapsedSubscription->forceFill([
             'trial_ends_at' => now()->subMonths(2),
+            'billing_user_id' => $user->id,
         ])->save();
 
         FamilyUser::firstOrCreate(
