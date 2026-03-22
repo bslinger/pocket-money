@@ -51,6 +51,10 @@ frankenphp-worker.php
 # Capacitor native builds
 /android/
 /ios/
+/config/capacitor/
+
+# Coverage artifacts
+/storage/coverage.xml
 
 # Claude Code local settings
 .claude/settings.local.json
