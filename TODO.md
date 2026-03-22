@@ -38,8 +38,10 @@ Organised by strategic area, with specific tasks nested under each.
 
 ## UI Improvements
 
-- [x] **Native emoji picker on mobile** — use system emoji keyboard on touch devices; JS picker on desktop; input can't be emptied (reverts to default)
+- [x] **Native emoji picker on mobile** — use system emoji keyboard on touch devices; JS picker on desktop; input can't be emptied (rever ts to default)
 - [x] **Onboarding flow** — smoother setup wizard: create family → choose currency → add kids → set pocket money → create first chore
+- [x] On the kid view page, each account should have a Spend/Add button like those on the kid cards on the dashboard, and when clicked they bring up the same modal but with that account pre-selected
+- [ ] Let's try splitting the Kid view up into tabs - one for Accounts, one for Savings Goals, one for Chores, and a Transactions tab that aggregates transactions for all their accounts
 
 ---
 
@@ -58,6 +60,8 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Add the ability to abandon a Savings Goal. Savings goals that were created in the past 24 hours can be fully destroyed rather than becoming and abandoned goal.
 - [x] Add an Abandoned Goals page that is only visible if there are any abandoned goals. It should list any goals that have been removed before being reached, and should show the date they were originally created, the date they were abandoned, and how much money was attributed to them at the time of being abandoned.
 - [x] Give parents the ability to completely destroy an abandoned goal.
+- [ ] On the Savings Goal page, I want the account sections to be more obvious. Make the headings clearer.
+- [ ] On the Kids page, order accounts by the amount of money in them, per kid
 
 ---
 
@@ -102,6 +106,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Parent should be able to unapprove chores that they've already approved. If undoing the chore approval would invalidate a payment that had already been made (eg. their pocket money responsibilities are no longer met, but pocket money has been paid) then the parent should get a notification about that payment and an option to cancel it.
 - [x] The Schedule tab of Chores should show which tasks have been marked as completed and/or approved for the current week.
 - [x] The Recent Activity section in the dashboard should give the option to unapprove the chores, as long as they were completed and approved in the current week.
+- [ ] On the schedule tab of the chores page, above the 'Today' card, there should be a summary of the day before that shows how many chores were present/completed for each kid. Clicking it should open it into a full card like the 'Today', etc cards with the chores for that day.
 
 
 ## Pocket Money Improvements v1
