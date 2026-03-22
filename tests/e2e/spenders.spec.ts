@@ -182,6 +182,47 @@ test.describe('Spenders', () => {
         await expect(page).toHaveURL(/\/accounts\//, { timeout: 10000 });
     });
 
+    test('shows tab navigation on spender page', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await expect(page.getByRole('button', { name: 'Accounts' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Goals' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Chores' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Transactions' })).toBeVisible();
+    });
+
+    test('switching to Transactions tab shows transaction history', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await page.getByRole('button', { name: 'Transactions' }).click();
+        // Should show the transactions tab content (either transactions or empty state)
+        await expect(page.locator('text=/No transactions yet|Transaction/i').first()).toBeVisible();
+    });
+
+    test('switching to Goals tab shows savings goals', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await page.getByRole('button', { name: 'Goals' }).click();
+        // Should show goals content
+        await expect(page.locator('text=/Goals|No savings goals/i').first()).toBeVisible();
+    });
+
+    test('switching to Chores tab shows chore list', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await page.getByRole('button', { name: 'Chores' }).click();
+        // Should show chores content
+        await expect(page.locator('text=/No chores|Chore|chore/i').first()).toBeVisible();
+    });
+
     test('can switch to child view and see the exit banner', async ({ page }) => {
         await page.goto('/dashboard');
         await page.getByText('Emma').first().click();

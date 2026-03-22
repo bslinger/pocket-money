@@ -6,8 +6,10 @@ use App\Http\Requests\StoreSpenderRequest;
 use App\Mail\ChildInvitationMail;
 use App\Models\ChildInvitation;
 use App\Models\PocketMoneySchedule;
+use App\Models\SavingsGoal;
 use App\Models\Spender;
 use App\Models\SpenderUser;
+use App\Models\Transaction;
 use App\Models\User;
 use Bentonow\BentoLaravel\DataTransferObjects\EventData;
 use Bentonow\BentoLaravel\Facades\Bento;
@@ -25,7 +27,7 @@ class SpenderController extends Controller
             ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
             ->first();
 
-        if (!$family) {
+        if (! $family) {
             return redirect()->route('families.create');
         }
 
@@ -45,11 +47,12 @@ class SpenderController extends Controller
                     ->sortBy('sort_order')
                     ->first();
                 $spender->setRelation('closest_goal', $topGoal);
+
                 return $spender;
             });
 
         return Inertia::render('Spenders/Index', [
-            'family'   => $family,
+            'family' => $family,
             'spenders' => $spenders,
         ]);
     }
@@ -60,10 +63,10 @@ class SpenderController extends Controller
 
         $isParentInFamily = $user->isParent()
             && $user->families()->where('families.id', $spender->family_id)->exists();
-        $isLinkedChild = !$user->isParent()
+        $isLinkedChild = ! $user->isParent()
             && $user->spenders()->where('spenders.id', $spender->id)->exists();
 
-        if (!$isParentInFamily && !$isLinkedChild) {
+        if (! $isParentInFamily && ! $isLinkedChild) {
             abort(403);
         }
 
@@ -72,19 +75,30 @@ class SpenderController extends Controller
             : collect();
 
         $spender->load([
-            'accounts.transactions' => fn($q) => $q->latest('occurred_at')->limit(20),
-            'savingsGoals'          => fn($q) => $q->orderBy('sort_order'),
+            'accounts.transactions' => fn ($q) => $q->latest('occurred_at')->limit(20),
+            'savingsGoals' => fn ($q) => $q->orderBy('sort_order'),
             'savingsGoals.account',
+            'chores' => fn ($q) => $q->where('is_active', true)->orderBy('name'),
+            'choreCompletions' => fn ($q) => $q->with('chore')->latest('completed_at')->limit(50),
             'family',
             'users',
         ]);
 
         // Compute cascade allocations per account
-        \App\Models\SavingsGoal::applyAccountAllocations($spender->savingsGoals);
+        SavingsGoal::applyAccountAllocations($spender->savingsGoals);
+
+        // Aggregate transactions across all accounts for the Transactions tab
+        $allAccountIds = $spender->accounts->pluck('id');
+        $transactions = Transaction::whereIn('account_id', $allAccountIds)
+            ->with('account')
+            ->latest('occurred_at')
+            ->limit(100)
+            ->get();
 
         return Inertia::render('Spenders/Show', [
-            'spender'            => $spender,
+            'spender' => $spender,
             'pendingInvitations' => $pendingInvitations,
+            'transactions' => $transactions,
         ]);
     }
 
@@ -97,8 +111,9 @@ class SpenderController extends Controller
         if ($user) {
             SpenderUser::firstOrCreate([
                 'spender_id' => $spender->id,
-                'user_id'    => $user->id,
+                'user_id' => $user->id,
             ]);
+
             return back()->with('success', 'Child account linked.');
         }
 
@@ -109,8 +124,8 @@ class SpenderController extends Controller
 
         $invitation = ChildInvitation::create([
             'spender_id' => $spender->id,
-            'email'      => $request->email,
-            'token'      => Str::random(64),
+            'email' => $request->email,
+            'token' => Str::random(64),
             'expires_at' => now()->addDays(7),
         ]);
 
@@ -138,7 +153,7 @@ class SpenderController extends Controller
     public function create()
     {
         $families = auth()->user()->families()
-            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
             ->get();
 
         return Inertia::render('Spenders/Create', [
@@ -179,11 +194,11 @@ class SpenderController extends Controller
             ->get();
 
         return Inertia::render('Spenders/Edit', [
-            'spender'             => $spender,
-            'family'              => $spender->family,
+            'spender' => $spender,
+            'family' => $spender->family,
             'pocketMoneySchedule' => $schedule,
-            'choreRewards'        => $choreRewards,
-            'availableChores'     => $spender->chores()->where('is_active', true)->get(),
+            'choreRewards' => $choreRewards,
+            'availableChores' => $spender->chores()->where('is_active', true)->get(),
         ]);
     }
 

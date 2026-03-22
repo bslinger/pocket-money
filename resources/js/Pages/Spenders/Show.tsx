@@ -1,15 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Spender, ChildInvitation, Account } from '@/types/models';
+import { Spender, ChildInvitation, Account, Transaction, Family, Chore, ChoreCompletion } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { Eye, Pencil, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2, Smartphone, Plus, Minus } from 'lucide-react';
+import {
+    Eye, Pencil, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2,
+    Smartphone, Plus, Minus, Check, Clock, ArrowUpRight, ArrowDownLeft,
+} from 'lucide-react';
 import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol } from '@/lib/utils';
 import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
+import { formatDistanceToNow } from 'date-fns';
+
+type Tab = 'accounts' | 'goals' | 'chores' | 'transactions';
 
 function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processing }: {
     email: string;
@@ -58,7 +64,8 @@ function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processin
                         What the child needs to do
                     </p>
                     <p className="text-wattle-600/80 text-xs">
-                        They'll receive an email with a link. They'll need to create a Quiddo account (or log in) using this email address to accept the invitation.
+                        They'll receive an email with a link. They'll need to create a Quiddo account (or log in) using
+                        this email address to accept the invitation.
                     </p>
                 </div>
 
@@ -185,13 +192,29 @@ function ChildLoginCard({ spender, pendingInvitations }: { spender: Spender; pen
     );
 }
 
-export default function SpenderShow({ spender, pendingInvitations }: { spender: Spender; pendingInvitations: ChildInvitation[] }) {
+export default function SpenderShow({
+    spender,
+    pendingInvitations,
+    transactions,
+}: {
+    spender: Spender;
+    pendingInvitations: ChildInvitation[];
+    transactions: (Transaction & { account: Account })[];
+}) {
     const { auth } = usePage().props as any;
     const isParent: boolean = auth.isParent ?? false;
     const currencySymbol = spenderCurrencySymbol(spender);
     const totalBalance = spender.accounts?.reduce((sum, a) => sum + parseFloat(a.balance), 0) ?? 0;
     const family = spender.family ?? null;
     const [quickTxModal, setQuickTxModal] = useState<{ account: Account; type: 'credit' | 'debit' } | null>(null);
+    const [activeTab, setActiveTab] = useState<Tab>('accounts');
+
+    const tabs: { id: Tab; label: string; count?: number }[] = [
+        { id: 'accounts', label: 'Accounts', count: spender.accounts?.length },
+        { id: 'goals', label: 'Goals', count: spender.savings_goals?.filter(g => !g.is_completed).length },
+        { id: 'chores', label: 'Chores', count: spender.chores?.length },
+        { id: 'transactions', label: 'Transactions', count: transactions.length },
+    ];
 
     return (
         <AuthenticatedLayout header={
@@ -230,113 +253,122 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
             </div>
         }>
             <Head title={spender.name} />
-            <div className="space-y-6">
-                {/* Accounts */}
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Accounts</h2>
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href={route('accounts.create', { spender_id: spender.id })}>
-                                <PlusCircle className="h-4 w-4 mr-1.5" />
-                                Add account
-                            </Link>
-                        </Button>
-                    </div>
 
-                    {(spender.accounts?.length ?? 0) === 0 ? (
-                        <Card>
-                            <CardContent className="py-10 text-center text-muted-foreground text-sm">
-                                No accounts yet. Add one to start tracking money.
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {spender.accounts?.map(account => {
-                                const acctSymbol = accountCurrencySymbol(account, family);
-                                return (
-                                    <Card key={account.id} className="overflow-hidden">
-                                        <Link href={route('accounts.show', account.id)} prefetch className="block hover:bg-muted/30 transition-colors">
-                                            <CardContent className="pt-4 pb-3">
-                                                <p className="text-sm font-medium mb-1">{account.name}</p>
-                                                <p className="text-2xl font-bold tabular-nums">
-                                                    {formatAmount(account.balance, acctSymbol)}
-                                                </p>
-                                                {(account.transactions?.length ?? 0) > 0 && (
-                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                        {account.transactions!.length} recent transaction{account.transactions!.length !== 1 ? 's' : ''}
-                                                    </p>
-                                                )}
-                                            </CardContent>
-                                        </Link>
-                                        {isParent && (
-                                            <div className="flex border-t">
-                                                <button
-                                                    onClick={() => setQuickTxModal({ account, type: 'debit' })}
-                                                    className="flex-1 flex items-center justify-center gap-1 py-2 text-redearth-400 hover:bg-redearth-50 transition-colors"
-                                                    aria-label={`Spend from ${account.name}`}
-                                                >
-                                                    <Minus className="h-3.5 w-3.5" />
-                                                    <span className="text-xs font-medium">Spend</span>
-                                                </button>
-                                                <div className="w-px bg-border" />
-                                                <button
-                                                    onClick={() => setQuickTxModal({ account, type: 'credit' })}
-                                                    className="flex-1 flex items-center justify-center gap-1 py-2 text-gumleaf-400 hover:bg-gumleaf-50 transition-colors"
-                                                    aria-label={`Add to ${account.name}`}
-                                                >
-                                                    <Plus className="h-3.5 w-3.5" />
-                                                    <span className="text-xs font-medium">Add</span>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
+            {/* Tab navigation */}
+            <div className="flex border-b mb-6 -mt-2 overflow-x-auto">
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${
+                            activeTab === tab.id
+                                ? 'border-eucalyptus-500 text-eucalyptus-600'
+                                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                        }`}
+                    >
+                        {tab.label}
+                        {tab.count !== undefined && tab.count > 0 && (
+                            <span className={`text-xs rounded-full px-1.5 py-0.5 font-normal ${
+                                activeTab === tab.id ? 'bg-eucalyptus-100 text-eucalyptus-600' : 'bg-muted text-muted-foreground'
+                            }`}>
+                                {tab.count}
+                            </span>
+                        )}
+                    </button>
+                ))}
+            </div>
 
-                {/* Savings Goals */}
-                {(spender.savings_goals?.length ?? 0) > 0 && (
+            {/* Accounts tab */}
+            {activeTab === 'accounts' && (
+                <div className="space-y-6">
                     <div>
-                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Savings Goals</h2>
-                        <Card>
-                            <CardContent className="pt-4 space-y-4">
-                                {spender.savings_goals?.map(goal => {
-                                    const current = parseFloat(goal.allocated_amount);
-                                    const target = parseFloat(goal.target_amount);
-                                    const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
-                                    const pctRounded = Math.round(pct);
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Accounts</h2>
+                            {isParent && (
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link href={route('accounts.create', { spender_id: spender.id })}>
+                                        <PlusCircle className="h-4 w-4 mr-1.5" />
+                                        Add account
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
+
+                        {(spender.accounts?.length ?? 0) === 0 ? (
+                            <Card>
+                                <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                                    No accounts yet. Add one to start tracking money.
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {spender.accounts?.map(account => {
+                                    const acctSymbol = accountCurrencySymbol(account, family);
                                     return (
-                                        <Link key={goal.id} href={route('goals.show', goal.id)} className="block group">
-                                            <div className="flex justify-between text-sm mb-1.5">
-                                                <span className="font-medium group-hover:underline">{goal.name}</span>
-                                                <span className="text-muted-foreground tabular-nums">
-                                                    {formatAmount(current, currencySymbol)} of {formatAmount(target, currencySymbol)} ({pctRounded}%)
-                                                </span>
-                                            </div>
-                                            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-2 bg-primary rounded-full transition-all"
-                                                    style={{ width: `${pct}%` }}
-                                                />
-                                            </div>
-                                            {goal.target_date && (
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    Target: {new Date(goal.target_date).toLocaleDateString()}
-                                                </p>
+                                        <Card key={account.id} className="overflow-hidden">
+                                            <Link href={route('accounts.show', account.id)} prefetch className="block hover:bg-muted/30 transition-colors">
+                                                <CardContent className="pt-4 pb-3">
+                                                    <p className="text-sm font-medium mb-1">{account.name}</p>
+                                                    <p className="text-2xl font-bold tabular-nums">
+                                                        {formatAmount(account.balance, acctSymbol)}
+                                                    </p>
+                                                    {(account.transactions?.length ?? 0) > 0 && (
+                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                            {account.transactions!.length} recent transaction{account.transactions!.length !== 1 ? 's' : ''}
+                                                        </p>
+                                                    )}
+                                                </CardContent>
+                                            </Link>
+                                            {isParent && (
+                                                <div className="flex border-t">
+                                                    <button
+                                                        onClick={() => setQuickTxModal({ account, type: 'debit' })}
+                                                        className="flex-1 flex items-center justify-center gap-1 py-2 text-redearth-400 hover:bg-redearth-50 transition-colors"
+                                                        aria-label={`Spend from ${account.name}`}
+                                                    >
+                                                        <Minus className="h-3.5 w-3.5" />
+                                                        <span className="text-xs font-medium">Spend</span>
+                                                    </button>
+                                                    <div className="w-px bg-border" />
+                                                    <button
+                                                        onClick={() => setQuickTxModal({ account, type: 'credit' })}
+                                                        className="flex-1 flex items-center justify-center gap-1 py-2 text-gumleaf-400 hover:bg-gumleaf-50 transition-colors"
+                                                        aria-label={`Add to ${account.name}`}
+                                                    >
+                                                        <Plus className="h-3.5 w-3.5" />
+                                                        <span className="text-xs font-medium">Add</span>
+                                                    </button>
+                                                </div>
                                             )}
-                                        </Link>
+                                        </Card>
                                     );
                                 })}
-                            </CardContent>
-                        </Card>
+                            </div>
+                        )}
                     </div>
-                )}
 
-                {/* Child login card — parents only */}
-                <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
-            </div>
+                    {/* Child login card — parents only */}
+                    <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
+                </div>
+            )}
+
+            {/* Goals tab */}
+            {activeTab === 'goals' && (
+                <GoalsTab spender={spender} currencySymbol={currencySymbol} />
+            )}
+
+            {/* Chores tab */}
+            {activeTab === 'chores' && (
+                <ChoresTab spender={spender} />
+            )}
+
+            {/* Transactions tab */}
+            {activeTab === 'transactions' && (
+                <TransactionsTab
+                    transactions={transactions}
+                    family={family}
+                />
+            )}
 
             {/* Quick transaction modal for account buttons */}
             {quickTxModal && family && (
@@ -349,5 +381,200 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                 />
             )}
         </AuthenticatedLayout>
+    );
+}
+
+function GoalsTab({ spender, currencySymbol }: { spender: Spender; currencySymbol: string }) {
+    const activeGoals = spender.savings_goals?.filter(g => !g.is_completed) ?? [];
+    const completedGoals = spender.savings_goals?.filter(g => g.is_completed) ?? [];
+
+    if ((spender.savings_goals?.length ?? 0) === 0) {
+        return (
+            <Card>
+                <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                    No savings goals yet.
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            {activeGoals.length > 0 && (
+                <div>
+                    <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Active Goals</h2>
+                    <Card>
+                        <CardContent className="pt-4 space-y-4">
+                            {activeGoals.map(goal => {
+                                const current = parseFloat(goal.allocated_amount);
+                                const target = parseFloat(goal.target_amount);
+                                const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
+                                return (
+                                    <Link key={goal.id} href={route('goals.show', goal.id)} className="block group">
+                                        <div className="flex justify-between text-sm mb-1.5">
+                                            <span className="font-medium group-hover:underline">{goal.name}</span>
+                                            <span className="text-muted-foreground tabular-nums">
+                                                {formatAmount(current, currencySymbol)} of {formatAmount(target, currencySymbol)} ({Math.round(pct)}%)
+                                            </span>
+                                        </div>
+                                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                                            <div className="h-2 bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                        </div>
+                                        {goal.target_date && (
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Target: {new Date(goal.target_date).toLocaleDateString()}
+                                            </p>
+                                        )}
+                                    </Link>
+                                );
+                            })}
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {completedGoals.length > 0 && (
+                <div>
+                    <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide mb-3">Completed Goals</h2>
+                    <Card>
+                        <CardContent className="pt-4 space-y-3">
+                            {completedGoals.map(goal => (
+                                <Link key={goal.id} href={route('goals.show', goal.id)} className="flex items-center justify-between gap-2 group">
+                                    <span className="text-sm font-medium group-hover:underline">{goal.name}</span>
+                                    <Badge variant="outline" className="text-gumleaf-600 border-gumleaf-200 shrink-0">
+                                        <Check className="h-3 w-3 mr-1" /> Reached
+                                    </Badge>
+                                </Link>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ChoresTab({ spender }: { spender: Spender }) {
+    const chores: Chore[] = spender.chores ?? [];
+    const completions: (ChoreCompletion & { chore?: Chore })[] = spender.chore_completions ?? [];
+
+    if (chores.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                    No chores assigned to {spender.name}.
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Map most recent completion per chore
+    const latestCompletion = new Map<string, ChoreCompletion>();
+    for (const c of completions) {
+        if (!latestCompletion.has(c.chore_id)) {
+            latestCompletion.set(c.chore_id, c);
+        }
+    }
+
+    return (
+        <Card>
+            <CardContent className="pt-4 divide-y">
+                {chores.map(chore => {
+                    const latest = latestCompletion.get(chore.id);
+                    return (
+                        <div key={chore.id} className="py-3 flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium">
+                                    {chore.emoji ? `${chore.emoji} ` : ''}{chore.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground capitalize">{chore.frequency}</p>
+                            </div>
+                            <div className="shrink-0">
+                                {latest ? (
+                                    <div className="text-right">
+                                        {latest.status === 'approved' && (
+                                            <Badge className="bg-gumleaf-50 text-gumleaf-700 border-gumleaf-200">
+                                                <Check className="h-3 w-3 mr-1" /> Approved
+                                            </Badge>
+                                        )}
+                                        {latest.status === 'pending' && (
+                                            <Badge variant="outline" className="text-wattle-600 border-wattle-200">
+                                                <Clock className="h-3 w-3 mr-1" /> Pending
+                                            </Badge>
+                                        )}
+                                        {latest.status === 'declined' && (
+                                            <Badge variant="outline" className="text-redearth-500 border-redearth-200">
+                                                Declined
+                                            </Badge>
+                                        )}
+                                        <p className="text-xs text-muted-foreground mt-0.5" suppressHydrationWarning>
+                                            {formatDistanceToNow(new Date(latest.completed_at), { addSuffix: true })}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <span className="text-xs text-muted-foreground">Not done yet</span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </CardContent>
+        </Card>
+    );
+}
+
+function TransactionsTab({
+    transactions,
+    family,
+}: {
+    transactions: (Transaction & { account: Account })[];
+    family: Family | null;
+}) {
+    if (transactions.length === 0) {
+        return (
+            <Card>
+                <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                    No transactions yet.
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardContent className="pt-4 divide-y">
+                {transactions.map(tx => {
+                    const acctSymbol = accountCurrencySymbol(tx.account, family);
+                    return (
+                        <div key={tx.id} className="py-3 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className={`rounded-full p-1.5 shrink-0 ${
+                                    tx.type === 'credit' ? 'bg-gumleaf-50 text-gumleaf-500' : 'bg-redearth-50 text-redearth-500'
+                                }`}>
+                                    {tx.type === 'credit'
+                                        ? <ArrowUpRight className="h-3.5 w-3.5" />
+                                        : <ArrowDownLeft className="h-3.5 w-3.5" />
+                                    }
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm truncate">{tx.description ?? 'Transaction'}</p>
+                                    <p className="text-xs text-muted-foreground">{tx.account?.name}</p>
+                                </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                                <p className={`text-sm font-medium tabular-nums ${
+                                    tx.type === 'credit' ? 'text-gumleaf-500' : 'text-redearth-500'
+                                }`}>
+                                    {tx.type === 'credit' ? '+' : '-'}{formatAmount(tx.amount, acctSymbol)}
+                                </p>
+                                <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                                    {formatDistanceToNow(new Date(tx.occurred_at), { addSuffix: true })}
+                                </p>
+                            </div>
+                        </div>
+                    );
+                })}
+            </CardContent>
+        </Card>
     );
 }
