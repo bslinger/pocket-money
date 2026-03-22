@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v5
+        uses: codecov/test-results-action@v1
         with:
           files: storage/coverage/pest/junit.xml
           flags: pest
@@ -156,7 +156,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v5
+        uses: codecov/test-results-action@v1
         with:
           files: test-results/e2e-junit.xml
           flags: e2e
