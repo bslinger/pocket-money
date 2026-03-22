@@ -9,7 +9,9 @@ test.describe('Kid view (parent preview)', () => {
         const backBtn = page.getByRole('button', { name: /Back to parent view/i });
         if (await backBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
             await backBtn.click();
-            await page.waitForURL('/dashboard');
+            // exitViewAs redirects to the originating page (not necessarily /dashboard)
+            await page.waitForLoadState('networkidle');
+            await page.goto('/dashboard');
             await expect(page.getByText('Family Balance')).toBeVisible({ timeout: 5000 });
         }
     });
@@ -40,12 +42,13 @@ test.describe('Kid view (parent preview)', () => {
         await expect(page.getByRole('button', { name: /Log out/i })).not.toBeVisible();
     });
 
-    test('"Back to parent view" returns to parent dashboard without logging out', async ({ page }) => {
+    test('"Back to parent view" exits kid mode and returns to the originating page', async ({ page }) => {
         await enterKidView(page);
         await page.getByRole('button', { name: /Back to parent view/i }).click();
-        await page.waitForURL('/dashboard');
-        // Should be back on the parent dashboard — stat cards are visible again
-        await expect(page.getByText('Family Balance')).toBeVisible();
+        // exitViewAs redirects back to the spender page the parent came from
+        await page.waitForURL(/\/spenders\//);
+        // Should no longer be in kid view — parent nav is visible again
+        await expect(page.getByRole('navigation')).toBeVisible();
     });
 
     test('amber banner on other pages shows "name\'s view"', async ({ page }) => {
