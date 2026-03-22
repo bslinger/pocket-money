@@ -146,6 +146,8 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Instead of the hamburger menu on mobile, let's go for the classic row of buttons along the bottom. Buttons should be: Dashboard, Kids, Chores, Goals, Pocket Money — completed 2026-03-22 11:32
 - [x] The Add/Spend modals currently overlap the native keyboard a bit by default unless you scroll. See if you can make them fixed higher on the page on mobile. — completed 2026-03-22 11:32
 
+## Billing Improvements
+- [ ] **Billing ownership transfer** — Allow the billing owner of a family to transfer billing responsibility to another carer via an email invite. The receiving carer must accept from their email before the transfer takes effect.
 
 # FOR LATER. Don't tackle anything below here without explicit instructions.
 
