@@ -15,7 +15,7 @@ export default function AccountShow({ account }: Props) {
       <div className="py-8 max-w-3xl mx-auto px-4">
         <div className="bg-white border border-bark-200 rounded-card p-6 mb-6">
           <p className="text-xs font-body font-semibold text-bark-400 uppercase tracking-widest">Balance</p>
-          <p className="font-display text-4xl text-bark-700 mt-1">{formatAmount(account.balance, symbol)}</p>
+          <p className="text-4xl font-semibold text-bark-700 mt-1">{formatAmount(account.balance, symbol)}</p>
           <div className="mt-4 flex gap-3">
             <Link href={route('accounts.transactions.create', account.id)} className="px-4 py-2 bg-gumleaf-400 text-white rounded-input text-sm hover:bg-gumleaf-500 transition-colors">+ Transaction</Link>
             <Link href={route('accounts.transfer.create', account.id)} className="px-4 py-2 bg-eucalyptus-400 text-white rounded-input text-sm hover:bg-eucalyptus-500 transition-colors">Transfer</Link>
