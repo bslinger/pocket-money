@@ -140,6 +140,48 @@ test.describe('Spenders', () => {
         await expect(addRewardButton).toBeVisible();
     });
 
+    test('shows Spend and Add buttons on account cards', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await expect(page.getByRole('button', { name: /Spend/i }).first()).toBeVisible();
+        await expect(page.getByRole('button', { name: /Add/i }).first()).toBeVisible();
+    });
+
+    test('clicking Add on an account card opens the quick transaction modal', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await page.getByRole('button', { name: /Add/i }).first().click();
+        await expect(page.getByText('Add money')).toBeVisible();
+    });
+
+    test('clicking Spend on an account card opens the modal in debit mode', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await page.getByRole('button', { name: /Spend/i }).first().click();
+        // The modal should open — the debit toggle should be active
+        await expect(page.getByText('Deduct')).toBeVisible();
+    });
+
+    test('can add money to an account from the spender page', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.getByText('Emma').first().click();
+        await expect(page).toHaveURL(/\/spenders\//);
+
+        await page.getByRole('button', { name: /Add/i }).first().click();
+        await expect(page.getByText('Add money')).toBeVisible();
+        await page.fill('#quick-amount', '5');
+        await page.getByRole('button', { name: /Add \$5/i }).click();
+
+        // Submitting redirects to the account show page
+        await expect(page).toHaveURL(/\/accounts\//, { timeout: 10000 });
+    });
+
     test('can switch to child view and see the exit banner', async ({ page }) => {
         await page.goto('/dashboard');
         await page.getByText('Emma').first().click();

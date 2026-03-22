@@ -1,14 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Spender, ChildInvitation } from '@/types/models';
+import { Spender, ChildInvitation, Account } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { Eye, Pencil, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2, Smartphone } from 'lucide-react';
-import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
+import { Eye, Pencil, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2, Smartphone, Plus, Minus } from 'lucide-react';
+import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol } from '@/lib/utils';
+import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
 
 function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processing }: {
     email: string;
@@ -189,6 +190,8 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
     const isParent: boolean = auth.isParent ?? false;
     const currencySymbol = spenderCurrencySymbol(spender);
     const totalBalance = spender.accounts?.reduce((sum, a) => sum + parseFloat(a.balance), 0) ?? 0;
+    const family = spender.family ?? null;
+    const [quickTxModal, setQuickTxModal] = useState<{ account: Account; type: 'credit' | 'debit' } | null>(null);
 
     return (
         <AuthenticatedLayout header={
@@ -248,26 +251,47 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                         </Card>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {spender.accounts?.map(account => (
-                                <Link key={account.id} href={route('accounts.show', account.id)} prefetch>
-                                    <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-                                        <CardContent className="pt-4">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <p className="text-sm font-medium">{account.name}</p>
-
-                                            </div>
-                                            <p className="text-2xl font-bold tabular-nums">
-                                                {formatAmount(account.balance, currencySymbol)}
-                                            </p>
-                                            {(account.transactions?.length ?? 0) > 0 && (
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    {account.transactions!.length} recent transaction{account.transactions!.length !== 1 ? 's' : ''}
+                            {spender.accounts?.map(account => {
+                                const acctSymbol = accountCurrencySymbol(account, family);
+                                return (
+                                    <Card key={account.id} className="overflow-hidden">
+                                        <Link href={route('accounts.show', account.id)} prefetch className="block hover:bg-muted/30 transition-colors">
+                                            <CardContent className="pt-4 pb-3">
+                                                <p className="text-sm font-medium mb-1">{account.name}</p>
+                                                <p className="text-2xl font-bold tabular-nums">
+                                                    {formatAmount(account.balance, acctSymbol)}
                                                 </p>
-                                            )}
-                                        </CardContent>
+                                                {(account.transactions?.length ?? 0) > 0 && (
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        {account.transactions!.length} recent transaction{account.transactions!.length !== 1 ? 's' : ''}
+                                                    </p>
+                                                )}
+                                            </CardContent>
+                                        </Link>
+                                        {isParent && (
+                                            <div className="flex border-t">
+                                                <button
+                                                    onClick={() => setQuickTxModal({ account, type: 'debit' })}
+                                                    className="flex-1 flex items-center justify-center gap-1 py-2 text-redearth-400 hover:bg-redearth-50 transition-colors"
+                                                    aria-label={`Spend from ${account.name}`}
+                                                >
+                                                    <Minus className="h-3.5 w-3.5" />
+                                                    <span className="text-xs font-medium">Spend</span>
+                                                </button>
+                                                <div className="w-px bg-border" />
+                                                <button
+                                                    onClick={() => setQuickTxModal({ account, type: 'credit' })}
+                                                    className="flex-1 flex items-center justify-center gap-1 py-2 text-gumleaf-400 hover:bg-gumleaf-50 transition-colors"
+                                                    aria-label={`Add to ${account.name}`}
+                                                >
+                                                    <Plus className="h-3.5 w-3.5" />
+                                                    <span className="text-xs font-medium">Add</span>
+                                                </button>
+                                            </div>
+                                        )}
                                     </Card>
-                                </Link>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -313,6 +337,17 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                 {/* Child login card — parents only */}
                 <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
             </div>
+
+            {/* Quick transaction modal for account buttons */}
+            {quickTxModal && family && (
+                <QuickTransactionModal
+                    spender={spender}
+                    family={family}
+                    initialType={quickTxModal.type}
+                    initialAccountId={quickTxModal.account.id}
+                    onClose={() => setQuickTxModal(null)}
+                />
+            )}
         </AuthenticatedLayout>
     );
 }
