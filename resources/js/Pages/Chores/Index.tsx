@@ -41,6 +41,11 @@ function jsDateToChoreDayIndex(date: Date): number {
 
 function isChoreScheduledOnDate(chore: Chore, date: Date): boolean {
   if (!chore.is_active) return false;
+
+  // Don't show chores on days before they were created
+  const createdDate = new Date(chore.created_at);
+  if (date < new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())) return false;
+
   const dayIdx = jsDateToChoreDayIndex(date);
 
   switch (chore.frequency) {
