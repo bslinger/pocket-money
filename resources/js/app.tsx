@@ -4,7 +4,7 @@ import './bootstrap';
 import { createInertiaApp } from '@inertiajs/react';
 import { App as CapApp } from '@capacitor/app';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { hydrateRoot } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 
 CapApp.addListener('backButton', ({ canGoBack }) => {
     if (canGoBack) {
@@ -24,7 +24,7 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.tsx'),
         ),
     setup({ el, App, props }) {
-        hydrateRoot(el, <App {...props} />);
+        createRoot(el).render(<App {...props} />);
     },
     progress: {
         color: '#4B5563',
