@@ -1,112 +1,161 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { AlertTriangle, Check, CreditCard, Crown } from 'lucide-react';
 
 interface Subscription {
-  status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'none';
-  plan_name: string | null;
+  status: string;
+  plan_name: string;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  on_grace_period: boolean;
+}
+
+interface Price {
+  amount: string;
+  interval: string;
+  savings?: string;
+  configured: boolean;
 }
 
 interface Props {
-  subscription: Subscription;
+  subscription: Subscription | null;
   on_trial: boolean;
   trial_ends_at: string | null;
+  frozen: boolean;
+  prices: {
+    monthly: Price;
+    yearly: Price;
+  };
 }
 
-export default function BillingIndex({ subscription, on_trial, trial_ends_at }: Props) {
-  const { post: postPortal, processing: portalProcessing } = useForm({});
-  const { post: postCheckout, processing: checkoutProcessing } = useForm({});
-
-  function goToPortal(e: React.FormEvent) {
-    e.preventDefault();
-    postPortal(route('billing.portal'));
+export default function BillingIndex({ subscription, on_trial, trial_ends_at, frozen, prices }: Props) {
+  function checkout(plan: 'monthly' | 'yearly') {
+    router.post(route('billing.checkout'), { plan });
   }
 
-  function goToCheckout(e: React.FormEvent) {
-    e.preventDefault();
-    postCheckout(route('billing.checkout'));
+  function openPortal() {
+    router.post(route('billing.portal'));
   }
 
-  const isActive = subscription.status === 'active' || subscription.status === 'trialing';
-
-  const statusLabel: Record<Subscription['status'], string> = {
-    active: 'Active',
-    trialing: 'Trial',
-    past_due: 'Past Due',
-    canceled: 'Canceled',
-    none: 'No Subscription',
-  };
-
-  const statusColor: Record<Subscription['status'], string> = {
-    active:   'text-gumleaf-600 bg-gumleaf-50 border border-gumleaf-200',
-    trialing: 'text-eucalyptus-600 bg-eucalyptus-50 border border-eucalyptus-200',
-    past_due: 'text-wattle-600 bg-wattle-50 border border-wattle-200',
-    canceled: 'text-redearth-600 bg-redearth-50 border border-redearth-200',
-    none:     'text-bark-600 bg-bark-50 border border-bark-200',
-  };
+  const daysLeft = trial_ends_at
+    ? Math.max(0, Math.ceil((new Date(trial_ends_at).getTime() - Date.now()) / 86400000))
+    : 0;
 
   return (
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-bark-700">Billing</h2>}>
       <Head title="Billing" />
-      <div className="py-8 max-w-2xl mx-auto px-4 space-y-6">
-        {/* Current plan card */}
-        <div className="bg-white border border-bark-200 rounded-card p-6">
-          <h3 className="font-semibold text-bark-700 mb-4">Current Plan</h3>
-          <div className="flex items-center justify-between">
+      <div className="py-8 max-w-3xl mx-auto px-4 space-y-6">
+
+        {/* Frozen state warning */}
+        {frozen && (
+          <div className="bg-redearth-50 border border-redearth-200 rounded-card p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-redearth-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-lg font-medium text-bark-700">
-                {subscription.plan_name ?? 'Free'}
+              <p className="font-semibold text-redearth-700">Your subscription has expired</p>
+              <p className="text-sm text-redearth-600 mt-1">
+                Your data is safe, but you can&apos;t make changes until you subscribe.
+                Choose a plan below to get started.
               </p>
-              {on_trial && trial_ends_at && (
-                <p className="text-sm text-eucalyptus-600 mt-0.5">
-                  Trial ends {new Date(trial_ends_at).toLocaleDateString()}
-                </p>
-              )}
-              {isActive && subscription.current_period_end && (
-                <p className="text-sm text-bark-500 mt-0.5">
-                  {subscription.cancel_at_period_end ? 'Cancels' : 'Renews'} {new Date(subscription.current_period_end).toLocaleDateString()}
-                </p>
-              )}
             </div>
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-pill ${statusColor[subscription.status]}`}>
-              {statusLabel[subscription.status]}
-            </span>
           </div>
-        </div>
+        )}
 
-        {/* Actions */}
-        <div className="bg-white border border-bark-200 rounded-card p-6 space-y-3">
-          <h3 className="font-semibold text-bark-700 mb-4">Actions</h3>
+        {/* Trial banner */}
+        {on_trial && !frozen && (
+          <div className="bg-eucalyptus-50 border border-eucalyptus-200 rounded-card p-4 flex items-start gap-3">
+            <Crown className="h-5 w-5 text-eucalyptus-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold text-eucalyptus-700">Free trial — {daysLeft} days remaining</p>
+              <p className="text-sm text-eucalyptus-600 mt-1">
+                You have full access to all features. Subscribe before your trial ends to continue.
+              </p>
+            </div>
+          </div>
+        )}
 
-          {isActive ? (
-            <form onSubmit={goToPortal}>
-              <button
-                type="submit"
-                disabled={portalProcessing}
-                className="w-full py-2.5 px-4 bg-eucalyptus-400 text-white rounded-input hover:bg-eucalyptus-500 disabled:opacity-50 font-medium transition-colors"
-              >
-                Manage Subscription
-              </button>
-              <p className="text-xs text-bark-400 mt-2 text-center">
-                Update payment method, download invoices, or cancel your plan.
-              </p>
-            </form>
-          ) : (
-            <form onSubmit={goToCheckout}>
-              <button
-                type="submit"
-                disabled={checkoutProcessing}
-                className="w-full py-2.5 px-4 bg-eucalyptus-400 text-white rounded-input hover:bg-eucalyptus-500 disabled:opacity-50 font-medium transition-colors"
-              >
-                Upgrade to Pro
-              </button>
-              <p className="text-xs text-bark-400 mt-2 text-center">
-                Unlock unlimited spenders, accounts, and recurring transactions.
-              </p>
-            </form>
-          )}
-        </div>
+        {/* Active subscription card */}
+        {subscription && (
+          <div className="bg-white border border-bark-200 rounded-card p-6">
+            <h3 className="font-semibold text-bark-700 mb-4">Current Plan</h3>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-medium text-bark-700">{subscription.plan_name} Plan</p>
+                {subscription.current_period_end && (
+                  <p className="text-sm text-bark-500 mt-0.5">
+                    {subscription.cancel_at_period_end ? 'Cancels' : 'Renews'}{' '}
+                    {new Date(subscription.current_period_end).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gumleaf-50 text-gumleaf-600 border border-gumleaf-200">
+                Active
+              </span>
+            </div>
+            <button
+              onClick={openPortal}
+              className="mt-4 w-full py-2.5 px-4 bg-bark-100 text-bark-700 rounded-lg hover:bg-bark-200 font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              Manage Subscription
+            </button>
+            <p className="text-xs text-bark-400 mt-2 text-center">
+              Update payment method, download invoices, or cancel.
+            </p>
+          </div>
+        )}
+
+        {/* Pricing cards — shown when no active subscription */}
+        {!subscription && (
+          <div>
+            <h3 className="font-semibold text-bark-700 mb-4 text-center text-lg">Choose your plan</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Monthly */}
+              <div className="bg-white border border-bark-200 rounded-card p-6 flex flex-col">
+                <h4 className="font-semibold text-bark-700">Monthly</h4>
+                <div className="mt-2">
+                  <span className="text-3xl font-bold text-bark-800">{prices.monthly.amount}</span>
+                  <span className="text-bark-500 text-sm"> / month</span>
+                </div>
+                <ul className="mt-4 space-y-2 text-sm text-bark-600 flex-1">
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-eucalyptus-500" /> Unlimited kids</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-eucalyptus-500" /> All features</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-eucalyptus-500" /> Cancel anytime</li>
+                </ul>
+                <button
+                  onClick={() => checkout('monthly')}
+                  disabled={!prices.monthly.configured}
+                  className="mt-4 w-full py-2.5 px-4 bg-bark-700 text-white rounded-lg hover:bg-bark-800 disabled:opacity-50 font-medium transition-colors"
+                >
+                  Subscribe Monthly
+                </button>
+              </div>
+
+              {/* Yearly */}
+              <div className="bg-white border-2 border-eucalyptus-400 rounded-card p-6 flex flex-col relative">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-eucalyptus-400 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  Save {prices.yearly.savings}
+                </span>
+                <h4 className="font-semibold text-bark-700">Annual</h4>
+                <div className="mt-2">
+                  <span className="text-3xl font-bold text-bark-800">{prices.yearly.amount}</span>
+                  <span className="text-bark-500 text-sm"> / year</span>
+                </div>
+                <ul className="mt-4 space-y-2 text-sm text-bark-600 flex-1">
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-eucalyptus-500" /> Unlimited kids</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-eucalyptus-500" /> All features</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-eucalyptus-500" /> 2 months free</li>
+                </ul>
+                <button
+                  onClick={() => checkout('yearly')}
+                  disabled={!prices.yearly.configured}
+                  className="mt-4 w-full py-2.5 px-4 bg-eucalyptus-400 text-white rounded-lg hover:bg-eucalyptus-500 disabled:opacity-50 font-medium transition-colors"
+                >
+                  Subscribe Annually
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AuthenticatedLayout>
   );

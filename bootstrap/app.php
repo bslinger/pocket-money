@@ -1,8 +1,16 @@
 <?php
 
+use App\Http\Middleware\CollectCoverage;
+use App\Http\Middleware\EnsureFamilyMember;
+use App\Http\Middleware\EnsureFamilySubscribed;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RequireParent;
+use App\Http\Middleware\SwitchTestDatabase;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,19 +20,20 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(prepend: [
-            \App\Http\Middleware\CollectCoverage::class,
-            \App\Http\Middleware\SwitchTestDatabase::class,
+            CollectCoverage::class,
+            SwitchTestDatabase::class,
         ]);
 
         $middleware->web(append: [
-            \Illuminate\Http\Middleware\HandleCors::class,
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+            HandleCors::class,
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         $middleware->alias([
-            'require.parent' => \App\Http\Middleware\RequireParent::class,
-            'ensure.family'  => \App\Http\Middleware\EnsureFamilyMember::class,
+            'require.parent' => RequireParent::class,
+            'ensure.family' => EnsureFamilyMember::class,
+            'subscribed.family' => EnsureFamilySubscribed::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

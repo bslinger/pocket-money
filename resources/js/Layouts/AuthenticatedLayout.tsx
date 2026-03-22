@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -205,10 +205,21 @@ export default function AuthenticatedLayout({
     const activeFamily = auth.activeFamily ?? null;
     const userFamilies: { id: string; name: string }[] = auth.userFamilies ?? [];
     const viewingAsSpender: { id: string; name: string } | null = auth.viewingAsSpender ?? null;
+    const subscription = auth.subscription ?? null;
+    const isFrozen = subscription?.frozen ?? false;
     return (
         <div className="min-h-screen bg-bark-100">
             {/* Safe-area colour fill — matches topmost bar background */}
-            <div className={`pt-safe ${viewingAsSpender ? 'bg-wattle-400' : 'bg-white'}`} />
+            <div className={`pt-safe ${viewingAsSpender ? 'bg-wattle-400' : isFrozen ? 'bg-redearth-500' : 'bg-white'}`} />
+
+            {isFrozen && !viewingAsSpender && (
+                <Link href={route('billing')} className="block bg-redearth-500 text-white px-4 py-2 text-sm font-medium text-center hover:bg-redearth-600 transition-colors">
+                    <span className="inline-flex items-center gap-2">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Your trial has expired — subscribe to continue making changes
+                    </span>
+                </Link>
+            )}
 
             {viewingAsSpender && (
                 <div className="bg-wattle-400 text-wattle-900 px-4 py-2 flex items-center justify-between gap-3 text-sm font-medium">

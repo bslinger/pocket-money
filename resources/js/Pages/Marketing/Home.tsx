@@ -502,9 +502,9 @@ export default function Home({ canLogin, canRegister }: Props) {
               <div className="inline-block bg-wattle-400 text-bark-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-3">Most popular</div>
               <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-white/50 mb-2">Annual</div>
               <div className="font-display text-[38px] font-bold text-wattle-300 leading-none">
-                $39.99<span className="text-[13px] font-normal text-white/40">/year</span>
+                $15<span className="text-[13px] font-normal text-white/40">/year</span>
               </div>
-              <p className="text-[13px] text-white/55 mt-2.5 mb-5 leading-snug">Best value — save 33% vs monthly. The full Quiddo for the whole family.</p>
+              <p className="text-[13px] text-white/55 mt-2.5 mb-5 leading-snug">Best value — save 37% vs monthly. The full Quiddo for the whole family.</p>
               <div className="flex flex-col gap-2 mb-6">
                 {['Up to 12 children', 'Recurring chores + approval', 'Savings goals', 'Auto pocket money', 'Kid-facing view', 'Multi-parent access', 'Responsibilities mode'].map(f => (
                   <div key={f} className="text-[13px] text-white/75 flex gap-2 items-start">
@@ -517,7 +517,7 @@ export default function Home({ canLogin, canRegister }: Props) {
                   href={route('register')}
                   className="block w-full py-2.5 rounded-full text-sm font-semibold text-center bg-wattle-400 text-bark-700 hover:bg-wattle-300 transition-colors"
                 >
-                  Start 30-day free trial
+                  Start 14-day free trial
                 </Link>
               )}
             </div>
@@ -526,7 +526,7 @@ export default function Home({ canLogin, canRegister }: Props) {
             <div className="bg-white rounded-[14px] p-7 border-[1.5px] border-bark-200">
               <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-bark-400 mb-2">Monthly</div>
               <div className="font-display text-[38px] font-bold text-bark-700 leading-none">
-                $4.99<span className="text-[13px] font-normal text-bark-400">/month</span>
+                $1.99<span className="text-[13px] font-normal text-bark-400">/month</span>
               </div>
               <p className="text-[13px] text-bark-500 mt-2.5 mb-5 leading-snug">All features, month to month. Cancel any time.</p>
               <div className="flex flex-col gap-2 mb-6">
@@ -541,7 +541,7 @@ export default function Home({ canLogin, canRegister }: Props) {
                   href={route('register')}
                   className="block w-full py-2.5 rounded-full text-sm font-semibold text-center border-[1.5px] border-bark-200 text-bark-700 hover:border-bark-300 transition-colors"
                 >
-                  Start 30-day free trial
+                  Start 14-day free trial
                 </Link>
               )}
             </div>

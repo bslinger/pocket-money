@@ -15,6 +15,14 @@ export interface ActiveFamily {
     kids_count: number;
 }
 
+export interface SubscriptionStatus {
+    active: boolean;
+    on_trial: boolean;
+    trial_ends_at: string | null;
+    subscribed: boolean;
+    frozen: boolean;
+}
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
@@ -24,5 +32,6 @@ export type PageProps<
         activeFamily: ActiveFamily | null;
         userFamilies: { id: string; name: string }[];
         viewingAsSpender: { id: string; name: string } | null;
+        subscription: SubscriptionStatus | null;
     };
 };

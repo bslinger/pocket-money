@@ -11,9 +11,10 @@ use Laravel\Cashier\Billable;
 
 class Family extends Model
 {
-    use HasFactory, HasUuids, Billable;
+    use Billable, HasFactory, HasUuids;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -27,7 +28,25 @@ class Family extends Model
 
     protected $casts = [
         'use_integer_amounts' => 'boolean',
+        'trial_ends_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Family $family) {
+            if ($family->trial_ends_at === null && $family->stripe_id === null) {
+                $family->trial_ends_at = now()->addDays(14);
+            }
+        });
+    }
+
+    /**
+     * Whether this family has an active subscription or is on trial.
+     */
+    public function hasActiveAccess(): bool
+    {
+        return $this->onTrial() || $this->subscribed('default');
+    }
 
     public function users(): BelongsToMany
     {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Family;
 use App\Models\Spender;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -33,13 +34,14 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user'             => $request->user(),
-                'isParent'         => $request->user()?->isParent() ?? false,
-                'activeFamily'     => $this->resolveActiveFamily($request),
-                'userFamilies'     => fn() => $request->user()?->isParent()
+                'user' => $request->user(),
+                'isParent' => $request->user()?->isParent() ?? false,
+                'activeFamily' => $this->resolveActiveFamily($request),
+                'userFamilies' => fn () => $request->user()?->isParent()
                     ? $request->user()->families()->select(['families.id', 'families.name'])->get()
                     : [],
                 'viewingAsSpender' => $this->resolveViewingAsSpender($request),
+                'subscription' => fn () => $this->resolveSubscriptionStatus($request),
             ],
         ];
     }
@@ -52,18 +54,49 @@ class HandleInertiaRequests extends Middleware
     private function resolveViewingAsSpender(Request $request): ?array
     {
         $user = $request->user();
-        if (!$user || !$user->isParent()) {
+        if (! $user || ! $user->isParent()) {
             return null;
         }
 
         $spenderId = $request->session()->get('viewing_as_spender_id');
-        if (!$spenderId) {
+        if (! $spenderId) {
             return null;
         }
 
         $spender = Spender::find($spenderId);
 
         return $spender ? ['id' => $spender->id, 'name' => $spender->name] : null;
+    }
+
+    /**
+     * Resolve subscription/trial status for the active family.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function resolveSubscriptionStatus(Request $request): ?array
+    {
+        $user = $request->user();
+        if (! $user || ! $user->isParent()) {
+            return null;
+        }
+
+        $familyId = session('active_family_id');
+        $family = $familyId ? Family::find($familyId) : $user->families()->first();
+
+        if (! $family) {
+            return null;
+        }
+
+        $onTrial = $family->onTrial();
+        $subscribed = $family->subscribed('default');
+
+        return [
+            'active' => $family->hasActiveAccess(),
+            'on_trial' => $onTrial,
+            'trial_ends_at' => $onTrial ? $family->trial_ends_at->toIso8601String() : null,
+            'subscribed' => $subscribed,
+            'frozen' => ! $onTrial && ! $subscribed,
+        ];
     }
 
     /**
@@ -75,7 +108,7 @@ class HandleInertiaRequests extends Middleware
     private function resolveActiveFamily(Request $request): ?array
     {
         $user = $request->user();
-        if (!$user || !$user->isParent()) {
+        if (! $user || ! $user->isParent()) {
             return null;
         }
 

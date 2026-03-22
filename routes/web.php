@@ -69,7 +69,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Kid-facing chore completion (any authenticated + verified user)
     Route::post('/chores/{chore}/complete', [ChoreCompletionController::class, 'store'])->name('chores.complete');
 
+    // Billing routes — exempt from subscription check
     Route::middleware('require.parent')->group(function () {
+        Route::get('/billing', [BillingController::class, 'index'])->name('billing');
+        Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
+        Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+    });
+
+    Route::middleware(['require.parent', 'subscribed.family'])->group(function () {
         Route::resource('spenders', SpenderController::class)->except('show');
         Route::post('/spenders/{spender}/link-child', [SpenderController::class, 'linkChild'])->name('spenders.link-child');
         Route::delete('/spenders/{spender}/linked-children/{user}', [SpenderController::class, 'unlinkChild'])->name('spenders.unlink-child');
@@ -84,9 +91,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/goals/{goal}/abandon', [SavingsGoalController::class, 'abandon'])->name('goals.abandon');
         Route::delete('/goals/{goal}/destroy-abandoned', [SavingsGoalController::class, 'destroyAbandoned'])->name('goals.destroy-abandoned');
         Route::resource('goals', SavingsGoalController::class);
-        Route::get('/billing', [BillingController::class, 'index'])->name('billing');
-        Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
-        Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
 
         Route::resource('chores', ChoreController::class)->except('show');
         Route::get('/chores/{chore}/history', [ChoreController::class, 'history'])->name('chores.history');
