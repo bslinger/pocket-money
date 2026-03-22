@@ -1,34 +1,137 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import Cropper, { type Area } from 'react-easy-crop';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { Camera as CameraIcon, ImageIcon, Loader2, X } from 'lucide-react';
+import { Camera as CameraIcon, ImageIcon, Loader2, X, ZoomIn } from 'lucide-react';
+import { Button } from '@/Components/ui/button';
 
 interface Props {
     currentUrl?: string | null;
     onUpload: (key: string) => void;
     onClear?: () => void;
     label?: string;
+    /** Crop aspect ratio — e.g. 1 for square, 16/9 for wide. Omit for free-form. */
+    aspect?: number;
 }
 
-/**
- * Image upload component.
- * POSTs the file to the backend, which stores it on the configured disk.
- * Calls onUpload(key) so the parent form can store the storage key.
- */
-export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Upload image' }: Props) {
+// ── Canvas crop helper ────────────────────────────────────────────────────────
+
+function createImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.addEventListener('load', () => resolve(img));
+        img.addEventListener('error', reject);
+        img.setAttribute('crossOrigin', 'anonymous');
+        img.src = url;
+    });
+}
+
+async function cropImageToBlob(imageSrc: string, pixelCrop: Area): Promise<Blob> {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(
+        image,
+        pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height,
+        0, 0, pixelCrop.width, pixelCrop.height,
+    );
+    return new Promise((resolve, reject) =>
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas empty')), 'image/jpeg', 0.92),
+    );
+}
+
+// ── Crop modal ────────────────────────────────────────────────────────────────
+
+function CropModal({
+    src,
+    aspect,
+    onDone,
+    onCancel,
+}: {
+    src: string;
+    aspect?: number;
+    onDone: (croppedArea: Area) => void;
+    onCancel: () => void;
+}) {
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+    const onCropComplete = useCallback((_: Area, pixels: Area) => {
+        setCroppedAreaPixels(pixels);
+    }, []);
+
+    return (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black">
+            {/* Cropper area */}
+            <div className="relative flex-1">
+                <Cropper
+                    image={src}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={aspect}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                    style={{
+                        containerStyle: { background: '#000' },
+                        cropAreaStyle: { border: '2px solid white', borderRadius: 4 },
+                    }}
+                />
+            </div>
+
+            {/* Controls */}
+            <div className="bg-bark-900 px-4 pt-3 pb-safe-or-3 space-y-3">
+                {/* Zoom slider */}
+                <div className="flex items-center gap-3">
+                    <ZoomIn className="h-4 w-4 text-bark-400 shrink-0" />
+                    <input
+                        type="range"
+                        min={1}
+                        max={3}
+                        step={0.01}
+                        value={zoom}
+                        onChange={e => setZoom(Number(e.target.value))}
+                        className="flex-1 accent-eucalyptus-400"
+                        aria-label="Zoom"
+                    />
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-3 pb-2">
+                    <Button variant="outline" className="flex-1 border-bark-600 text-bark-300 hover:bg-bark-800 hover:text-white" onClick={onCancel}>
+                        Cancel
+                    </Button>
+                    <Button
+                        className="flex-1 bg-eucalyptus-400 hover:bg-eucalyptus-500 text-white"
+                        onClick={() => croppedAreaPixels && onDone(croppedAreaPixels)}
+                        disabled={!croppedAreaPixels}
+                    >
+                        Use photo
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Upload image', aspect }: Props) {
     const [preview, setPreview] = useState<string | null>(currentUrl ?? null);
+    const [rawSrc, setRawSrc] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    async function handleFile(file: File) {
+    async function uploadBlob(blob: Blob, filename = 'image.jpg') {
         setUploading(true);
         setError(null);
-
         try {
             const formData = new FormData();
-            formData.append('file', file);
-
+            formData.append('file', blob, filename);
             const res = await fetch(route('uploads.store'), {
                 method: 'POST',
                 headers: {
@@ -36,29 +139,38 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
                 },
                 body: formData,
             });
-
             if (!res.ok) throw new Error('Upload failed');
-
             const { key } = await res.json();
-
-            setPreview(URL.createObjectURL(file));
+            setPreview(URL.createObjectURL(blob));
             onUpload(key);
-        } catch (e) {
+        } catch {
             setError('Upload failed. Please try again.');
         } finally {
             setUploading(false);
         }
     }
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (file) handleFile(file);
+    async function handleCropDone(pixelCrop: Area) {
+        if (!rawSrc) return;
+        setRawSrc(null);
+        const blob = await cropImageToBlob(rawSrc, pixelCrop);
+        await uploadBlob(blob);
     }
 
-    function handleDrop(e: React.DragEvent) {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        if (file?.type.startsWith('image/')) handleFile(file);
+    function handleCropCancel() {
+        setRawSrc(null);
+        if (inputRef.current) inputRef.current.value = '';
+    }
+
+    function openForCrop(src: string) {
+        setRawSrc(src);
+    }
+
+    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const objectUrl = URL.createObjectURL(file);
+        openForCrop(objectUrl);
     }
 
     async function handleCameraCapture() {
@@ -70,10 +182,7 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
                 source: CameraSource.Camera,
             });
             if (photo.webPath) {
-                const response = await fetch(photo.webPath);
-                const blob = await response.blob();
-                const file = new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' });
-                handleFile(file);
+                openForCrop(photo.webPath);
             }
         } catch {
             // User cancelled or permission denied — do nothing
@@ -87,79 +196,91 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
     }
 
     return (
-        <div className="space-y-2">
-            {preview ? (
-                <div className="relative">
-                    <img
-                        src={preview}
-                        alt="Cover"
-                        className="w-full h-48 object-cover rounded-lg border border-bark-200"
-                    />
-                    {onClear && (
-                        <button
-                            type="button"
-                            onClick={clear}
-                            className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-bark-500 hover:text-bark-700 transition-colors"
-                            aria-label="Remove image"
-                        >
-                            <X className="h-3.5 w-3.5" />
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        onClick={() => inputRef.current?.click()}
-                        className="absolute bottom-2 right-2 text-xs bg-white/80 backdrop-blur px-2 py-1 rounded-md border border-bark-200 hover:bg-bark-50 transition-colors"
-                    >
-                        Change
-                    </button>
-                </div>
-            ) : Capacitor.isNativePlatform() ? (
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={handleCameraCapture}
-                        disabled={uploading}
-                        className="flex-1 h-24 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors disabled:opacity-50"
-                    >
-                        {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CameraIcon className="h-5 w-5" />}
-                        <span className="text-xs">Take a photo</span>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => inputRef.current?.click()}
-                        disabled={uploading}
-                        className="flex-1 h-24 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors disabled:opacity-50"
-                    >
-                        <ImageIcon className="h-5 w-5" />
-                        <span className="text-xs">Choose file</span>
-                    </button>
-                </div>
-            ) : (
-                <button
-                    type="button"
-                    onClick={() => inputRef.current?.click()}
-                    onDrop={handleDrop}
-                    onDragOver={e => e.preventDefault()}
-                    className="w-full h-32 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-2 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors"
-                    disabled={uploading}
-                >
-                    {uploading
-                        ? <Loader2 className="h-5 w-5 animate-spin" />
-                        : <ImageIcon className="h-5 w-5" />
-                    }
-                    <span className="text-sm">{uploading ? 'Uploading…' : label}</span>
-                </button>
+        <>
+            {/* Crop modal — rendered outside normal flow so it covers everything */}
+            {rawSrc && (
+                <CropModal
+                    src={rawSrc}
+                    aspect={aspect}
+                    onDone={handleCropDone}
+                    onCancel={handleCropCancel}
+                />
             )}
 
-            <input
-                ref={inputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleChange}
-            />
+            <div className="space-y-2">
+                {preview ? (
+                    <div className="relative">
+                        <img
+                            src={preview}
+                            alt="Preview"
+                            className="w-full h-48 object-cover rounded-lg border border-bark-200"
+                        />
+                        {onClear && (
+                            <button
+                                type="button"
+                                onClick={clear}
+                                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white/80 backdrop-blur flex items-center justify-center text-bark-500 hover:text-bark-700 transition-colors"
+                                aria-label="Remove image"
+                            >
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => inputRef.current?.click()}
+                            className="absolute bottom-2 right-2 text-xs bg-white/80 backdrop-blur px-2 py-1 rounded-md border border-bark-200 hover:bg-bark-50 transition-colors"
+                        >
+                            Change
+                        </button>
+                    </div>
+                ) : Capacitor.isNativePlatform() ? (
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={handleCameraCapture}
+                            disabled={uploading}
+                            className="flex-1 h-24 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors disabled:opacity-50"
+                        >
+                            {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CameraIcon className="h-5 w-5" />}
+                            <span className="text-xs">Take a photo</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => inputRef.current?.click()}
+                            disabled={uploading}
+                            className="flex-1 h-24 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors disabled:opacity-50"
+                        >
+                            <ImageIcon className="h-5 w-5" />
+                            <span className="text-xs">Choose file</span>
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => inputRef.current?.click()}
+                        onDrop={e => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file?.type.startsWith('image/')) { openForCrop(URL.createObjectURL(file)); } }}
+                        onDragOver={e => e.preventDefault()}
+                        className="w-full h-32 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-2 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors"
+                        disabled={uploading}
+                    >
+                        {uploading
+                            ? <Loader2 className="h-5 w-5 animate-spin" />
+                            : <ImageIcon className="h-5 w-5" />
+                        }
+                        <span className="text-sm">{uploading ? 'Uploading…' : label}</span>
+                    </button>
+                )}
 
-            {error && <p className="text-xs text-destructive">{error}</p>}
-        </div>
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                />
+
+                {error && <p className="text-xs text-destructive">{error}</p>}
+            </div>
+        </>
     );
 }

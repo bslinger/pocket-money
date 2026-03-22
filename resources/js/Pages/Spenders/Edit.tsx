@@ -55,6 +55,7 @@ export default function SpenderEdit({ spender, family, pocketMoneySchedule, chor
                                 onUpload={key => setData('avatar_key', key)}
                                 onClear={() => setData('avatar_key', '')}
                                 label="Upload a photo"
+                                aspect={1}
                             />
                         </div>
 

@@ -80,6 +80,7 @@ export default function GoalEdit({ goal, accounts }: Props) {
                                 onUpload={key => setData('image_key', key)}
                                 onClear={() => setData('image_key', '')}
                                 label="Add an inspirational photo"
+                                aspect={16 / 9}
                             />
                         </div>
 
