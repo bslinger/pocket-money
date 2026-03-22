@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\BillingTransferController;
 use App\Http\Controllers\ChildInvitationController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -35,6 +36,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         ChildInvitationController::claimPending($request);
+        BillingTransferController::claimPending($request);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

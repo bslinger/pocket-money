@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BillingTransferInvitation;
 use App\Models\Family;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,16 +17,38 @@ class BillingController extends Controller
         $user = auth()->user();
         $families = $user->families()->where('billing_user_id', $user->id)->get();
 
-        $familyBilling = $families->map(function (Family $family) {
+        /** @var Collection<int, array<string, mixed>> $familyBilling */
+        $familyBilling = $families->map(function (Family $family): array {
             $subscription = $family->subscription('default');
             $onTrial = $family->onTrial();
+
+            /** @var BillingTransferInvitation|null $pendingTransfer */
+            $pendingTransfer = BillingTransferInvitation::where('family_id', $family->id)
+                ->where('expires_at', '>', now())
+                ->first();
+
+            /** @var \Illuminate\Database\Eloquent\Collection<int, User> $members */
+            $members = $family->users()
+                ->where('users.id', '!=', auth()->id())
+                ->select(['users.id', 'users.name', 'users.email', 'users.display_name'])
+                ->get();
 
             return [
                 'id' => $family->id,
                 'name' => $family->name,
                 'on_trial' => $onTrial,
-                'trial_ends_at' => $onTrial ? $family->trial_ends_at->toIso8601String() : null,
+                'trial_ends_at' => $onTrial ? $family->trial_ends_at?->toIso8601String() : null,
                 'frozen' => ! $family->hasActiveAccess(),
+                'members' => $members->map(fn (User $u): array => [
+                    'id' => $u->id,
+                    'name' => $u->display_name ?? $u->name,
+                    'email' => $u->email,
+                ]),
+                'pending_transfer' => $pendingTransfer ? [
+                    'id' => $pendingTransfer->id,
+                    'to_email' => $pendingTransfer->to_email,
+                    'expires_at' => $pendingTransfer->expires_at->toIso8601String(),
+                ] : null,
                 'subscription' => $subscription ? [
                     'status' => $subscription->stripe_status,
                     'plan_name' => $subscription->stripe_price === config('services.stripe.price_yearly')

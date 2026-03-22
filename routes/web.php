@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\BillingTransferController;
 use App\Http\Controllers\ChildInvitationController;
 use App\Http\Controllers\ChoreCompletionController;
 use App\Http\Controllers\ChoreController;
@@ -74,7 +75,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/billing', [BillingController::class, 'index'])->name('billing');
         Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
         Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+        Route::post('/families/{family}/billing/transfer', [BillingTransferController::class, 'initiate'])->name('billing.transfer');
+        Route::delete('/billing-transfers/{invitation}', [BillingTransferController::class, 'cancel'])->name('billing.transfer.cancel');
     });
+
+    // Billing transfer accept — any authenticated user
+    Route::get('/billing-transfers/{token}/accept', [BillingTransferController::class, 'accept'])
+        ->middleware('auth')
+        ->name('billing.transfer.accept');
 
     Route::middleware(['require.parent', 'subscribed.family'])->group(function () {
         Route::resource('spenders', SpenderController::class)->except('show');

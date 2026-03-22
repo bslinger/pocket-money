@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
-import { AlertTriangle, Check, CreditCard, Crown, Shield } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { AlertTriangle, ArrowRightLeft, Check, CreditCard, Crown, Shield, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface FamilySubscription {
   status: string;
@@ -9,12 +10,26 @@ interface FamilySubscription {
   cancel_at_period_end: boolean;
 }
 
+interface FamilyMember {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface PendingTransfer {
+  id: string;
+  to_email: string;
+  expires_at: string;
+}
+
 interface FamilyBilling {
   id: string;
   name: string;
   on_trial: boolean;
   trial_ends_at: string | null;
   frozen: boolean;
+  members: FamilyMember[];
+  pending_transfer: PendingTransfer | null;
   subscription: FamilySubscription | null;
 }
 
@@ -143,6 +158,99 @@ function FamilyCard({ family, prices }: { family: FamilyBilling; prices: Props['
           <PricingButtons prices={prices} onCheckout={checkout} />
         )}
       </div>
+
+      {/* Billing transfer section */}
+      {family.members.length > 0 && (
+        <BillingTransferSection family={family} />
+      )}
+    </div>
+  );
+}
+
+function BillingTransferSection({ family }: { family: FamilyBilling }) {
+  const [showForm, setShowForm] = useState(false);
+  const { data, setData, post, processing, errors, reset } = useForm({ email: '' });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    post(route('billing.transfer', family.id), {
+      onSuccess: () => { reset(); setShowForm(false); },
+    });
+  }
+
+  function cancelTransfer(transferId: string) {
+    router.delete(route('billing.transfer.cancel', transferId));
+  }
+
+  return (
+    <div className="border-t border-bark-200 px-6 py-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-bark-500 uppercase tracking-wide">Billing Owner</span>
+      </div>
+
+      {family.pending_transfer && (
+        <div className="bg-wattle-50 border border-wattle-200 rounded-lg p-3 mb-3 flex items-center justify-between">
+          <div>
+            <p className="text-sm text-wattle-700 font-medium">Transfer pending</p>
+            <p className="text-xs text-wattle-600">
+              Waiting for {family.pending_transfer.to_email} to accept
+              (expires {new Date(family.pending_transfer.expires_at).toLocaleDateString()})
+            </p>
+          </div>
+          <button
+            onClick={() => cancelTransfer(family.pending_transfer!.id)}
+            className="text-wattle-600 hover:text-wattle-800 p-1"
+            title="Cancel transfer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {!family.pending_transfer && !showForm && (
+        <button
+          onClick={() => setShowForm(true)}
+          className="text-sm text-bark-500 hover:text-bark-700 flex items-center gap-1.5 transition-colors"
+        >
+          <ArrowRightLeft className="h-3.5 w-3.5" />
+          Transfer billing to another carer
+        </button>
+      )}
+
+      {!family.pending_transfer && showForm && (
+        <form onSubmit={submit} className="space-y-2">
+          <p className="text-xs text-bark-500">
+            Choose a family member to transfer billing to. They&apos;ll receive an email to accept.
+          </p>
+          <select
+            value={data.email}
+            onChange={e => setData('email', e.target.value)}
+            className="w-full text-sm border border-bark-200 rounded-lg px-3 py-2 bg-white"
+          >
+            <option value="">Select a member...</option>
+            {family.members.map(m => (
+              <option key={m.id} value={m.email}>{m.name} ({m.email})</option>
+            ))}
+          </select>
+          {errors.email && <p className="text-xs text-redearth-500">{errors.email}</p>}
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={processing || !data.email}
+              className="text-sm bg-eucalyptus-400 text-white px-4 py-1.5 rounded-lg hover:bg-eucalyptus-500 disabled:opacity-50 font-medium transition-colors"
+            >
+              Send Transfer Invite
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowForm(false); reset(); }}
+              className="text-sm text-bark-500 px-4 py-1.5 hover:text-bark-700 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
