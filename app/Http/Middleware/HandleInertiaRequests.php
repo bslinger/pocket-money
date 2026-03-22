@@ -125,10 +125,6 @@ class HandleInertiaRequests extends Middleware
         $active = $activeFamilyId ? $families->firstWhere('id', $activeFamilyId) : null;
         $active ??= $families->first();
 
-        if ($active->id !== $activeFamilyId) {
-            session(['active_family_id' => $active->id]);
-        }
-
         return $active->toArray();
     }
 }
