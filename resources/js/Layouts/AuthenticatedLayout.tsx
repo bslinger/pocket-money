@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { AlertTriangle, Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, CheckSquare, CreditCard, Eye, LayoutDashboard, LogOut, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -137,6 +137,12 @@ function FamilyAccountMenu({
                         <Link href={route('profile.edit')} prefetch>
                             <User className="h-3.5 w-3.5 shrink-0" />
                             <span className="text-sm">Profile settings</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 cursor-pointer">
+                        <Link href={route('billing')} prefetch>
+                            <CreditCard className="h-3.5 w-3.5 shrink-0" />
+                            <span className="text-sm">Billing</span>
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 cursor-pointer">
@@ -308,6 +314,12 @@ export default function AuthenticatedLayout({
                                         <Link href={route('profile.edit')} prefetch className="flex items-center gap-2">
                                             <User className="h-4 w-4" />
                                             Profile
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href={route('billing')} prefetch className="flex items-center gap-2">
+                                            <CreditCard className="h-4 w-4" />
+                                            Billing
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
