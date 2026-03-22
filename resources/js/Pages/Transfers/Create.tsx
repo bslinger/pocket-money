@@ -25,53 +25,63 @@ export default function TransferCreate({ account, accounts }: Props) {
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-bark-700">Transfer Funds</h2>}>
             <Head title="Transfer Funds" />
             <div className="py-8 max-w-lg mx-auto px-4">
-                <form onSubmit={submit} className="bg-white border border-bark-200 rounded-card p-6 space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-bark-700 mb-1">From</label>
-                        <p className="text-sm text-bark-700 font-medium">{account.name}</p>
+                {accounts.length === 0 ? (
+                    <div className="bg-white border border-bark-200 rounded-card p-6 text-center space-y-2">
+                        <p className="text-bark-700 font-medium">No accounts to transfer to</p>
+                        <p className="text-sm text-bark-400">
+                            Transfers can only be made between accounts belonging to the same kid and using the same currency.
+                            {account.spender?.name ? ` ${account.spender.name} has no other compatible accounts.` : ''}
+                        </p>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-bark-700 mb-1">To Account</label>
-                        <select
-                            value={data.to_account_id}
-                            onChange={e => setData('to_account_id', e.target.value)}
-                            className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
+                ) : (
+                    <form onSubmit={submit} className="bg-white border border-bark-200 rounded-card p-6 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-bark-700 mb-1">From</label>
+                            <p className="text-sm text-bark-700 font-medium">{account.name}</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-bark-700 mb-1">To Account</label>
+                            <select
+                                value={data.to_account_id}
+                                onChange={e => setData('to_account_id', e.target.value)}
+                                className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
+                            >
+                                {accounts.map(a => (
+                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
+                            </select>
+                            {errors.to_account_id && <p className="text-redearth-400 text-xs mt-1">{errors.to_account_id}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-bark-700 mb-1">Amount</label>
+                            <input
+                                type="number"
+                                step={useIntegers ? '1' : '0.01'}
+                                min={useIntegers ? '1' : '0.01'}
+                                value={data.amount}
+                                onChange={e => setData('amount', e.target.value)}
+                                className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
+                            />
+                            {errors.amount && <p className="text-redearth-400 text-xs mt-1">{errors.amount}</p>}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-bark-700 mb-1">Description</label>
+                            <input
+                                type="text"
+                                value={data.description}
+                                onChange={e => setData('description', e.target.value)}
+                                className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="w-full py-2 bg-eucalyptus-400 text-white rounded-pill hover:bg-eucalyptus-500 font-semibold disabled:opacity-50"
                         >
-                            {accounts.map(a => (
-                                <option key={a.id} value={a.id}>{a.name}</option>
-                            ))}
-                        </select>
-                        {errors.to_account_id && <p className="text-redearth-400 text-xs mt-1">{errors.to_account_id}</p>}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-bark-700 mb-1">Amount</label>
-                        <input
-                            type="number"
-                            step={useIntegers ? '1' : '0.01'}
-                            min={useIntegers ? '1' : '0.01'}
-                            value={data.amount}
-                            onChange={e => setData('amount', e.target.value)}
-                            className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
-                        />
-                        {errors.amount && <p className="text-redearth-400 text-xs mt-1">{errors.amount}</p>}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-bark-700 mb-1">Description</label>
-                        <input
-                            type="text"
-                            value={data.description}
-                            onChange={e => setData('description', e.target.value)}
-                            className="w-full border border-bark-200 rounded-input px-3 py-2 text-bark-700 focus:border-eucalyptus-400 focus:ring-eucalyptus-400"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="w-full py-2 bg-eucalyptus-400 text-white rounded-pill hover:bg-eucalyptus-500 font-semibold disabled:opacity-50"
-                    >
-                        Transfer
-                    </button>
-                </form>
+                            Transfer
+                        </button>
+                    </form>
+                )}
             </div>
         </AuthenticatedLayout>
     );

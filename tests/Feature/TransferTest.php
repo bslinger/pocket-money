@@ -60,6 +60,51 @@ describe('transfers', function () {
             ->assertForbidden();
     });
 
+    it('rejects transfers between accounts of different kids', function () {
+        [$user, , $spenders] = parentWithFamily(['Emma', 'Jack']);
+        $from = Account::factory()->create(['spender_id' => $spenders[0]->id, 'balance' => 20]);
+        $to   = Account::factory()->create(['spender_id' => $spenders[1]->id, 'balance' => 0]);
+
+        $this->actingAs($user)
+            ->post(route('accounts.transfer', $from), [
+                'to_account_id' => $to->id,
+                'amount'        => '5.00',
+            ])
+            ->assertStatus(422);
+    });
+
+    it('rejects transfers between accounts with different currencies', function () {
+        [$user, , $spenders] = parentWithFamily(['Emma']);
+        $spender = $spenders->first();
+        $from = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 20, 'currency_symbol' => null]);
+        $to   = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0, 'currency_symbol' => '⭐']);
+
+        $this->actingAs($user)
+            ->post(route('accounts.transfer', $from), [
+                'to_account_id' => $to->id,
+                'amount'        => '5.00',
+            ])
+            ->assertStatus(422);
+    });
+
+    it('shows only same-spender same-currency accounts on the transfer create page', function () {
+        [$user, , $spenders] = parentWithFamily(['Emma', 'Jack']);
+        $spender = $spenders->first();
+        $otherSpender = $spenders->last();
+
+        $from       = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 20, 'currency_symbol' => null]);
+        $compatible = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0, 'currency_symbol' => null]);
+        Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0, 'currency_symbol' => '⭐']); // different currency
+        Account::factory()->create(['spender_id' => $otherSpender->id, 'balance' => 0, 'currency_symbol' => null]); // different kid
+
+        $this->actingAs($user)
+            ->get(route('accounts.transfer.create', $from))
+            ->assertInertia(fn ($page) => $page
+                ->has('accounts', 1)
+                ->where('accounts.0.id', $compatible->id)
+            );
+    });
+
     it('validates amount is required', function () {
         [$user, , $spenders] = parentWithFamily(['Emma']);
         $spender = $spenders->first();

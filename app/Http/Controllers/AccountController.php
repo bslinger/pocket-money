@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAccountRequest;
 use App\Models\Account;
+use App\Models\Spender;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AccountController extends Controller
@@ -12,31 +15,31 @@ class AccountController extends Controller
     {
         return Inertia::render('Accounts/Show', [
             'account' => $account->load([
-                'transactions' => fn($q) => $q->latest('occurred_at')->limit(50),
+                'transactions' => fn ($q) => $q->latest('occurred_at')->limit(50),
                 'spender.family',
             ]),
         ]);
     }
 
-    public function create(\Illuminate\Http\Request $request)
+    public function create(Request $request)
     {
         $user = auth()->user();
         $spenders = $user->isParent()
-            ? \App\Models\Spender::whereIn('family_id', $user->families()->pluck('families.id'))->get()
+            ? Spender::whereIn('family_id', $user->families()->pluck('families.id'))->get()
             : $user->spenders()->get();
 
         $family = $user->families()
-            ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+            ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
             ->first();
 
         return Inertia::render('Accounts/Create', [
-            'spenders'              => $spenders,
-            'preselectedSpenderId'  => $request->query('spender_id'),
-            'family'                => $family,
+            'spenders' => $spenders,
+            'preselectedSpenderId' => $request->query('spender_id'),
+            'family' => $family,
         ]);
     }
 
-    public function store(StoreAccountRequest $request)
+    public function store(StoreAccountRequest $request): RedirectResponse
     {
         $request->validate(['spender_id' => 'required|uuid|exists:spenders,id']);
 
@@ -44,6 +47,8 @@ class AccountController extends Controller
             $request->validated(),
             ['spender_id' => $request->spender_id, 'balance' => 0]
         ));
+
+        Inertia::clearHistory();
 
         return redirect()->route('accounts.show', $account);
     }
