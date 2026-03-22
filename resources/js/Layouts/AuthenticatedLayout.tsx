@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 import { Button } from '@/Components/ui/button';
 import {
     DropdownMenu,
@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, Menu, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
+import { Check, ChevronDown, CheckSquare, Eye, LayoutDashboard, LogOut, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -157,6 +157,42 @@ function FamilyAccountMenu({
     );
 }
 
+// ── Mobile bottom nav ────────────────────────────────────────────────────────
+
+const BOTTOM_NAV_ITEMS = [
+    { href: () => route('dashboard'),            icon: LayoutDashboard, label: 'Dashboard',     pattern: 'dashboard' },
+    { href: () => route('spenders.index'),        icon: Users,           label: 'Kids',          pattern: 'spenders.*' },
+    { href: () => route('chores.index'),          icon: CheckSquare,     label: 'Chores',        pattern: 'chores.*' },
+    { href: () => route('goals.index'),           icon: Target,          label: 'Goals',         pattern: 'goals.*' },
+    { href: () => route('pocket-money.release'),  icon: Coins,           label: 'Pocket Money',  pattern: 'pocket-money.*' },
+];
+
+function MobileBottomNav() {
+    return (
+        <nav className="fixed bottom-0 left-0 right-0 z-30 sm:hidden bg-white border-t border-bark-200 pb-safe">
+            <div className="flex">
+                {BOTTOM_NAV_ITEMS.map(item => {
+                    const isActive = route().current(item.pattern);
+                    const Icon = item.icon;
+                    return (
+                        <Link
+                            key={item.label}
+                            href={item.href()}
+                            prefetch
+                            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-colors min-w-0 ${
+                                isActive ? 'text-eucalyptus-500' : 'text-bark-400'
+                            }`}
+                        >
+                            <Icon className="h-5 w-5 shrink-0" />
+                            <span className="text-[9px] font-medium leading-tight text-center">{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </div>
+        </nav>
+    );
+}
+
 // ── Layout ───────────────────────────────────────────────────────────────────
 
 export default function AuthenticatedLayout({
@@ -169,25 +205,11 @@ export default function AuthenticatedLayout({
     const activeFamily = auth.activeFamily ?? null;
     const userFamilies: { id: string; name: string }[] = auth.userFamilies ?? [];
     const viewingAsSpender: { id: string; name: string } | null = auth.viewingAsSpender ?? null;
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [drawerVisible, setDrawerVisible] = useState(false);
-
-    function openMenu() {
-        setMobileMenuOpen(true);
-        // Two rAFs: first ensures the element is mounted, second ensures it's been painted
-        requestAnimationFrame(() => requestAnimationFrame(() => setDrawerVisible(true)));
-    }
-
-    function closeMenu() {
-        setDrawerVisible(false);
-    }
-
-    function handleDrawerTransitionEnd() {
-        if (!drawerVisible) setMobileMenuOpen(false);
-    }
-
     return (
         <div className="min-h-screen bg-bark-100">
+            {/* Safe-area colour fill — matches topmost bar background */}
+            <div className={`pt-safe ${viewingAsSpender ? 'bg-wattle-400' : 'bg-white'}`} />
+
             {viewingAsSpender && (
                 <div className="bg-wattle-400 text-wattle-900 px-4 py-2 flex items-center justify-between gap-3 text-sm font-medium">
                     <div className="flex items-center gap-2">
@@ -209,19 +231,8 @@ export default function AuthenticatedLayout({
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-14 items-center justify-between">
 
-                        {/* Left: hamburger (mobile) + logo + nav links (desktop) */}
+                        {/* Left: logo + nav links (desktop) */}
                         <div className="flex items-center gap-2">
-                            {/* Hamburger — mobile only */}
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="sm:hidden -ml-1"
-                                onClick={openMenu}
-                                aria-label="Toggle menu"
-                            >
-                                <Menu className="h-5 w-5" />
-                            </Button>
-
                             <Link href={route('dashboard')} prefetch className="flex items-center gap-2">
                                 <Wallet className="h-5 w-5 text-eucalyptus-400" />
                                 <span className="hidden sm:inline font-display text-lg font-semibold text-eucalyptus-400">Quiddo</span>
@@ -308,82 +319,8 @@ export default function AuthenticatedLayout({
                 </div>
             </nav>
 
-            {/* Mobile drawer overlay */}
-            {mobileMenuOpen && (
-                <div
-                    className="fixed inset-0 z-40 sm:hidden"
-                    onClick={closeMenu}
-                >
-                    {/* Backdrop */}
-                    <div className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${drawerVisible ? 'opacity-100' : 'opacity-0'}`} />
-
-                    {/* Drawer panel */}
-                    <div
-                        className={`absolute top-0 left-0 h-full w-72 bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out ${drawerVisible ? 'translate-x-0' : '-translate-x-full'}`}
-                        onClick={e => e.stopPropagation()}
-                        onTransitionEnd={handleDrawerTransitionEnd}
-                    >
-                        {/* Drawer header */}
-                        <div className="flex items-center justify-between px-4 h-14 border-b border-bark-200 shrink-0">
-                            <Link
-                                href={route('dashboard')}
-                                prefetch
-                                className="flex items-center gap-2"
-                                onClick={closeMenu}
-                            >
-                                <Wallet className="h-5 w-5 text-eucalyptus-400" />
-                                <span className="font-display text-lg font-semibold text-eucalyptus-400">Quiddo</span>
-                            </Link>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={closeMenu}
-                                aria-label="Close menu"
-                            >
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </div>
-
-                        {/* Nav links */}
-                        <nav className="flex flex-col gap-1 p-3">
-                            <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                <Link href={route('dashboard')} prefetch>
-                                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                                    Dashboard
-                                </Link>
-                            </Button>
-                            {isParent && (
-                                <>
-                                    <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('spenders.index')} prefetch>
-                                            <Users className="h-4 w-4 mr-2" />
-                                            Kids
-                                        </Link>
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('chores.index')} prefetch>
-                                            <CheckSquare className="h-4 w-4 mr-2" />
-                                            Chores
-                                        </Link>
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('pocket-money.release')} prefetch>
-                                            <Coins className="h-4 w-4 mr-2" />
-                                            Pocket Money
-                                        </Link>
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="justify-start" asChild onClick={closeMenu}>
-                                        <Link href={route('goals.index')} prefetch>
-                                            <Target className="h-4 w-4 mr-2" />
-                                            Goals
-                                        </Link>
-                                    </Button>
-                                </>
-                            )}
-                        </nav>
-                    </div>
-                </div>
-            )}
+            {/* Mobile bottom nav */}
+            {isParent && <MobileBottomNav />}
 
             {header && (
                 <div className="border-b border-bark-200 bg-white">
@@ -393,7 +330,7 @@ export default function AuthenticatedLayout({
                 </div>
             )}
 
-            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pb-24 sm:pb-8">
                 {children}
             </main>
         </div>

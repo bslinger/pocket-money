@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
-import { ImageIcon, Loader2, X } from 'lucide-react';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { Camera as CameraIcon, ImageIcon, Loader2, X } from 'lucide-react';
 
 interface Props {
     currentUrl?: string | null;
@@ -59,6 +61,25 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
         if (file?.type.startsWith('image/')) handleFile(file);
     }
 
+    async function handleCameraCapture() {
+        try {
+            const photo = await Camera.getPhoto({
+                quality: 90,
+                allowEditing: false,
+                resultType: CameraResultType.Uri,
+                source: CameraSource.Camera,
+            });
+            if (photo.webPath) {
+                const response = await fetch(photo.webPath);
+                const blob = await response.blob();
+                const file = new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' });
+                handleFile(file);
+            }
+        } catch {
+            // User cancelled or permission denied — do nothing
+        }
+    }
+
     function clear() {
         setPreview(null);
         if (inputRef.current) inputRef.current.value = '';
@@ -90,6 +111,27 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
                         className="absolute bottom-2 right-2 text-xs bg-white/80 backdrop-blur px-2 py-1 rounded-md border border-bark-200 hover:bg-bark-50 transition-colors"
                     >
                         Change
+                    </button>
+                </div>
+            ) : Capacitor.isNativePlatform() ? (
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={handleCameraCapture}
+                        disabled={uploading}
+                        className="flex-1 h-24 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors disabled:opacity-50"
+                    >
+                        {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CameraIcon className="h-5 w-5" />}
+                        <span className="text-xs">Take a photo</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => inputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex-1 h-24 border-2 border-dashed border-bark-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-bark-500 hover:border-eucalyptus-300 hover:text-bark-700 transition-colors disabled:opacity-50"
+                    >
+                        <ImageIcon className="h-5 w-5" />
+                        <span className="text-xs">Choose file</span>
                     </button>
                 </div>
             ) : (

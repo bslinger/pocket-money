@@ -129,12 +129,12 @@ Organised by strategic area, with specific tasks nested under each.
 
 ## Mobile App improvements
 **These apply to the site when in a mobile viewport, either from the website or embedded in the Capacitor app**
-- [ ] Add space at the top of the viewport for cutouts and icons
-- [ ] Back swipe currently closes the app rather than going back
-- [ ] Move the login components higher up the screen so they don't get cut off by the native keyboard
-- [ ] Hook into the native camera components where available and add a 'Take a photo' button where we currently have the ability to upload a photo
-- [ ] Instead of the hamburger menu on mobile, let's go for the classic row of buttons along the bottom. Buttons should be: Dashboard, Kids, Chores, Goals, Pocket Money
-- [ ] The Add/Spend modals currently overlap the native keyboard a bit by default unless you scroll. See if you can make them fixed higher on the page on mobile.
+- [x] Add space at the top of the viewport for cutouts and icons
+- [x] Back swipe currently closes the app rather than going back
+- [x] Move the login components higher up the screen so they don't get cut off by the native keyboard
+- [x] Hook into the native camera components where available and add a 'Take a photo' button where we currently have the ability to upload a photo
+- [x] Instead of the hamburger menu on mobile, let's go for the classic row of buttons along the bottom. Buttons should be: Dashboard, Kids, Chores, Goals, Pocket Money
+- [x] The Add/Spend modals currently overlap the native keyboard a bit by default unless you scroll. See if you can make them fixed higher on the page on mobile.
 
 
 # FOR LATER. Don't tackle anything below here without explicit instructions.
