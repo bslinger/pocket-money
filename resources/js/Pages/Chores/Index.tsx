@@ -635,6 +635,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                       <div className="flex flex-wrap gap-2 pl-7">
                         {chores.map(chore => {
                           const status = getCompletionStatus(chore.id, spender.id, date);
+                          const missed = !status;
                           return (
                             <div
                               key={chore.id}
@@ -642,6 +643,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                                 status === 'approved' ? 'bg-gumleaf-50 text-gumleaf-600' :
                                 status === 'pending'  ? 'bg-wattle-50 text-wattle-600' :
                                 status === 'declined' ? 'bg-redearth-50 text-redearth-600' :
+                                missed ? 'bg-redearth-100 text-redearth-500' :
                                 'bg-muted text-muted-foreground'
                               }`}
                             >
@@ -650,6 +652,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                               {status === 'approved' && <CheckCircle2 className="h-3 w-3 shrink-0" />}
                               {status === 'pending'  && <Clock className="h-3 w-3 shrink-0" />}
                               {status === 'declined' && <XCircle className="h-3 w-3 shrink-0" />}
+                              {missed && <XCircle className="h-3 w-3 shrink-0" />}
                             </div>
                           );
                         })}
