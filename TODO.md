@@ -41,7 +41,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Native emoji picker on mobile** — use system emoji keyboard on touch devices; JS picker on desktop; input can't be emptied (rever ts to default)
 - [x] **Onboarding flow** — smoother setup wizard: create family → choose currency → add kids → set pocket money → create first chore
 - [x] On the kid view page, each account should have a Spend/Add button like those on the kid cards on the dashboard, and when clicked they bring up the same modal but with that account pre-selected
-- [ ] Let's try splitting the Kid view up into tabs - one for Accounts, one for Savings Goals, one for Chores, and a Transactions tab that aggregates transactions for all their accounts
+- [x] Let's try splitting the Kid view up into tabs - one for Accounts, one for Savings Goals, one for Chores, and a Transactions tab that aggregates transactions for all their accounts
 
 ---
 
