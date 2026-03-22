@@ -105,24 +105,41 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
   const [pastCompletions, setPastCompletions] = useState<Map<string, WeekCompletion[]>>(new Map());
   const [loadingPastDay, setLoadingPastDay] = useState(false);
 
+  async function fetchCompletionsForDate(dateKey: string): Promise<WeekCompletion[]> {
+    const res = await fetch(route('chores.completions-for-date') + `?date=${dateKey}`, {
+      headers: { 'Accept': 'application/json' },
+    });
+    return res.ok ? await res.json() : [];
+  }
+
   async function expandPastDay() {
     const nextDaysBack = pastDaysShown + 1;
-    const date = subDays(new Date(), nextDaysBack);
-    const dateKey = format(date, 'yyyy-MM-dd');
+    const expandDate = subDays(new Date(), nextDaysBack);
+    const expandKey = format(expandDate, 'yyyy-MM-dd');
 
-    if (!pastCompletions.has(dateKey)) {
-      setLoadingPastDay(true);
-      try {
-        const res = await fetch(route('chores.completions-for-date') + `?date=${dateKey}`, {
-          headers: { 'Accept': 'application/json' },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setPastCompletions(prev => new Map(prev).set(dateKey, data));
-        }
-      } finally {
-        setLoadingPastDay(false);
+    // Also pre-fetch the day after that (the next summary)
+    const previewDate = subDays(new Date(), nextDaysBack + 1);
+    const previewKey = format(previewDate, 'yyyy-MM-dd');
+
+    setLoadingPastDay(true);
+    try {
+      const fetches: Promise<[string, WeekCompletion[]]>[] = [];
+      if (!pastCompletions.has(expandKey)) {
+        fetches.push(fetchCompletionsForDate(expandKey).then(d => [expandKey, d]));
       }
+      if (!pastCompletions.has(previewKey)) {
+        fetches.push(fetchCompletionsForDate(previewKey).then(d => [previewKey, d]));
+      }
+      if (fetches.length > 0) {
+        const results = await Promise.all(fetches);
+        setPastCompletions(prev => {
+          const next = new Map(prev);
+          for (const [key, data] of results) next.set(key, data);
+          return next;
+        });
+      }
+    } finally {
+      setLoadingPastDay(false);
     }
 
     setPastDaysShown(nextDaysBack);
