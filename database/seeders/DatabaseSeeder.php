@@ -132,34 +132,36 @@ class DatabaseSeeder extends Seeder
         );
 
         // ── Chores ──────────────────────────────────────────────────────────
+        // Backdate created_at so chores appear on past schedule days
+        $choreCreatedAt = now()->subWeeks(2);
 
         $makebed = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Make bed'],
-            ['emoji' => '🛏️', 'reward_type' => ChoreRewardType::Responsibility, 'frequency' => ChoreFrequency::Daily, 'requires_approval' => false, 'is_active' => true, 'created_by' => $user->id]
+            ['emoji' => '🛏️', 'reward_type' => ChoreRewardType::Responsibility, 'frequency' => ChoreFrequency::Daily, 'requires_approval' => false, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
         $makebed->spenders()->syncWithoutDetaching([$emma->id, $jack->id]);
 
         $dishes = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Wash the dishes'],
-            ['emoji' => '🍽️', 'reward_type' => ChoreRewardType::Earns, 'amount' => '1.50', 'frequency' => ChoreFrequency::Daily, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id]
+            ['emoji' => '🍽️', 'reward_type' => ChoreRewardType::Earns, 'amount' => '1.50', 'frequency' => ChoreFrequency::Daily, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
         $dishes->spenders()->syncWithoutDetaching([$emma->id, $jack->id, $theodore->id]);
 
         $vacuum = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Vacuum the living room'],
-            ['emoji' => '🧹', 'reward_type' => ChoreRewardType::Earns, 'amount' => '2.00', 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id]
+            ['emoji' => '🧹', 'reward_type' => ChoreRewardType::Earns, 'amount' => '2.00', 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
         $vacuum->spenders()->syncWithoutDetaching([$emma->id]);
 
         $bins = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Take out the bins'],
-            ['emoji' => '🗑️', 'reward_type' => ChoreRewardType::Earns, 'amount' => '1.00', 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id]
+            ['emoji' => '🗑️', 'reward_type' => ChoreRewardType::Earns, 'amount' => '1.00', 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
         $bins->spenders()->syncWithoutDetaching([$jack->id, $theodore->id]);
 
         $laundry = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Put away laundry'],
-            ['emoji' => '👕', 'reward_type' => ChoreRewardType::Responsibility, 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => false, 'is_active' => true, 'created_by' => $user->id]
+            ['emoji' => '👕', 'reward_type' => ChoreRewardType::Responsibility, 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => false, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
         $laundry->spenders()->syncWithoutDetaching([$emma->id, $theodore->id]);
 
