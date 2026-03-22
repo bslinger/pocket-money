@@ -7,7 +7,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { Eye, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2, Smartphone } from 'lucide-react';
+import { Eye, Pencil, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2, Smartphone } from 'lucide-react';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 
 function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processing }: {
@@ -206,15 +206,23 @@ export default function SpenderShow({ spender, pendingInvitations }: { spender: 
                     </div>
                 </div>
                 {isParent && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={() => router.post(route('dashboard.view-as', spender.id))}
-                    >
-                        <Eye className="h-3.5 w-3.5" />
-                        View as {spender.name}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                            <Link href={route('spenders.edit', spender.id)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit
+                            </Link>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={() => router.post(route('dashboard.view-as', spender.id))}
+                        >
+                            <Eye className="h-3.5 w-3.5" />
+                            View as {spender.name}
+                        </Button>
+                    </div>
                 )}
             </div>
         }>

@@ -21,7 +21,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Edit kid profile** — update name, avatar, colour, and currency override from a single place (currently split across pages)
 - [x] **Archive / deactivate a kid** — soft-delete so history is preserved when a child ages out
 - [x] **Family settings page** — consolidate currency, pocket money day, and member management into one place
-- [ ] Add an edit button to kid pages
+- [x] Add an edit button to kid pages
 - 
 
 ---
@@ -34,7 +34,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Currency plural handling** — correctly pluralise currency names where possible (e.g. "1 Sheep / 2 Sheep", "1 Mouse / 2 Mice"); allow parents to specify an optional plural form
 - [x] **Guess currency name from emoji** — when parent picks an emoji, auto-suggest the currency name (e.g. ⭐ → "Star", 🪙 → "Coin", 🍕 → "Pizza")
 - [x] Change 'Take' to 'Spend' on the kid cards on the dashboard
-- [ ] Add an account selector on the Add/Spend modals, and switch the currency as necessary based on selected account
+- [x] Add an account selector on the Add/Spend modals, and switch the currency as necessary based on selected account
 
 ## UI Improvements
 
@@ -100,8 +100,8 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] The calendar view should be grouped by child.
 - [x] The chore type (Responsibility, etc) should not have the hover effect on the chore list, but instead should have a tooltip that appears after a moment giving more information about that chore type. Refactor the text that defines each chore type into a file and make sure it's used wherever it's needed.
 - [x] Parent should be able to unapprove chores that they've already approved. If undoing the chore approval would invalidate a payment that had already been made (eg. their pocket money responsibilities are no longer met, but pocket money has been paid) then the parent should get a notification about that payment and an option to cancel it.
--[ ] The Schedule tab of Chores should show which tasks have been marked as completed and/or approved for the current week.
-- [ ] The Recent Activity section in the dashboard should give the option to unapprove the chores, as long as they were completed and approved in the current week.
+- [x] The Schedule tab of Chores should show which tasks have been marked as completed and/or approved for the current week.
+- [x] The Recent Activity section in the dashboard should give the option to unapprove the chores, as long as they were completed and approved in the current week.
 
 
 ## Pocket Money Improvements v1
@@ -109,7 +109,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] We will need a background job that runs hourly to check whether pocket money is due, and if so , creates a transaction for it (as long as all responsibilities have been filled)
 - [x] The parent should still be able to release pocket money that hasn't met responsibilities, but continues to be a manual action.
 - [x] We should add a new type of payment - a reward that is based on a specific set of chores being completed. It's can optionally have a date that it will be paid out (in which case, if the responsibilities are completed, the transaction should be made automatically). If no date is set, it is paid out when the responsibilities are completed and approved.
-- [ ] The Pocket Money page right now isn't very useful. Change it to show the pocket money schedules of the different kids, and a history of pocket money specific transactions. If any kids have had pocket money withheld this week due to failed responsibilities, add a summary of why it was withheld and give the option to release it, either in part (as a percentage) or in full.
+- [x] The Pocket Money page right now isn't very useful. Change it to show the pocket money schedules of the different kids, and a history of pocket money specific transactions. If any kids have had pocket money withheld this week due to failed responsibilities, add a summary of why it was withheld and give the option to release it, either in part (as a percentage) or in full.
 
 ## Miscellaneous Bugs v1
  - [x] The emoji picker on the family edit page should match the dark/light mode of the page. It's currently in dark mode.
