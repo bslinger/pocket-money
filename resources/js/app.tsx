@@ -1,7 +1,7 @@
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
-import { hydrateRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 
 if (typeof window !== 'undefined') {
     import('@capacitor/app').then(({ App: CapApp }) => {
@@ -20,7 +20,11 @@ const appName = import.meta.env.VITE_APP_NAME || 'Quiddo';
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     setup({ el, App, props }) {
-        hydrateRoot(el!, <App {...props} />);
+        if (el!.hasChildNodes()) {
+            hydrateRoot(el!, <App {...props} />);
+        } else {
+            createRoot(el!).render(<App {...props} />);
+        }
     },
     progress: {
         color: '#4B5563',
