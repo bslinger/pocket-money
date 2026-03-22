@@ -168,7 +168,7 @@ export default function SpendersIndex({ family, spenders }: Props) {
                                                     size="icon"
                                                     className="h-8 w-8"
                                                     title={`View as ${spender.name}`}
-                                                    onClick={() => router.post(route('dashboard.view-as', spender.id))}
+                                                    onClick={() => router.post(route('dashboard.view-as', spender.id), { return_url: window.location.pathname })}
                                                 >
                                                     <Eye className="h-3.5 w-3.5" />
                                                 </Button>

@@ -243,7 +243,7 @@ export default function SpenderShow({
                             variant="outline"
                             size="sm"
                             className="gap-1.5"
-                            onClick={() => router.post(route('dashboard.view-as', spender.id))}
+                            onClick={() => router.post(route('dashboard.view-as', spender.id), { return_url: window.location.pathname })}
                         >
                             <Eye className="h-3.5 w-3.5" />
                             View as {spender.name}

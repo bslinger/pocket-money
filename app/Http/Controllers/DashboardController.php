@@ -18,10 +18,10 @@ class DashboardController extends Controller
         abort_unless($user->isParent()
             && $user->families()->where('families.id', $spender->family_id)->exists(), 403);
 
-        $returnUrl = url()->previous(route('dashboard'));
-        // Ensure we only redirect to an internal URL
-        if (! str_starts_with($returnUrl, config('app.url'))) {
-            $returnUrl = route('dashboard');
+        $returnUrl = $request->input('return_url', '/dashboard');
+        // Ensure we only redirect to a relative path
+        if (! str_starts_with($returnUrl, '/')) {
+            $returnUrl = '/dashboard';
         }
 
         session([
