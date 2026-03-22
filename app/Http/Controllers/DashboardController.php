@@ -35,10 +35,11 @@ class DashboardController extends Controller
 
     public function exitViewAs()
     {
-        session()->forget(['viewing_as_spender_id', 'view_as_return_url']);
+        $returnUrl = session()->pull('view_as_return_url');
+        session()->forget('viewing_as_spender_id');
         session()->save();
 
-        return redirect()->route('dashboard');
+        return $returnUrl ? redirect()->to($returnUrl) : redirect()->route('dashboard');
     }
 
     public function index(Request $request)
