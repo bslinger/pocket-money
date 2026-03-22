@@ -7,13 +7,21 @@ const config: CapacitorConfig = {
   appName: 'Quiddo',
   webDir: 'public',
   server: isProd
-    ? undefined  // uses bundled assets in prod
+    ? undefined
     : {
-        url: 'https://quiddo-main-5m5iax.laravel.cloud/',
+        url: 'https://quiddo-main-5m5iax.laravel.cloud/login',
         cleartext: true,
       },
+  plugins: {
+    SplashScreen: {
+      launchAutoHide: true,
+      launchShowDuration: 0,
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: true,
+      spinnerColor: '#2D6A4F',
+    },
+  },
   ios: {
-    // Allow swipe-back gesture to navigate browser history instead of exiting
     allowsBackForwardNavigationGestures: true,
   },
 };
