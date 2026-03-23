@@ -4,7 +4,7 @@ import { test, expect } from './fixtures';
 test.use({ storageStatePath: null });
 
 test.describe('Onboarding wizard', () => {
-    test('new user registration redirects to onboarding', async ({ page }) => {
+    async function registerAndLand(page: any) {
         const email = `onboard+${Date.now()}@example.com`;
         await page.goto('/register');
         await page.fill('#name', 'New Parent');
@@ -12,24 +12,17 @@ test.describe('Onboarding wizard', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
+        // Unverified users now go straight to onboarding (no verify-email redirect)
+        await page.waitForURL(/onboarding|dashboard/);
+    }
 
-        // New users without email verification land on verify-email
-        // For local dev, we can hit the dev verify-email shortcut
-        await page.goto('/dev/verify-email');
+    test('new user registration redirects to onboarding', async ({ page }) => {
+        await registerAndLand(page);
         await expect(page).toHaveURL('/onboarding');
     });
 
     test('onboarding step 1: family name', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await expect(page).toHaveURL('/onboarding');
         await expect(page.getByText('Welcome to Quiddo')).toBeVisible();
@@ -49,15 +42,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding step 2: currency - select symbol', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');
@@ -74,15 +59,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding step 2: custom currency shows emoji picker and name fields', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');
@@ -102,15 +79,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding step 3: add 2 kids then create family', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         // Step 1: family name
         await page.fill('#family-name', 'The Testers');
@@ -134,15 +103,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding step 3: add kid with starting balance', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');
@@ -160,15 +121,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding continue: pocket money step - enable for first kid', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');
@@ -194,15 +147,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding continue: chores step - add a chore', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');
@@ -227,15 +172,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding continue: invite step - go to dashboard', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');
@@ -261,15 +198,7 @@ test.describe('Onboarding wizard', () => {
     });
 
     test('onboarding continue: skip all via "Skip setup" link', async ({ page }) => {
-        const email = `onboard+${Date.now()}@example.com`;
-        await page.goto('/register');
-        await page.fill('#name', 'New Parent');
-        await page.fill('#email', email);
-        await page.fill('#password', 'password123');
-        await page.fill('#password_confirmation', 'password123');
-        await page.click('button[type=submit]');
-        await page.waitForURL(/verify-email/);
-        await page.goto('/dev/verify-email');
+        await registerAndLand(page);
 
         await page.fill('#family-name', 'The Testers');
         await page.click('button:has-text("Continue")');

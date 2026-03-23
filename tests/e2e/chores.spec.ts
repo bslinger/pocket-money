@@ -10,53 +10,53 @@ test.describe('Chores', () => {
         await page.goto('/chores/create');
         await page.fill('#name', 'Test Earns Chore');
         // "Earns" is the default — click it to be explicit
-        await page.click('button:has-text("Earns")');
+        await page.getByRole('button', { name: 'Earns' }).click();
         await page.fill('#amount', '1.50');
-        await page.selectOption('select', 'weekly');
-        await page.click('button:has-text("Emma")');
-        await page.click('button:has-text("Create Chore")');
+        await page.locator('select').last().selectOption('weekly');
+        await page.getByRole('button', { name: 'Emma' }).click();
+        await page.getByRole('button', { name: 'Create Chore' }).click();
         await page.waitForURL('/chores');
-        await page.click('button:has-text("Manage")');
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Test Earns Chore')).toBeVisible();
     });
 
     test('can create a responsibility chore', async ({ page }) => {
         await page.goto('/chores/create');
         await page.fill('#name', 'Test Responsibility Chore');
-        await page.click('button:has-text("Responsibility")');
-        await page.selectOption('select', 'daily');
-        await page.click('button:has-text("Emma")');
-        await page.click('button:has-text("Create Chore")');
+        await page.getByRole('button', { name: 'Responsibility' }).click();
+        await page.locator('select').last().selectOption('daily');
+        await page.getByRole('button', { name: 'Emma' }).click();
+        await page.getByRole('button', { name: 'Create Chore' }).click();
         await page.waitForURL('/chores');
-        await page.click('button:has-text("Manage")');
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Test Responsibility Chore')).toBeVisible();
     });
 
     test('can create a one-off chore', async ({ page }) => {
         await page.goto('/chores/create');
         await page.fill('#name', 'Clean garage');
-        await page.click('button:has-text("Earns")');
+        await page.getByRole('button', { name: 'Earns' }).click();
         await page.fill('#amount', '5.00');
-        await page.selectOption('select', 'one_off');
-        await page.click('button:has-text("Emma")');
-        await page.click('button:has-text("Create Chore")');
+        await page.locator('select').last().selectOption('one_off');
+        await page.getByRole('button', { name: 'Emma' }).click();
+        await page.getByRole('button', { name: 'Create Chore' }).click();
         await page.waitForURL('/chores');
-        await page.click('button:has-text("Manage")');
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Clean garage')).toBeVisible();
     });
 
     test('shows validation error for missing chore name', async ({ page }) => {
         await page.goto('/chores/create');
-        await page.click('button:has-text("Create Chore")');
+        await page.getByRole('button', { name: 'Create Chore' }).click();
         await expect(page.getByText(/name field is required/i)).toBeVisible();
     });
 
     test('shows amount field only for earns reward type', async ({ page }) => {
         await page.goto('/chores/create');
         await expect(page.locator('#amount')).toBeVisible();
-        await page.click('button:has-text("Responsibility")');
+        await page.getByRole('button', { name: 'Responsibility' }).click();
         await expect(page.locator('#amount')).not.toBeVisible();
-        await page.click('button:has-text("No reward")');
+        await page.getByRole('button', { name: 'No reward' }).click();
         await expect(page.locator('#amount')).not.toBeVisible();
     });
 
@@ -64,12 +64,12 @@ test.describe('Chores', () => {
         // First create one
         await page.goto('/chores/create');
         await page.fill('#name', 'Editable Chore');
-        await page.click('button:has-text("Earns")');
+        await page.getByRole('button', { name: 'Earns' }).click();
         await page.fill('#amount', '1.00');
-        await page.click('button:has-text("Emma")');
-        await page.click('button:has-text("Create Chore")');
+        await page.getByRole('button', { name: 'Emma' }).click();
+        await page.getByRole('button', { name: 'Create Chore' }).click();
         await page.waitForURL('/chores');
-        await page.click('button:has-text("Manage")');
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Editable Chore')).toBeVisible();
 
         // Edit it — find the pencil/edit button in the same row
@@ -77,9 +77,9 @@ test.describe('Chores', () => {
         await choreRow.getByRole('link').last().click();
         await expect(page).toHaveURL(/\/chores\/.*\/edit/);
         await page.fill('#name', 'Edited Chore');
-        await page.click('button:has-text("Save Changes")');
+        await page.getByRole('button', { name: 'Save Changes' }).click();
         await page.waitForURL('/chores');
-        await page.click('button:has-text("Manage")');
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Edited Chore')).toBeVisible();
     });
 
@@ -87,12 +87,12 @@ test.describe('Chores', () => {
         // Create a chore to delete
         await page.goto('/chores/create');
         await page.fill('#name', 'Delete Me Chore');
-        await page.click('button:has-text("Earns")');
+        await page.getByRole('button', { name: 'Earns' }).click();
         await page.fill('#amount', '1.00');
-        await page.click('button:has-text("Emma")');
-        await page.click('button:has-text("Create Chore")');
+        await page.getByRole('button', { name: 'Emma' }).click();
+        await page.getByRole('button', { name: 'Create Chore' }).click();
         await page.waitForURL('/chores');
-        await page.click('button:has-text("Manage")');
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Delete Me Chore')).toBeVisible();
 
         // Accept the confirm dialog and click the delete (trash) button in that row

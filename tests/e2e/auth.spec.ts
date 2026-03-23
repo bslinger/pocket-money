@@ -45,8 +45,8 @@ test.describe('Register', () => {
         await page.fill('#password', 'password123');
         await page.fill('#password_confirmation', 'password123');
         await page.click('button[type=submit]');
-        // After registration, lands on verify-email or dashboard
-        await expect(page).toHaveURL(/verify-email|dashboard/);
+        // After registration, lands on onboarding, verify-email, or dashboard
+        await expect(page).toHaveURL(/onboarding|verify-email|dashboard/);
     });
 
     test('shows validation error when passwords do not match', async ({ page }) => {
