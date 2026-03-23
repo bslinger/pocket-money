@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -46,15 +46,17 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v5
         with:
           files: storage/coverage/pest/junit.xml
           flags: pest
           token: ${{ secrets.CODECOV_TOKEN }}
+          disable_search: true
+          report_type: test_results
 
       - name: Upload Pest coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pest-coverage
           path: storage/coverage/pest/
@@ -80,7 +82,7 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -102,7 +104,7 @@ jobs:
         run: php artisan migrate --seed --force
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -139,7 +141,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: playwright-report
           path: /tmp/pw-test-results/
@@ -156,15 +158,17 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v5
         with:
           files: test-results/e2e-junit.xml
           flags: e2e
           token: ${{ secrets.CODECOV_TOKEN }}
+          disable_search: true
+          report_type: test_results
 
       - name: Upload E2E coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: e2e-coverage
           path: storage/coverage/e2e/
@@ -177,10 +181,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -235,4 +239,3 @@ jobs:
           api_token: ${{ secrets.LARAVEL_CLOUD_API_TOKEN }}
           application_name: ${{ vars.LARAVEL_CLOUD_APP_NAME }}
           environment_name: ${{ vars.LARAVEL_CLOUD_ENVIRONMENT_NAME }}
-
