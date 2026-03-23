@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { AlertTriangle, Check, ChevronDown, CheckSquare, CreditCard, Eye, LayoutDashboard, LogOut, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, CheckSquare, CreditCard, Eye, LayoutDashboard, LogOut, MailWarning, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -293,7 +293,18 @@ export default function AuthenticatedLayout({
                             </div>
                         </div>
 
-                        {/* Right: family/account menu */}
+                        {/* Right: unverified badge + family/account menu */}
+                        <div className="flex items-center gap-2">
+                        {!user.email_verified_at && (
+                            <Link
+                                href={route('verification.notice')}
+                                className="flex items-center gap-1 text-wattle-600 bg-wattle-50 border border-wattle-200 rounded-full px-2.5 py-1 text-xs font-medium hover:bg-wattle-100 transition-colors"
+                                title="Verify your email"
+                            >
+                                <MailWarning className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Unverified</span>
+                            </Link>
+                        )}
                         {isParent && activeFamily ? (
                             <FamilyAccountMenu
                                 activeFamily={activeFamily}
@@ -337,6 +348,7 @@ export default function AuthenticatedLayout({
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
+                        </div>
 
                     </div>
                 </div>

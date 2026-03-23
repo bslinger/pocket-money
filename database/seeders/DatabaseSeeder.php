@@ -32,6 +32,17 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Unverified test user — same password, member of Ben's Family
+        $unverified = User::firstOrCreate(
+            ['email' => 'unverified@example.com'],
+            [
+                'name' => 'unverified',
+                'display_name' => 'Unverified User',
+                'password' => bcrypt('test1234'),
+                'email_verified_at' => null,
+            ]
+        );
+
         $family = Family::firstOrCreate(
             ['name' => "Ben's Family"],
             ['billing_user_id' => $user->id, 'trial_ends_at' => now()->addDays(14)]
@@ -46,6 +57,11 @@ class DatabaseSeeder extends Seeder
         FamilyUser::firstOrCreate(
             ['family_id' => $family->id, 'user_id' => $user->id],
             ['role' => FamilyRole::Admin]
+        );
+
+        FamilyUser::firstOrCreate(
+            ['family_id' => $family->id, 'user_id' => $unverified->id],
+            ['role' => FamilyRole::Member]
         );
 
         $emma = Spender::firstOrCreate(

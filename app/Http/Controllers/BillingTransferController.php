@@ -21,6 +21,7 @@ class BillingTransferController extends Controller
         $user = $request->user();
 
         abort_unless($family->isBillingUser($user), 403, 'Only the billing owner can transfer billing.');
+        abort_unless($user->hasVerifiedEmail(), 403, 'You must verify your email before transferring billing.');
 
         $request->validate([
             'email' => 'required|email|max:255',

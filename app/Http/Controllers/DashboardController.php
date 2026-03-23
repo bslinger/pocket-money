@@ -48,8 +48,8 @@ class DashboardController extends Controller
 
         abort_if($user === null, 401);
 
-        // Verified user with no family and no child links → guide through onboarding
-        if ($user->hasVerifiedEmail() && ! $user->isParent() && ! $user->spenderUsers()->exists()) {
+        // User with no family and no child links → guide through onboarding
+        if (! $user->isParent() && ! $user->spenderUsers()->exists()) {
             return redirect()->route('onboarding');
         }
 

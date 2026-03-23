@@ -123,6 +123,9 @@ class FamilyController extends Controller
     public function invite(Request $request, Family $family)
     {
         $this->assertAdmin($family);
+
+        abort_unless($request->user()->hasVerifiedEmail(), 403, 'You must verify your email before inviting others.');
+
         $request->validate(['email' => 'required|email']);
 
         $email = strtolower(trim($request->email));

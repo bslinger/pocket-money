@@ -1,13 +1,12 @@
 <?php
 
-use App\Models\Account;
+use App\Enums\FamilyRole;
 use App\Models\Chore;
 use App\Models\Family;
 use App\Models\FamilyUser;
 use App\Models\PocketMoneySchedule;
 use App\Models\Spender;
 use App\Models\User;
-use App\Enums\FamilyRole;
 
 describe('onboarding', function () {
 
@@ -17,12 +16,12 @@ describe('onboarding', function () {
                 ->assertRedirect(route('login'));
         });
 
-        it('redirects unverified users to verify-email', function () {
+        it('allows unverified users to access onboarding', function () {
             $user = User::factory()->unverified()->create();
 
             $this->actingAs($user)
                 ->get(route('onboarding'))
-                ->assertRedirect(route('verification.notice'));
+                ->assertOk();
         });
 
         it('shows the onboarding page for a verified user with no family', function () {
@@ -31,7 +30,7 @@ describe('onboarding', function () {
             $this->actingAs($user)
                 ->get(route('onboarding'))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Onboarding/Index'));
+                ->assertInertia(fn ($page) => $page->component('Onboarding/Index'));
         });
 
         it('redirects to continue page if user already has a family', function () {
@@ -81,11 +80,11 @@ describe('onboarding', function () {
 
             $this->actingAs($user)
                 ->post(route('onboarding.store'), [
-                    'name'                 => 'The Smiths',
-                    'currency_symbol'      => '$',
-                    'currency_name'        => 'Dollar',
+                    'name' => 'The Smiths',
+                    'currency_symbol' => '$',
+                    'currency_name' => 'Dollar',
                     'currency_name_plural' => 'Dollars',
-                    'use_integer_amounts'  => false,
+                    'use_integer_amounts' => false,
                 ])
                 ->assertRedirect();
 
@@ -118,7 +117,7 @@ describe('onboarding', function () {
 
             $this->actingAs($user)
                 ->post(route('onboarding.store'), [
-                    'name'     => 'The Jones',
+                    'name' => 'The Jones',
                     'spenders' => [
                         ['name' => 'Alice', 'color' => '#6366f1'],
                         ['name' => 'Bob',   'color' => '#8b5cf6'],
@@ -138,7 +137,7 @@ describe('onboarding', function () {
 
             $this->actingAs($user)
                 ->post(route('onboarding.store'), [
-                    'name'     => 'The Bakers',
+                    'name' => 'The Bakers',
                     'spenders' => [
                         ['name' => 'Lily', 'color' => '#6366f1', 'balance' => '12.50'],
                         ['name' => 'Tom',  'color' => '#8b5cf6', 'balance' => '0'],
@@ -157,7 +156,7 @@ describe('onboarding', function () {
 
             $this->actingAs($user)
                 ->post(route('onboarding.store'), [
-                    'name'     => 'The Hills',
+                    'name' => 'The Hills',
                     'spenders' => [
                         ['name' => 'Sam', 'color' => '#6366f1'],
                     ],
@@ -183,7 +182,7 @@ describe('onboarding', function () {
             $this->actingAs($user)
                 ->get(route('onboarding.continue', $family))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page
+                ->assertInertia(fn ($page) => $page
                     ->component('Onboarding/Continue')
                     ->has('family')
                 );
@@ -216,15 +215,15 @@ describe('onboarding', function () {
                 ->post(route('onboarding.pocket-money', $family), [
                     'schedules' => [
                         [
-                            'spender_id'  => $emma->id,
-                            'amount'      => '5.00',
-                            'frequency'   => 'weekly',
+                            'spender_id' => $emma->id,
+                            'amount' => '5.00',
+                            'frequency' => 'weekly',
                             'day_of_week' => 0,
                         ],
                         [
-                            'spender_id'   => $jack->id,
-                            'amount'       => '10.00',
-                            'frequency'    => 'monthly',
+                            'spender_id' => $jack->id,
+                            'amount' => '10.00',
+                            'frequency' => 'monthly',
                             'day_of_month' => 15,
                         ],
                     ],
@@ -264,19 +263,19 @@ describe('onboarding', function () {
                 ->post(route('onboarding.chores', $family), [
                     'chores' => [
                         [
-                            'name'        => 'Tidy bedroom',
-                            'emoji'       => '🛏️',
+                            'name' => 'Tidy bedroom',
+                            'emoji' => '🛏️',
                             'reward_type' => 'earns',
-                            'amount'      => '2.00',
-                            'frequency'   => 'weekly',
+                            'amount' => '2.00',
+                            'frequency' => 'weekly',
                             'spender_ids' => $spenders->pluck('id')->toArray(),
                         ],
                         [
-                            'name'        => 'Feed the dog',
-                            'emoji'       => '🐶',
+                            'name' => 'Feed the dog',
+                            'emoji' => '🐶',
                             'reward_type' => 'responsibility',
-                            'amount'      => null,
-                            'frequency'   => 'daily',
+                            'amount' => null,
+                            'frequency' => 'daily',
                             'spender_ids' => [$spenders->first()->id],
                         ],
                     ],
@@ -302,10 +301,10 @@ describe('onboarding', function () {
                 ->post(route('onboarding.chores', $family), [
                     'chores' => [
                         [
-                            'name'        => 'Test',
+                            'name' => 'Test',
                             'reward_type' => 'earns',
-                            'amount'      => '1.00',
-                            'frequency'   => 'weekly',
+                            'amount' => '1.00',
+                            'frequency' => 'weekly',
                             'spender_ids' => [$spenders->first()->id],
                         ],
                     ],

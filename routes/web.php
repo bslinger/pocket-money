@@ -44,7 +44,7 @@ Route::get('/invitations/{token}/accept', [InvitationController::class, 'accept'
 Route::get('/child-invitations/{token}/accept', [ChildInvitationController::class, 'accept'])
     ->name('child-invitations.accept');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding');
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
     Route::get('/onboarding/{family}/continue', [OnboardingController::class, 'showContinue'])->name('onboarding.continue');

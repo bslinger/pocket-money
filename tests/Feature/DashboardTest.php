@@ -82,12 +82,12 @@ describe('dashboard', function () {
         $this->get(route('dashboard'))->assertRedirect(route('login'));
     });
 
-    it('redirects unverified users to email verification', function () {
+    it('allows unverified users through (redirects to onboarding if no family)', function () {
         $user = User::factory()->unverified()->create();
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertRedirect(route('verification.notice'));
+            ->assertRedirect(route('onboarding'));
     });
 
     it('redirects verified user with no family or child links to onboarding', function () {
