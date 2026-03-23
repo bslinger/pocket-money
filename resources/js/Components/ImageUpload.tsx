@@ -64,53 +64,61 @@ function CropModal({
     }, []);
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black">
-            {/* Cropper area */}
-            <div className="relative flex-1">
-                <Cropper
-                    image={src}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={aspect}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={onCropComplete}
-                    style={{
-                        containerStyle: { background: '#000' },
-                        cropAreaStyle: { border: '2px solid white', borderRadius: 4 },
-                    }}
-                />
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+                {/* Header */}
+                <div className="px-4 py-3 border-b border-bark-200">
+                    <h3 className="font-semibold text-bark-700 text-sm">Crop photo</h3>
+                </div>
 
-            {/* Controls */}
-            <div className="bg-bark-900 px-4 pt-3 pb-safe-or-3 space-y-3">
-                {/* Zoom slider */}
-                <div className="flex items-center gap-3">
-                    <ZoomIn className="h-4 w-4 text-bark-400 shrink-0" />
-                    <input
-                        type="range"
-                        min={1}
-                        max={3}
-                        step={0.01}
-                        value={zoom}
-                        onChange={e => setZoom(Number(e.target.value))}
-                        className="flex-1 accent-eucalyptus-400"
-                        aria-label="Zoom"
+                {/* Cropper area */}
+                <div className="relative" style={{ height: 320 }}>
+                    <Cropper
+                        image={src}
+                        crop={crop}
+                        zoom={zoom}
+                        aspect={aspect}
+                        onCropChange={setCrop}
+                        onZoomChange={setZoom}
+                        onCropComplete={onCropComplete}
+                        cropShape={aspect === 1 ? 'round' : 'rect'}
+                        style={{
+                            containerStyle: { background: '#f5f5f4' },
+                            cropAreaStyle: { border: '2px solid #2D6A4F' },
+                        }}
                     />
                 </div>
 
-                {/* Buttons */}
-                <div className="flex gap-3 pb-2">
-                    <Button variant="outline" className="flex-1 border-bark-600 text-bark-300 hover:bg-bark-800 hover:text-white" onClick={onCancel}>
-                        Cancel
-                    </Button>
-                    <Button
-                        className="flex-1 bg-eucalyptus-400 hover:bg-eucalyptus-500 text-white"
-                        onClick={() => croppedAreaPixels && onDone(croppedAreaPixels)}
-                        disabled={!croppedAreaPixels}
-                    >
-                        Use photo
-                    </Button>
+                {/* Controls */}
+                <div className="px-4 pt-3 pb-4 space-y-3 border-t border-bark-200">
+                    {/* Zoom slider */}
+                    <div className="flex items-center gap-3">
+                        <ZoomIn className="h-4 w-4 text-bark-400 shrink-0" />
+                        <input
+                            type="range"
+                            min={1}
+                            max={3}
+                            step={0.01}
+                            value={zoom}
+                            onChange={e => setZoom(Number(e.target.value))}
+                            className="flex-1 accent-eucalyptus-400"
+                            aria-label="Zoom"
+                        />
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex gap-3">
+                        <Button variant="outline" className="flex-1" onClick={onCancel}>
+                            Cancel
+                        </Button>
+                        <Button
+                            className="flex-1 bg-eucalyptus-400 hover:bg-eucalyptus-500 text-white"
+                            onClick={() => croppedAreaPixels && onDone(croppedAreaPixels)}
+                            disabled={!croppedAreaPixels}
+                        >
+                            Use photo
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,6 +128,7 @@ function CropModal({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Upload image', aspect }: Props) {
+    const isSquare = aspect === 1;
     const [preview, setPreview] = useState<string | null>(currentUrl ?? null);
     const [rawSrc, setRawSrc] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -209,11 +218,13 @@ export default function ImageUpload({ currentUrl, onUpload, onClear, label = 'Up
 
             <div className="space-y-2">
                 {preview ? (
-                    <div className="relative">
+                    <div className={`relative ${isSquare ? 'w-32' : ''}`}>
                         <img
                             src={preview}
                             alt="Preview"
-                            className="w-full h-48 object-cover rounded-lg border border-bark-200"
+                            className={`object-cover border border-bark-200 ${
+                                isSquare ? 'w-32 h-32 rounded-full' : 'w-full h-48 rounded-lg'
+                            }`}
                         />
                         {onClear && (
                             <button
