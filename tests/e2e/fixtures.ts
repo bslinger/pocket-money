@@ -30,7 +30,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         const artisan = process.env.LARAVEL_SAIL
             ? 'php artisan'
             : './vendor/bin/sail artisan';
-        const output = execSync(`${artisan} test:db:prepare ${workerIndex}`, {
+        const output = execSync(`${artisan} test:db:prepare ${workerIndex} 2>/dev/null`, {
             cwd: process.cwd(),
             encoding: 'utf-8',
         });
