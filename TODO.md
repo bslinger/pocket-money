@@ -23,6 +23,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Family settings page** — consolidate currency, pocket money day, and member management into one place — completed 2026-03-20 17:22
 - [x] Add an edit button to kid pages — completed 2026-03-22 11:03
 - [x] When setting up a kid (in either onboarding or on edit page), provide a larger array of colours in various nice palettes. Have 10 visible like now, the rest in a popup that can be opened or expanded — completed 2026-03-22
+- [ ] Add a QR code flow, where another parent can use their device to scan the QR code and it will bring up the app/site and let them register and connect their account, same way an invite would
 
 ---
 
@@ -76,8 +77,6 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Bulk approve** — approve multiple pending chores at once from the dashboard — completed 2026-03-20 23:28
 - [x] **Chore history** — view past completions and approval decisions per chore — completed 2026-03-21 00:03
 
-
-
 ---
 
 ## 📱 Kid Experience
@@ -91,8 +90,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Wherever we are currently showing the amount complete for a savings goal, add the contributed and total currency for that goal as well. So "$5 of $10 (50%)" or "(star emoji)5 of (star emoji)20 (25%)" — completed 2026-03-22 00:53
 - [x] On the kids page, make the goals clickable and have them take the user to the page for that goal — completed 2026-03-22 00:53
 - [x] Everywhere we can, have the kid's name link to their page — completed 2026-03-22 00:53
-
-
+- [ ] Add a QR code flow, where a kid can use their device to scan the QR code and it will bring up the app/site and let them register and connect their account
 
 ---
 
@@ -178,4 +176,7 @@ Organised by strategic area, with specific tasks nested under each.
 
 - [ ] **Weekly email digest** — parents receive balances, chores done, upcoming goals
 - [ ] **Printable goal cards** — kids can show grandparents their savings progress
+- [ ] Push notifications - implement laravel-notification-channels/fcm for Android and laravel-notification-channels/apn for Apple
 
+## Infrastructure and Privacy
+ - [ ] Encrypt certain fields at the database layer using Laravel's encrypted cast. Kid's names, parent names, stripe IDs, etc. Don't do this until we have a proper key rotation and backup strategy in place - losing the key means all that data is gone.
