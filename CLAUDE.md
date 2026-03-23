@@ -1,140 +1,124 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Product
 
-## Project Overview
+**Quiddo** is an Australian family pocket money tracking app. Parents manage savings accounts, transactions, chores, and goals for their kids (spenders). Two frontends — Inertia.js web app and Expo React Native mobile app — share a single Laravel backend.
 
-**Pocket Money** is a family financial management app — parents manage savings accounts, transactions, chores, and goals for their kids (spenders). Built with Laravel 13 + Inertia.js + React.
+## Monorepo Structure
+
+```
+/                           ← Laravel backend (root of repo)
+├── app/                    ← PHP: Models, Controllers, Services, Middleware
+├── routes/                 ← web.php (Inertia), api.php (mobile JSON API), auth.php
+├── resources/js/           ← Web frontend: Inertia + React pages
+├── mobile/                 ← Expo React Native app (Expo Router, TanStack Query)
+├── packages/
+│   └── shared/             ← @quiddo/shared: TypeScript types, Zod schemas, constants
+├── database/migrations/    ← All database migrations
+└── tests/                  ← Pest PHP tests + Playwright E2E tests
+```
+
+## Tech Stack
+
+- **Backend:** Laravel 13, PHP 8.4+ on Laravel Cloud (ap-southeast-2 Sydney)
+- **Web frontend:** Inertia.js v3 + React 19 + TypeScript, Vite 7 + Tailwind CSS
+- **Mobile frontend:** Expo SDK 55, React Native 0.83, Expo Router, TanStack Query, MMKV
+- **Auth:** Laravel Sanctum — session auth for Inertia, token auth for mobile API
+- **Billing:** Laravel Cashier (Stripe)
+- **Email:** Bento
+- **Push notifications:** Direct FCM HTTP v1 API + APNs from Laravel. NO Firebase SDK in mobile app.
+- **Testing:** Pest 4 (SQLite in-memory), Playwright E2E
 
 ## Commands
 
-All commands run via Laravel Sail. Add the alias for convenience:
+All Laravel commands run via Sail:
 ```bash
 alias sail='./vendor/bin/sail'
+sail up -d                                    # Start containers
+sail artisan migrate                          # Run migrations
+sail artisan test --compact                   # Run Pest tests
+sail exec laravel.test ./vendor/bin/phpstan analyse  # PHPStan (level 5)
+npm run dev                                   # Vite dev server (run locally)
+npm run build                                 # TypeScript check + Vite build
+npm run test:e2e                              # Playwright E2E tests
+cd mobile && npx expo start                   # Start Expo dev server
 ```
 
-### Starting / stopping
-```bash
-sail up -d       # Start containers in background (app + postgres)
-sail down        # Stop containers
-sail down -v     # Stop and wipe volumes (including DB data)
-```
+Playwright tests live in `tests/e2e/`. Each parallel worker gets its own database (`pocket_money_test_{N}`). Tests import from `tests/e2e/fixtures.ts`, not `@playwright/test` directly.
 
-### First-time setup
-```bash
-sail up -d
-sail artisan migrate
-npm install && npm run dev   # Run Vite locally (outside container)
-```
+## Data Model
 
-### Development
-```bash
-sail artisan serve          # Not needed — Sail's app container serves on port 80
-npm run dev                 # Run Vite dev server locally for HMR
-sail artisan queue:work     # Run queue worker inside container
-```
-
-### Testing
-```bash
-sail artisan test                         # Run all PHPUnit tests (SQLite in-memory)
-sail artisan test --testsuite=Feature     # Feature tests only
-sail artisan test --testsuite=Unit        # Unit tests only
-sail artisan test tests/Feature/Auth/AuthenticationTest.php  # Single file
-
-npm run test:e2e          # Run Playwright E2E tests (resets DB + seeds first)
-npm run test:e2e:ui       # Playwright interactive UI mode
-npm run test:e2e:headed   # Run with browser visible
-```
-
-Playwright tests live in `tests/e2e/`. Each parallel worker creates its own isolated database (`pocket_money_test_{N}`) via `sail artisan test:db:prepare {N}`, which migrates and seeds it fresh. Auth state is stored per-worker in `tests/e2e/.auth/user_{N}.json` (gitignored). Tests import `test` and `expect` from `tests/e2e/fixtures.ts`, not from `@playwright/test` directly. Auth tests opt out of the shared auth state with `test.use({ storageStatePath: null })`.
-
-### Database
-```bash
-sail artisan migrate              # Run migrations
-sail artisan migrate:fresh --seed # Fresh database with seed data
-sail artisan db:seed              # Seed only
-sail psql                         # Connect to Postgres via psql
-```
-
-### Static analysis
-```bash
-sail exec laravel.test ./vendor/bin/phpstan analyse   # Run PHPStan (level 5 via phpstan.neon)
-```
-
-### Build
-```bash
-npm run build    # TypeScript check + Vite build
-```
-
-### Artisan / Composer inside container
-```bash
-sail artisan <command>
-sail composer <command>
-```
-
-## Architecture
-
-### Stack
-- **Backend:** Laravel 13, PHP 8.4+
-- **Frontend:** Inertia.js 2.0 + React 18 + TypeScript
-- **Build:** Vite 7 + Tailwind CSS 3
-- **Auth:** Laravel Breeze (session-based, email verification required)
-- **Billing:** Laravel Cashier (Stripe)
-- **Testing:** PHPUnit 12 (SQLite in-memory)
-
-### Request Flow
-All routes use Inertia — controllers return `Inertia::render('PageName', [...props])` and React page components in `resources/js/Pages/` receive those props directly as typed TypeScript props.
-
-### Authorization Model
-Two user tiers enforced at the middleware level:
-- **Parent:** Has a `FamilyUser` record. Accesses parent-only routes protected by the `require.parent` middleware (`RequireParent`).
-- **Child:** Linked via `SpenderUser`. Sees a child dashboard with their spenders' accounts and pending chores.
-
-`User::isParent()` checks for the existence of `familyUsers`. The `HandleInertiaRequests` middleware shares `isParent` to all frontend pages.
-
-Email verification is required for dashboard access (`verified` middleware).
-
-### Key Models & Relationships
 ```
 User ─── FamilyUser ─── Family ─── Spender ─── Account ─── Transaction
                                           └─── SavingsGoal   └─── RecurringTransaction
-                                          └─── ChoreCompletion ── Chore (BelongsToMany via chore_spender)
+                                          └─── ChoreCompletion ── Chore (M2M via chore_spender)
+                                          └─── ChoreReward ────── Chore (M2M via chore_chore_reward)
+                                          └─── PocketMoneySchedule
          SpenderUser ──────────────────────┘
+         Family ─── Invitation / ChildInvitation / BillingTransferInvitation
 ```
 
-All models use UUID primary keys (`HasUuids`, `$incrementing = false`).
+All domain models use UUID primary keys. Currency amounts are `decimal:2`. Enums: `TxType`, `ChoreRewardType`, `ChoreFrequency`, `CompletionStatus`, `FamilyRole`, `Frequency`.
 
-Currency fields (`balance`, `amount`, `target_amount`) are cast as `decimal:2`.
+## Authorization Model
 
-Enums used for: `TxType` (Credit/Debit), `ChoreRewardType`, `ChoreFrequency`, `CompletionStatus`, `FamilyRole`.
+- **Parent:** Has a `FamilyUser` record. Parent-only routes protected by `require.parent` middleware.
+- **Child:** Linked via `SpenderUser`. Sees child dashboard with their spenders' accounts and chores.
+- `User::isParent()` checks for `familyUsers`. Shared to frontend via `HandleInertiaRequests`.
+- Subscription required for write operations (`subscribed.family` middleware). Read-only when frozen.
+- 14-day trial, one per user across all families.
 
-### Routing
-Routes are in `routes/web.php` and `routes/auth.php`. Parent-only resource routes are grouped under the `require.parent` middleware. A catch-all show route for spenders/accounts is placed *after* resource routes to avoid conflicts.
+## API Conventions
 
-Scheduled commands live in `routes/console.php` — recurring transactions run hourly via `recurring:run`.
+- **Web (Inertia):** Controllers return `Inertia::render('PageName', $props)`. Session auth.
+- **Mobile API:** `routes/api.php` under `/api/v1/`. Bearer token auth via Sanctum.
+  - Single resource: `{ "data": { ... } }`
+  - Collection: `{ "data": [...], "meta": { current_page, last_page, per_page, total } }`
+  - Error: `{ "message": "...", "errors": { ... } }`
+- API Resources in `app/Http/Resources/` define JSON shapes. Types in `packages/shared/src/types/` must match exactly.
 
-### Frontend Structure
-- `resources/js/Pages/` — Route-level React components (one per Inertia page)
-- `resources/js/Components/` — Shared UI components
-- `resources/js/Layouts/` — Page layout wrappers
-- `resources/js/types/` — TypeScript type definitions for Inertia props
-- `resources/js/lib/` — Utility helpers
+## Design System — Eucalyptus Palette
 
-Path alias `@/` resolves to `resources/js/`.
+| Role | Token | Hex | Rule |
+|------|-------|-----|------|
+| Primary brand / CTAs | eucalyptus-400 | #4A7C59 | |
+| Page background | bark-100 | #F5F0E8 | |
+| Primary headings | bark-700 | #3A3028 | |
+| Secondary text | bark-600 | #8C7A60 | |
+| Earn / approve | gumleaf-400 | #2A9E5C | ONLY for earn and approve states |
+| Spend / decline | redearth-400 | #C8483C | ONLY for spend and decline states |
+| Goals / balances / badges | wattle-400 | #E8A030 | |
+| Kid view dark bg | nightsky-900 | #081828 | |
 
-### Image Uploads
-Browser uploads directly to S3 via presigned URLs. `ImageUploadController::sign()` generates the presigned URL; the client uploads, then saves the `image_key` reference to the backend.
+- **Fonts:** Fraunces (font-display) for headings, display numbers, logo. DM Sans (font-body) for all UI text.
+- **Border radius:** rounded-pill (99px), rounded-card (12px), rounded-input (8px)
 
-Temporary signed URLs (60-minute expiry) are generated via `Storage::temporaryUrl()` on models with `image_key`.
+## Critical Rules
 
-### Test Environment
-Tests use SQLite `:memory:`, array drivers for cache/mail/queue/session, and `RefreshDatabase`. Factories exist for all models.
+1. **Never duplicate types.** API response shapes live in `packages/shared/src/types/`. Both web and mobile import from `@quiddo/shared`.
+2. **Never duplicate business logic.** Calculations and rules live in Laravel (models, services, controllers). TypeScript never reimplements them.
+3. **Never break existing Inertia functionality.** Every existing web page, route, and controller must work after changes.
+4. **Earn is always gumleaf (#2A9E5C). Spend is always redearth (#C8483C).** Semantic signals — never repurposed.
+5. **No Firebase SDK in the mobile app.** Push notifications via direct FCM/APNs HTTP APIs from Laravel.
+6. **Encrypt sensitive fields.** Never store tokens or secrets in plain text.
+7. **Zod schemas must mirror Laravel FormRequest rules.** Keep `packages/shared/src/validation/` in sync with `app/Http/Requests/`.
 
-# Workflow
-- Be sure to typecheck when you're done making a series of code changes
-- Prefer running single tests, and not the whole test suite, for performance
-- Write Pest and Playwright tests for all code changes, and ensure they pass
-- Run PHPStan after every feature is implemented and ensure it passes
+## Cross-Cutting Changes
+
+When adding or modifying a feature, these files may need updating:
+1. **Laravel:** Migration, Model, Controller (Inertia + API), FormRequest, API Resource, Routes
+2. **Shared:** `packages/shared/src/types/` (response type), `packages/shared/src/validation/` (form schema)
+3. **Web:** `resources/js/Pages/` (Inertia page component)
+4. **Mobile:** `mobile/app/` (screen), `mobile/lib/api/` (query hook)
+5. **Tests:** Pest feature test, Playwright E2E test
+
+## Workflow
+
+- Typecheck after code changes
+- Prefer running single tests, not the whole suite
+- Write Pest and Playwright tests for all code changes
+- Run PHPStan after every PHP change
+- Run `sail bin pint --dirty --format agent` after PHP changes
 
 ===
 

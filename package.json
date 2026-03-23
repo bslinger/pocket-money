@@ -1,7 +1,9 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
+    "name": "quiddo-monorepo",
     "private": true,
     "type": "module",
+    "workspaces": ["mobile", "packages/*"],
     "scripts": {
         "build": "tsc && vite build",
         "build:ssr": "tsc && vite build && vite build --ssr",

@@ -151,6 +151,17 @@ Organised by strategic area, with specific tasks nested under each.
 
 # FOR LATER. Don't tackle anything below here without explicit instructions.
 
+## React Native Rebuild TODO
+
+- [x] **Font files** — Fraunces and DM Sans need to be added to `mobile/assets/fonts/` and loaded in root layout
+- [ ] **Tab icons** — Tab bar icons need to be configured (Lucide or SF Symbols)
+- [ ] **Push notifications** — `device_tokens` migration and model needed when implementing FCM/APNs delivery from Laravel
+- [ ] **`match_percentage`** — Savings goal parent matching exists in schema but has no UI or logic yet
+- [ ] **Capacitor removal** — Root still has Capacitor deps (`@capacitor/core`, `@capacitor/cli`); remove if mobile replaces it
+- [ ] **Start Sail** — API routes can't be verified until `sail up -d` is running
+- [ ] **Environment variable** — `EXPO_PUBLIC_API_URL` needs to be set for the mobile app to connect to the Laravel API
+- [ ] **Sanctum config** — May need `config/sanctum.php` published if token auth doesn't work out of the box
+
 ---
 
 ## 🏆 Engagement & Rewards
