@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { LayoutDashboard, Users, CheckSquare, Target, Coins } from 'lucide-react-native';
 import { colors } from '@/lib/colors';
 
 export default function TabLayout() {
@@ -20,7 +21,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          // TODO: Add icon
+          tabBarIcon: ({ color, size }) => <LayoutDashboard size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -28,7 +29,7 @@ export default function TabLayout() {
         options={{
           title: 'Kids',
           headerShown: false,
-          // TODO: Add icon
+          tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -36,7 +37,7 @@ export default function TabLayout() {
         options={{
           title: 'Chores',
           headerShown: false,
-          // TODO: Add icon
+          tabBarIcon: ({ color, size }) => <CheckSquare size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -44,7 +45,7 @@ export default function TabLayout() {
         options={{
           title: 'Goals',
           headerShown: false,
-          // TODO: Add icon
+          tabBarIcon: ({ color, size }) => <Target size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -52,7 +53,7 @@ export default function TabLayout() {
         options={{
           title: 'Pocket Money',
           headerShown: false,
-          // TODO: Add icon
+          tabBarIcon: ({ color, size }) => <Coins size={size} color={color} />,
         }}
       />
     </Tabs>
