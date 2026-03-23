@@ -8,8 +8,15 @@ import { Label } from '@/Components/ui/label';
 import { guessNameFromEmoji } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon, ArchiveRestore } from 'lucide-react';
+import { Clock, PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon, ArchiveRestore, X } from 'lucide-react';
 import EmojiPickerField from '@/Components/EmojiPickerField';
+
+interface PendingInvitation {
+    id: string;
+    email: string;
+    role: string;
+    expires_at: string;
+}
 
 interface Props {
     family: Family & {
@@ -17,6 +24,8 @@ interface Props {
         spenders: (Spender & { accounts: { id: string }[] })[];
     };
     authUserId: string;
+    pendingInvitations: PendingInvitation[];
+    isAdmin: boolean;
 }
 
 const CURRENCY_PRESETS = [
@@ -26,13 +35,13 @@ const CURRENCY_PRESETS = [
     { label: 'Points',   symbol: '🏆', name: 'Point' },
 ];
 
-export default function FamilyShow({ family, authUserId }: Props) {
+export default function FamilyShow({ family, authUserId, pendingInvitations, isAdmin }: Props) {
     return (
         <AuthenticatedLayout header={<h1 className="text-xl font-semibold">{family.name}</h1>}>
             <Head title={`${family.name} — Settings`} />
             <div className="space-y-6">
                 <FamilyDetailsSection family={family} />
-                <ParentsSection family={family} authUserId={authUserId} />
+                <ParentsSection family={family} authUserId={authUserId} pendingInvitations={pendingInvitations} isAdmin={isAdmin} />
                 <SpendersSection family={family} />
             </div>
         </AuthenticatedLayout>
@@ -171,9 +180,11 @@ function FamilyDetailsSection({ family }: { family: Family }) {
 
 // ── Parents / carers ────────────────────────────────────────────────────────
 
-function ParentsSection({ family, authUserId }: {
+function ParentsSection({ family, authUserId, pendingInvitations, isAdmin }: {
     family: Props['family'];
     authUserId: string;
+    pendingInvitations: PendingInvitation[];
+    isAdmin: boolean;
 }) {
     const inviteForm = useForm({ email: '' });
 
@@ -192,6 +203,11 @@ function ParentsSection({ family, authUserId }: {
         router.patch(route('families.members.role', { family: family.id, user: familyUser.user_id }), { role: newRole });
     }
 
+    function revokeInvitation(invitation: PendingInvitation) {
+        if (!confirm(`Revoke invitation for ${invitation.email}?`)) return;
+        router.delete(route('families.invitations.destroy', { family: family.id, invitation: invitation.id }));
+    }
+
     return (
         <Card id="parents">
             <CardHeader className="pb-3">
@@ -199,6 +215,7 @@ function ParentsSection({ family, authUserId }: {
             </CardHeader>
             <CardContent className="space-y-4">
                 <ul className="divide-y">
+                    {/* Active members */}
                     {family.family_users.map(fu => (
                         <li key={fu.id} className="flex items-center gap-3 py-3">
                             <Avatar className="h-9 w-9 shrink-0">
@@ -217,18 +234,28 @@ function ParentsSection({ family, authUserId }: {
                                 <p className="text-xs text-muted-foreground truncate">{fu.user.email}</p>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleRole(fu)}
-                                    title={fu.role === 'admin' ? 'Admin — click to make Member' : 'Member — click to make Admin'}
-                                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors hover:bg-muted"
-                                >
-                                    {fu.role === 'admin'
-                                        ? <><ShieldCheck className="h-3.5 w-3.5 text-primary" /> Admin</>
-                                        : <><UserIcon className="h-3.5 w-3.5 text-muted-foreground" /> Member</>
-                                    }
-                                </button>
-                                {fu.user.id !== authUserId && (
+                                {isAdmin && (
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleRole(fu)}
+                                        title={fu.role === 'admin' ? 'Admin — click to make Member' : 'Member — click to make Admin'}
+                                        className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors hover:bg-muted"
+                                    >
+                                        {fu.role === 'admin'
+                                            ? <><ShieldCheck className="h-3.5 w-3.5 text-primary" /> Admin</>
+                                            : <><UserIcon className="h-3.5 w-3.5 text-muted-foreground" /> Member</>
+                                        }
+                                    </button>
+                                )}
+                                {!isAdmin && (
+                                    <Badge variant="outline" className="text-xs gap-1">
+                                        {fu.role === 'admin'
+                                            ? <><ShieldCheck className="h-3 w-3" /> Admin</>
+                                            : <><UserIcon className="h-3 w-3" /> Member</>
+                                        }
+                                    </Badge>
+                                )}
+                                {isAdmin && fu.user.id !== authUserId && (
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -241,23 +268,60 @@ function ParentsSection({ family, authUserId }: {
                             </div>
                         </li>
                     ))}
+
+                    {/* Pending invitations */}
+                    {pendingInvitations.map(inv => (
+                        <li key={inv.id} className="flex items-center gap-3 py-3 opacity-60">
+                            <Avatar className="h-9 w-9 shrink-0">
+                                <AvatarFallback className="text-sm font-medium bg-bark-100 text-bark-400">
+                                    <Clock className="h-4 w-4" />
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{inv.email}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Invited — expires {new Date(inv.expires_at).toLocaleDateString()}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Badge variant="outline" className="text-xs gap-1 text-wattle-600 border-wattle-300">
+                                    <Clock className="h-3 w-3" /> Pending
+                                </Badge>
+                                {isAdmin && (
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                        onClick={() => revokeInvitation(inv)}
+                                        title="Revoke invitation"
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </Button>
+                                )}
+                            </div>
+                        </li>
+                    ))}
                 </ul>
 
-                {/* Invite form */}
-                <form onSubmit={submitInvite} className="flex gap-2 pt-2 border-t">
-                    <Input
-                        type="email"
-                        value={inviteForm.data.email}
-                        onChange={e => inviteForm.setData('email', e.target.value)}
-                        placeholder="Invite a parent by email…"
-                        className="flex-1"
-                    />
-                    <Button type="submit" size="sm" disabled={inviteForm.processing}>
-                        <UserPlus className="h-4 w-4 mr-1.5" />
-                        Invite
-                    </Button>
-                </form>
-                {inviteForm.errors.email && <p className="text-xs text-destructive">{inviteForm.errors.email}</p>}
+                {/* Invite form — admin only */}
+                {isAdmin && (
+                    <>
+                        <form onSubmit={submitInvite} className="flex gap-2 pt-2 border-t">
+                            <Input
+                                type="email"
+                                value={inviteForm.data.email}
+                                onChange={e => inviteForm.setData('email', e.target.value)}
+                                placeholder="Invite a parent by email…"
+                                className="flex-1"
+                            />
+                            <Button type="submit" size="sm" disabled={inviteForm.processing}>
+                                <UserPlus className="h-4 w-4 mr-1.5" />
+                                Invite
+                            </Button>
+                        </form>
+                        {inviteForm.errors.email && <p className="text-xs text-destructive">{inviteForm.errors.email}</p>}
+                    </>
+                )}
             </CardContent>
         </Card>
     );

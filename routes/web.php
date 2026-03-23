@@ -66,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/families/{family}/invite', [FamilyController::class, 'invite'])->name('families.invite');
     Route::delete('/families/{family}/members/{user}', [FamilyController::class, 'removeMember'])->name('families.members.destroy');
     Route::patch('/families/{family}/members/{user}/role', [FamilyController::class, 'updateMemberRole'])->name('families.members.role');
+    Route::delete('/families/{family}/invitations/{invitation}', [FamilyController::class, 'revokeInvitation'])->name('families.invitations.destroy');
 
     // Kid-facing chore completion (any authenticated + verified user)
     Route::post('/chores/{chore}/complete', [ChoreCompletionController::class, 'store'])->name('chores.complete');

@@ -71,9 +71,19 @@ class FamilyController extends Controller
             $family->spenders()->withTrashed()->with('accounts')->get()
         );
 
+        $pendingInvitations = Invitation::where('family_id', $family->id)
+            ->where('expires_at', '>', now())
+            ->select(['id', 'email', 'role', 'expires_at'])
+            ->get();
+
         return Inertia::render('Families/Show', [
             'family' => $family,
             'authUserId' => auth()->id(),
+            'pendingInvitations' => $pendingInvitations,
+            'isAdmin' => FamilyUser::where('family_id', $family->id)
+                ->where('user_id', auth()->id())
+                ->where('role', FamilyRole::Admin)
+                ->exists(),
         ]);
     }
 
@@ -173,5 +183,14 @@ class FamilyController extends Controller
             ->update(['role' => $request->role]);
 
         return back();
+    }
+
+    public function revokeInvitation(Family $family, Invitation $invitation): RedirectResponse
+    {
+        abort_unless($invitation->family_id === $family->id, 404);
+
+        $invitation->delete();
+
+        return back()->with('success', 'Invitation revoked.');
     }
 }
