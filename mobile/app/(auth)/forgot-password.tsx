@@ -19,7 +19,8 @@ export default function ForgotPasswordScreen() {
       await api.post('/forgot-password', { email });
       setStatus('Password reset link sent to your email.');
     } catch (e: any) {
-      setError(e.response?.data?.message ?? 'Failed to send reset link');
+      const msg = e.response?.data?.message ?? e.response?.data?.errors?.email?.[0] ?? 'Failed to send reset link';
+      setError(msg);
     } finally {
       setLoading(false);
     }
