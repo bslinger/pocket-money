@@ -19,6 +19,18 @@ use Inertia\Inertia;
 
 class FamilyController extends Controller
 {
+    private function assertAdmin(Family $family): void
+    {
+        abort_unless(
+            FamilyUser::where('family_id', $family->id)
+                ->where('user_id', auth()->id())
+                ->where('role', FamilyRole::Admin)
+                ->exists(),
+            403,
+            'Only family admins can perform this action.'
+        );
+    }
+
     public function index()
     {
         return Inertia::render('Families/Index', [
@@ -110,6 +122,7 @@ class FamilyController extends Controller
 
     public function invite(Request $request, Family $family)
     {
+        $this->assertAdmin($family);
         $request->validate(['email' => 'required|email']);
 
         $email = strtolower(trim($request->email));
@@ -156,6 +169,8 @@ class FamilyController extends Controller
 
     public function removeMember(Family $family, User $user)
     {
+        $this->assertAdmin($family);
+
         // Prevent removing the last admin
         $isLastAdmin = $family->familyUsers()
             ->where('role', FamilyRole::Admin)
@@ -176,6 +191,7 @@ class FamilyController extends Controller
 
     public function updateMemberRole(Request $request, Family $family, User $user)
     {
+        $this->assertAdmin($family);
         $request->validate(['role' => 'required|in:admin,member']);
 
         $family->familyUsers()
@@ -187,6 +203,7 @@ class FamilyController extends Controller
 
     public function revokeInvitation(Family $family, Invitation $invitation): RedirectResponse
     {
+        $this->assertAdmin($family);
         abort_unless($invitation->family_id === $family->id, 404);
 
         $invitation->delete();
