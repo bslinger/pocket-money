@@ -26,8 +26,8 @@ class ImageUploadController extends Controller
     }
 
     /**
-     * Generate a public URL for the given storage key.
-     * Uses temporaryUrl on S3 (signed, 60-min expiry) or url() on local disk.
+     * Generate a signed temporary URL for the given storage key.
+     * Works for both local (serve => true requires signature) and S3 disks.
      */
     public static function url(?string $key): ?string
     {
@@ -35,14 +35,6 @@ class ImageUploadController extends Controller
             return null;
         }
 
-        $disk = Storage::disk('images');
-
-        $driver = $disk->getConfig()['driver'] ?? 'local';
-
-        if ($driver === 'local') {
-            return $disk->url($key);
-        }
-
-        return $disk->temporaryUrl($key, now()->addMinutes(60));
+        return Storage::disk('images')->temporaryUrl($key, now()->addMinutes(60));
     }
 }
