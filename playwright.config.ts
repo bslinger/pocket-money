@@ -8,7 +8,7 @@ export default defineConfig({
     workers: process.env.CI ? 2 : 1,
     outputDir: '/tmp/pw-test-results',
     reporter: process.env.CI
-        ? [['dot'], ['junit', { outputFile: 'test-results/e2e-junit.xml' }]]
+        ? [['list'], ['junit', { outputFile: 'test-results/e2e-junit.xml' }]]
         : 'list',
     timeout: 30000,
     use: {
