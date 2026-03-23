@@ -32,8 +32,7 @@ async function goToOnboardingCustomCurrencyStep(page: Page) {
     await page.fill('#password', 'password123');
     await page.fill('#password_confirmation', 'password123');
     await page.click('button[type=submit]');
-    await page.waitForURL(/verify-email/);
-    await page.goto('/dev/verify-email');
+    await page.waitForURL(/onboarding|dashboard/);
     await page.fill('#family-name', 'The Testers');
     await page.click('button:has-text("Continue")');
     await page.click('button:has-text("⭐ Custom currency")');

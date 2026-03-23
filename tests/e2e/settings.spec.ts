@@ -88,12 +88,12 @@ test.describe('Pocket Money Release', () => {
 
     test('can pay pocket money to a spender', async ({ page }) => {
         await page.goto('/pocket-money/release');
-        // Find the first spender release card's amount input and pay button
+        // Find a release form's amount input and submit button
         const amountInput = page.locator('input[type=number]').first();
-        if (await amountInput.count() > 0) {
+        if (await amountInput.isVisible({ timeout: 3000 }).catch(() => false)) {
             await amountInput.fill('5.00');
-            await page.locator('button:has-text("Pay Now")').first().click();
-            await expect(page.getByText(/paid/i).first()).toBeVisible();
+            await page.locator('button:has-text("Release")').first().click();
+            await expect(page.getByText(/Paid/i).first()).toBeVisible();
         }
     });
 });

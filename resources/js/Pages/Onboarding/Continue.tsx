@@ -401,6 +401,7 @@ export default function OnboardingContinue({ family }: Props) {
                                                                         )}
                                                                     >
                                                                         <Avatar className="h-4 w-4">
+                                                                            <AvatarImage src={s.avatar_url ?? undefined} />
                                                                             <AvatarFallback style={{ backgroundColor: s.color ?? '#6366f1' }} className="text-white text-[8px]">
                                                                                 {s.name[0]}
                                                                             </AvatarFallback>
@@ -478,6 +479,7 @@ export default function OnboardingContinue({ family }: Props) {
                                             {family.spenders.map(spender => (
                                                 <div key={spender.id} className="flex items-center gap-3">
                                                     <Avatar className="h-8 w-8 shrink-0">
+                                                        <AvatarImage src={spender.avatar_url ?? undefined} />
                                                         <AvatarFallback style={{ backgroundColor: spender.color ?? '#6366f1' }} className="text-white text-xs font-bold">
                                                             {spender.name[0].toUpperCase()}
                                                         </AvatarFallback>
