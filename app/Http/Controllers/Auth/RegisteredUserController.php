@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\BillingTransferController;
 use App\Http\Controllers\ChildInvitationController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\InvitationController;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -48,7 +50,9 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        InvitationController::claimPending($request);
         ChildInvitationController::claimPending($request);
+        BillingTransferController::claimPending($request);
 
         return redirect(route('dashboard', absolute: false));
     }

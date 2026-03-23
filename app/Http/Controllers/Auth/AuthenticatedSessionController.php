@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\BillingTransferController;
 use App\Http\Controllers\ChildInvitationController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\InvitationController;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        InvitationController::claimPending($request);
         ChildInvitationController::claimPending($request);
         BillingTransferController::claimPending($request);
 
