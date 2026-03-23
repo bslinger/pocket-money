@@ -31,7 +31,7 @@ jobs:
         run: php artisan key:generate
 
       - name: Run Pest tests with coverage
-        run: php artisan test --log-junit storage/coverage/pest/junit.xml --coverage-html storage/coverage/pest/html --coverage-clover storage/coverage/pest/clover.xml
+        run: php artisan test --stop-on-failure --log-junit storage/coverage/pest/junit.xml --coverage-html storage/coverage/pest/html --coverage-clover storage/coverage/pest/clover.xml
         env:
           XDEBUG_MODE: coverage
 
