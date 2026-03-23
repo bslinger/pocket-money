@@ -8,8 +8,8 @@ export default defineConfig({
     workers: process.env.CI ? 2 : 1,
     outputDir: '/tmp/pw-test-results',
     reporter: process.env.CI
-        ? [['html'], ['junit', { outputFile: 'test-results/e2e-junit.xml' }]]
-        : 'html',
+        ? [['dot'], ['junit', { outputFile: 'test-results/e2e-junit.xml' }]]
+        : 'list',
     timeout: 30000,
     use: {
         baseURL: process.env.APP_URL ?? 'http://localhost',

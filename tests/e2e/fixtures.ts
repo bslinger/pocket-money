@@ -30,10 +30,13 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         const artisan = process.env.LARAVEL_SAIL
             ? 'php artisan'
             : './vendor/bin/sail artisan';
-        execSync(`${artisan} test:db:prepare ${workerIndex}`, {
-            stdio: 'inherit',
+        const output = execSync(`${artisan} test:db:prepare ${workerIndex}`, {
             cwd: process.cwd(),
+            encoding: 'utf-8',
         });
+        // Only print the final "ready" line, suppress migration noise
+        const readyLine = output.split('\n').find(l => l.includes('ready'));
+        if (readyLine) console.log(readyLine.trim());
         await use();
     }, { scope: 'worker' }],
 
