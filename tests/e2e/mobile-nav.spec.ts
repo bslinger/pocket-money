@@ -9,6 +9,7 @@ test.describe('Mobile bottom nav', () => {
     test('bottom nav is visible on mobile', async ({ page }) => {
         await page.setViewportSize(MOBILE);
         await page.goto('/dashboard');
+        await page.waitForLoadState('networkidle');
         const nav = page.locator('nav.fixed.bottom-0');
         await expect(nav).toBeVisible({ timeout: 10000 });
     });

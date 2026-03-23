@@ -8,6 +8,7 @@ test.describe('Chores', () => {
 
     test('can create an earns chore', async ({ page }) => {
         await page.goto('/chores/create');
+        await page.waitForLoadState('networkidle');
         await page.fill('#name', 'Test Earns Chore');
         // "Earns" is the default — click it to be explicit
         await page.locator('button:has-text("Earns")').click();

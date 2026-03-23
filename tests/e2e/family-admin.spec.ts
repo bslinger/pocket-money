@@ -35,7 +35,7 @@ test.describe('Family admin controls', () => {
 
         // Inertia redirects back — wait for the success message or the pending email to appear
         await expect(page.getByText('pendingtest@example.com')).toBeVisible({ timeout: 10000 });
-        await expect(page.getByText('Pending', { exact: true })).toBeVisible();
+        await expect(page.getByText('Pending', { exact: true }).first()).toBeVisible();
     });
 });
 
