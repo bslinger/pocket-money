@@ -1,7 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Account, Transaction } from '@/types/models';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { formatAmount, accountCurrencySymbol } from '@/lib/utils';
+import { ChevronRight } from 'lucide-react';
 
 interface Props {
   account: Account & { transactions: Transaction[] };
@@ -9,10 +11,27 @@ interface Props {
 
 export default function AccountShow({ account }: Props) {
   const symbol = accountCurrencySymbol(account, account.spender?.family);
+  const spender = account.spender;
+
   return (
     <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-bark-700">{account.name}</h2>}>
       <Head title={account.name} />
       <div className="py-8 max-w-3xl mx-auto px-4">
+        {spender && (
+          <Link
+            href={route('spenders.show', spender.id)}
+            className="flex items-center gap-3 mb-4 px-1 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+          >
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={spender.avatar_url ?? undefined} />
+              <AvatarFallback style={{ backgroundColor: spender.color ?? '#4A7C59' }} className="text-white text-xs">
+                {spender.name[0].toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="group-hover:underline">{spender.name}</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
         <div className="bg-white border border-bark-200 rounded-card p-6 mb-6">
           <p className="text-xs font-body font-semibold text-bark-400 uppercase tracking-widest">Balance</p>
           <p className="text-4xl font-semibold text-bark-700 mt-1">{formatAmount(account.balance, symbol)}</p>
