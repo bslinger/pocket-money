@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
+import { useFamilyChannel, useSpenderChannel } from '@/hooks/useBroadcast';
 
 interface Props {
   isParent: boolean;
@@ -27,6 +28,10 @@ interface Props {
 export default function Dashboard({ isParent, families, spenders, pendingCompletions, recentActivity, recentApprovedCompletions, totalBalance, paidThisMonth }: Props) {
   const { auth } = usePage().props as any;
   const isActualParent: boolean = auth.isParent ?? false;
+  const activeFamilyId = auth.activeFamily?.id;
+
+  // Real-time updates via Reverb (parent dashboard)
+  useFamilyChannel(isParent ? activeFamilyId : undefined);
 
   return (
     <>
@@ -460,6 +465,9 @@ function CreateFamilyWizard() {
 
 function ChildDashboard({ spenders, isParentPreview = false }: { spenders: Spender[]; isParentPreview?: boolean }) {
   const kidName = spenders[0]?.name;
+
+  // Real-time updates for the first spender (child typically has one)
+  useSpenderChannel(spenders[0]?.id);
 
   return (
     <div className="min-h-screen bg-nightsky-700 text-white">
