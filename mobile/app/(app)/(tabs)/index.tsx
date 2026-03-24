@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -80,15 +80,22 @@ function ChildChoreItem({ chore, completions, spenderId }: { chore: any; complet
   );
 }
 
-function ChildDeviceDashboard({ data }: { data: any }) {
+function ChildDeviceDashboard({ data, onRefresh }: { data: any; onRefresh: () => Promise<any> }) {
   const { logout } = useAuth();
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
   const spender = data.spender;
   const spenderColor = spender?.color ?? colors.wattle[400];
   const balance = parseFloat(data.balance ?? '0');
   const goals = data.goals ?? [];
   const chores = data.chores ?? [];
   const completions = data.completions_this_week ?? [];
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await onRefresh();
+    setRefreshing(false);
+  };
 
   return (
     <View style={[childStyles.container, { paddingTop: insets.top }]}>
@@ -100,7 +107,18 @@ function ChildDeviceDashboard({ data }: { data: any }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={childStyles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={childStyles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.wattle[400]}
+            colors={[colors.wattle[400]]}
+          />
+        }
+      >
         {/* Avatar + Name + Balance */}
         <View style={childStyles.profileSection}>
           <View style={[childStyles.avatar, { backgroundColor: spenderColor }]}>
@@ -202,7 +220,7 @@ export default function DashboardScreen() {
   const { user, isChildDevice, childSpender } = useAuth();
   const router = useRouter();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['dashboard', isChildDevice ? 'child' : 'parent'],
     queryFn: async () => {
       if (isChildDevice) {
@@ -242,7 +260,7 @@ export default function DashboardScreen() {
 
   // Child device view (linked via QR code, no user account)
   if (isChildDevice) {
-    return <ChildDeviceDashboard data={data} />;
+    return <ChildDeviceDashboard data={data} onRefresh={refetch} />;
   }
 
   if (data.is_parent) {
