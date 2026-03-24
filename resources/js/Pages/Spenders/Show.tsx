@@ -10,8 +10,9 @@ import { Badge } from '@/Components/ui/badge';
 import {
     Eye, Pencil, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2,
     Smartphone, Plus, Minus, Check, Clock, ArrowUpRight, ArrowDownLeft,
-    QrCode, Trash2, Copy,
+    QrCode, Trash2, Copy, Wallet, Target, CheckSquare, Receipt, Settings,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { SpenderDevice } from '@quiddo/shared';
 import { QRCodeSVG } from 'qrcode.react';
 import Modal from '@/Components/Modal';
@@ -413,12 +414,12 @@ export default function SpenderShow({
     const [quickTxModal, setQuickTxModal] = useState<{ account: Account; type: 'credit' | 'debit' } | null>(null);
     const [activeTab, setActiveTab] = useState<Tab>('accounts');
 
-    const tabs: { id: Tab; label: string; count?: number }[] = [
-        { id: 'accounts', label: 'Accounts', count: spender.accounts?.length },
-        { id: 'goals', label: 'Goals', count: spender.savings_goals?.filter(g => !g.is_completed).length },
-        { id: 'chores', label: 'Chores', count: spender.chores?.length },
-        { id: 'transactions', label: 'Transactions', count: transactions.length },
-        ...(isParent ? [{ id: 'manage' as Tab, label: 'Manage' }] : []),
+    const tabs: { id: Tab; label: string; icon: LucideIcon; count?: number }[] = [
+        { id: 'accounts', label: 'Accounts', icon: Wallet, count: spender.accounts?.length },
+        { id: 'goals', label: 'Goals', icon: Target, count: spender.savings_goals?.filter(g => !g.is_completed).length },
+        { id: 'chores', label: 'Chores', icon: CheckSquare, count: spender.chores?.length },
+        { id: 'transactions', label: 'Transactions', icon: Receipt, count: transactions.length },
+        ...(isParent ? [{ id: 'manage' as Tab, label: 'Manage', icon: Settings }] : []),
     ];
 
     return (
@@ -461,17 +462,21 @@ export default function SpenderShow({
 
             {/* Tab navigation */}
             <div className="flex border-b mb-6 -mt-2 overflow-x-auto">
-                {tabs.map(tab => (
+                {tabs.map(tab => {
+                    const Icon = tab.icon;
+                    return (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${
+                        className={`px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors flex items-center gap-1.5 ${
                             activeTab === tab.id
                                 ? 'border-eucalyptus-500 text-eucalyptus-600'
                                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                         }`}
+                        title={tab.label}
                     >
-                        {tab.label}
+                        <Icon className="h-4 w-4 sm:hidden" />
+                        <span className="hidden sm:inline">{tab.label}</span>
                         {tab.count !== undefined && tab.count > 0 && (
                             <span className={`text-xs rounded-full px-1.5 py-0.5 font-normal ${
                                 activeTab === tab.id ? 'bg-eucalyptus-100 text-eucalyptus-600' : 'bg-muted text-muted-foreground'
@@ -480,7 +485,8 @@ export default function SpenderShow({
                             </span>
                         )}
                     </button>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Accounts tab */}
