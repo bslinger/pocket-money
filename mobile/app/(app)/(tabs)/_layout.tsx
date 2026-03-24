@@ -3,21 +3,26 @@ import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import { useAuth } from '@/lib/auth';
 import AppHeader from '@/components/AppHeader';
 
 export default function TabLayout() {
+  const { isChildDevice } = useAuth();
+
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bark[100] }}>
-      <AppHeader />
+    <View style={{ flex: 1, backgroundColor: isChildDevice ? colors.nightsky[900] : colors.bark[100] }}>
+      {!isChildDevice && <AppHeader />}
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: colors.eucalyptus[400],
           tabBarInactiveTintColor: colors.bark[600],
           tabBarLabelStyle: { fontFamily: fonts.body, fontSize: 11 },
-          tabBarStyle: {
-            backgroundColor: colors.white,
-            borderTopColor: colors.bark[200],
-          },
+          tabBarStyle: isChildDevice
+            ? { display: 'none' }
+            : {
+                backgroundColor: colors.white,
+                borderTopColor: colors.bark[200],
+              },
           headerShown: false,
         }}
       >
