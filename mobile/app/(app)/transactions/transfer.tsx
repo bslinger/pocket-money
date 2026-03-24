@@ -35,7 +35,7 @@ export default function TransferScreen() {
   const transferMutation = useMutation({
     mutationFn: async () => {
       return api.post(`/accounts/${sourceAccountId}/transfer`, {
-        destination_account_id: destinationAccountId,
+        to_account_id: destinationAccountId,
         amount,
         description: description || null,
       });

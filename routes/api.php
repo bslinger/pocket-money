@@ -30,6 +30,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Auth
     Route::get('/auth/user', [AuthController::class, 'user']);
+    Route::put('/auth/user', [AuthController::class, 'updateProfile']);
+    Route::delete('/auth/user', [AuthController::class, 'deleteAccount']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     // Dashboard

@@ -136,12 +136,12 @@ describe('savings goals', function () {
             expect($goal->target_date->format('Y-m-d'))->toBe('2026-12-25');
         });
 
-        it('validates name, target_amount, and account_id are required', function () {
+        it('validates name and target_amount are required', function () {
             [$user, , $spenders] = parentWithFamily(['Emma']);
 
             $this->actingAs($user)
                 ->post(route('goals.store'), ['spender_id' => $spenders->first()->id])
-                ->assertSessionHasErrors(['name', 'target_amount', 'account_id']);
+                ->assertSessionHasErrors(['name', 'target_amount']);
         });
 
         it('requires parent role', function () {

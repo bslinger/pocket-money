@@ -31,8 +31,8 @@ export default function PocketMoneyScreen() {
   });
 
   const payMutation = useMutation({
-    mutationFn: async (spenderId: string) => {
-      await api.post('/pocket-money/release', { spender_id: spenderId });
+    mutationFn: async ({ spenderId, amount }: { spenderId: string; amount: string }) => {
+      await api.post('/pocket-money/release', { spender_id: spenderId, amount });
     },
     onMutate: () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -62,7 +62,7 @@ export default function PocketMoneyScreen() {
           text: 'Pay All',
           onPress: () => {
             for (const s of dueSpenders) {
-              payMutation.mutate(s.spender.id);
+              payMutation.mutate({ spenderId: s.spender.id, amount: s.amount });
             }
           },
         },
@@ -152,7 +152,7 @@ export default function PocketMoneyScreen() {
                     `Pay ${item.spender.name} $${parseFloat(item.amount).toFixed(2)}?`,
                     [
                       { text: 'Cancel', style: 'cancel' },
-                      { text: 'Pay', onPress: () => payMutation.mutate(item.spender.id) },
+                      { text: 'Pay', onPress: () => payMutation.mutate({ spenderId: item.spender.id, amount: item.amount }) },
                     ],
                   )
                 }

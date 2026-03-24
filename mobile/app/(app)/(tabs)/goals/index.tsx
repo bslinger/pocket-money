@@ -29,8 +29,8 @@ export default function GoalsListScreen() {
   });
 
   const reorderMutation = useMutation({
-    mutationFn: async (payload: { goals: { id: string; sort_order: number }[] }) => {
-      await api.post('/goals/reorder', payload);
+    mutationFn: async (goalIds: string[]) => {
+      await api.post('/goals/reorder', { goal_ids: goalIds });
     },
     onSuccess: () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -47,8 +47,7 @@ export default function GoalsListScreen() {
     const reordered = [...spenderGoals];
     [reordered[idx], reordered[newIdx]] = [reordered[newIdx], reordered[idx]];
 
-    const payload = reordered.map((g, i) => ({ id: g.id, sort_order: i }));
-    reorderMutation.mutate({ goals: payload });
+    reorderMutation.mutate(reordered.map((g) => g.id));
   };
 
   if (isLoading) {

@@ -72,6 +72,31 @@ class AuthController extends Controller
         ]);
     }
 
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => ['sometimes', 'string', 'max:255'],
+            'display_name' => ['nullable', 'string', 'max:255'],
+            'parent_title' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $request->user()->update($request->only(['name', 'display_name', 'parent_title']));
+
+        return response()->json([
+            'data' => new UserResource($request->user()->fresh()),
+        ]);
+    }
+
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json(['message' => 'Account deleted']);
+    }
+
     public function forgotPassword(Request $request): JsonResponse
     {
         $request->validate([
