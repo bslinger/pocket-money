@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -18,6 +20,183 @@ interface DashboardData {
   total_balance: string;
   paid_this_month: string;
 }
+
+function ChildChoreItem({ chore, completions, spenderId }: { chore: any; completions: any[]; spenderId: string }) {
+  const queryClient = useQueryClient();
+  const thisCompletion = completions.find((c: any) => c.chore_id === chore.id);
+  const [localStatus, setLocalStatus] = useState<string | null>(thisCompletion?.status ?? null);
+
+  const completeMutation = useMutation({
+    mutationFn: async () => {
+      await api.post(`/child/chores/${chore.id}/complete`);
+    },
+    onMutate: async () => {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setLocalStatus('pending');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'child'] });
+    },
+    onError: () => {
+      setLocalStatus(null);
+    },
+  });
+
+  const status = localStatus ?? thisCompletion?.status ?? null;
+  const isDeclined = status === 'declined';
+
+  return (
+    <View style={childStyles.choreCard}>
+      {isDeclined && (
+        <Text style={childStyles.choreDeclined}>Your parent sent this back</Text>
+      )}
+      <View style={childStyles.choreRow}>
+        <Text style={childStyles.choreEmoji}>{chore.emoji ?? '📋'}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={childStyles.choreName}>{chore.name}</Text>
+          {chore.reward_type === 'earns' && chore.amount && (
+            <Text style={childStyles.choreReward}>${parseFloat(chore.amount).toFixed(2)}</Text>
+          )}
+        </View>
+        {(status === null || isDeclined) && (
+          <TouchableOpacity
+            style={childStyles.choreButton}
+            onPress={() => completeMutation.mutate()}
+            disabled={completeMutation.isPending}
+          >
+            <Text style={childStyles.choreButtonText}>
+              {isDeclined ? 'I really did it!' : 'I did it!'}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {status === 'pending' && (
+          <Text style={childStyles.chorePending}>⏳ Waiting</Text>
+        )}
+        {status === 'approved' && (
+          <Text style={childStyles.choreApproved}>✓ Done</Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function ChildDeviceDashboard({ data }: { data: any }) {
+  const { logout } = useAuth();
+  const insets = useSafeAreaInsets();
+  const spender = data.spender;
+  const spenderColor = spender?.color ?? colors.wattle[400];
+  const balance = parseFloat(data.balance ?? '0');
+  const goals = data.goals ?? [];
+  const chores = data.chores ?? [];
+  const completions = data.completions_this_week ?? [];
+
+  return (
+    <View style={[childStyles.container, { paddingTop: insets.top }]}>
+      {/* Header */}
+      <View style={childStyles.header}>
+        <Text style={childStyles.logo}>Quiddo</Text>
+        <TouchableOpacity onPress={logout} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Text style={childStyles.logoutText}>Log out</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={childStyles.content} showsVerticalScrollIndicator={false}>
+        {/* Avatar + Name + Balance */}
+        <View style={childStyles.profileSection}>
+          <View style={[childStyles.avatar, { backgroundColor: spenderColor }]}>
+            <Text style={childStyles.avatarText}>{spender?.name?.[0]?.toUpperCase()}</Text>
+          </View>
+          <Text style={childStyles.spenderName}>{spender?.name}</Text>
+          <Text style={[childStyles.balance, { color: spenderColor }]}>
+            ${balance.toFixed(2)}
+          </Text>
+        </View>
+
+        {/* Goals */}
+        {goals.length > 0 && (
+          <View style={childStyles.section}>
+            <Text style={childStyles.sectionTitle}>My Goals</Text>
+            {goals.map((goal: any) => {
+              const current = parseFloat(goal.allocated_amount ?? '0');
+              const target = parseFloat(goal.target_amount ?? '1');
+              const pct = Math.min(100, target > 0 ? (current / target) * 100 : 0);
+              const isComplete = pct >= 100;
+
+              return (
+                <View key={goal.id} style={childStyles.goalCard}>
+                  <View style={childStyles.goalHeader}>
+                    <Text style={childStyles.goalName}>{goal.name}</Text>
+                    <Text style={childStyles.goalPct}>
+                      {isComplete ? '🎉 Done!' : `${pct.toFixed(0)}%`}
+                    </Text>
+                  </View>
+                  <View style={childStyles.goalTrack}>
+                    <View style={[
+                      childStyles.goalBar,
+                      { width: `${pct}%`, backgroundColor: isComplete ? colors.gumleaf[400] : colors.wattle[400] },
+                    ]} />
+                  </View>
+                  <Text style={childStyles.goalAmount}>
+                    ${current.toFixed(2)} of ${target.toFixed(2)} ({pct.toFixed(0)}%)
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Chores */}
+        {chores.length > 0 && (
+          <View style={childStyles.section}>
+            <Text style={childStyles.sectionTitle}>My Chores</Text>
+            {chores.map((chore: any) => (
+              <ChildChoreItem
+                key={chore.id}
+                chore={chore}
+                completions={completions}
+                spenderId={spender?.id}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+const childStyles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.nightsky[900] },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12 },
+  logo: { fontFamily: fonts.display, fontSize: 22, color: colors.white },
+  logoutText: { fontFamily: fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.5)' },
+  content: { paddingHorizontal: 20, paddingBottom: 40 },
+  profileSection: { alignItems: 'center', paddingTop: 16, marginBottom: 32 },
+  avatar: { width: 64, height: 64, borderRadius: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  avatarText: { fontFamily: fonts.body, fontSize: 24, color: colors.white },
+  spenderName: { fontFamily: fonts.body, fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 8 },
+  balance: { fontFamily: fonts.display, fontSize: 48 },
+  section: { marginBottom: 24 },
+  sectionTitle: { fontFamily: fonts.body, fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
+  // Goals
+  goalCard: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, padding: 16, marginBottom: 8 },
+  goalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  goalName: { fontFamily: fonts.body, fontSize: 14, color: colors.white },
+  goalPct: { fontFamily: fonts.body, fontSize: 13, color: 'rgba(255,255,255,0.5)' },
+  goalTrack: { height: 10, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 5, overflow: 'hidden' },
+  goalBar: { height: '100%', borderRadius: 5 },
+  goalAmount: { fontFamily: fonts.body, fontSize: 12, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 6 },
+  // Chores
+  choreCard: { backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 16, padding: 16, marginBottom: 8 },
+  choreRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  choreEmoji: { fontSize: 24 },
+  choreName: { fontFamily: fonts.body, fontSize: 14, color: colors.white },
+  choreReward: { fontFamily: fonts.body, fontSize: 12, color: colors.wattle[400], marginTop: 2 },
+  choreButton: { backgroundColor: colors.wattle[400], borderRadius: 99, paddingHorizontal: 14, paddingVertical: 8 },
+  choreButtonText: { fontFamily: fonts.body, fontSize: 13, color: colors.nightsky[900] },
+  chorePending: { fontFamily: fonts.body, fontSize: 13, color: colors.wattle[400] },
+  choreApproved: { fontFamily: fonts.body, fontSize: 13, color: colors.gumleaf[400] },
+  choreDeclined: { fontFamily: fonts.body, fontSize: 12, color: colors.redearth[400], textAlign: 'center', marginBottom: 8 },
+});
 
 export default function DashboardScreen() {
   const { user, isChildDevice, childSpender } = useAuth();
@@ -63,33 +242,7 @@ export default function DashboardScreen() {
 
   // Child device view (linked via QR code, no user account)
   if (isChildDevice) {
-    return (
-      <ScrollView style={[styles.container, { backgroundColor: colors.nightsky[900] }]} contentContainerStyle={styles.content}>
-        <Text style={styles.childName}>{data.spender?.name}</Text>
-        <Text style={styles.childBalance}>
-          ${parseFloat(data.balance ?? '0').toFixed(2)}
-        </Text>
-
-        {/* Goals */}
-        {data.goals?.map((goal: any) => (
-          <View key={goal.id} style={styles.goalCard}>
-            <Text style={styles.goalName}>{goal.name}</Text>
-            <View style={styles.goalProgress}>
-              <View style={[styles.goalBar, { width: `${Math.min(100, (parseFloat(goal.allocated_amount) / parseFloat(goal.target_amount)) * 100)}%` }]} />
-            </View>
-            <Text style={styles.goalAmount}>${goal.allocated_amount} / ${goal.target_amount}</Text>
-          </View>
-        ))}
-
-        {/* Chores */}
-        {data.chores?.map((chore: any) => (
-          <View key={chore.id} style={styles.choreCard}>
-            <Text style={styles.choreEmoji}>{chore.emoji ?? '✅'}</Text>
-            <Text style={styles.choreName}>{chore.name}</Text>
-          </View>
-        ))}
-      </ScrollView>
-    );
+    return <ChildDeviceDashboard data={data} />;
   }
 
   if (data.is_parent) {
