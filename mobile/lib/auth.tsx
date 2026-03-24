@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useRouter, useSegments } from 'expo-router';
 import type { User, ClaimDeviceResponse } from '@quiddo/shared';
 import { api, getToken, setToken, clearToken, setSuppressAutoClear } from './api';
+import { registerForPushNotifications, unregisterPushToken } from './notifications';
 
 interface AuthState {
   user: User | null;
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           childSpender: null,
           authError: null,
         });
+        registerForPushNotifications(false);
         return;
       } catch {
         // Not a parent token — try child device
@@ -79,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           childSpender: spender,
           authError: null,
         });
+        registerForPushNotifications(true);
       } catch {
         setSuppressAutoClear(false);
         await clearToken();
@@ -115,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { user, token } = response.data.data;
     await setToken(token);
     setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
+    registerForPushNotifications(false);
   }, []);
 
   const register = useCallback(async (
@@ -134,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { user, token } = response.data.data;
     await setToken(token);
     setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
+    registerForPushNotifications(false);
   }, []);
 
   const childLogin = useCallback(async (code: string, deviceName: string) => {
@@ -141,9 +146,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { token, spender } = response.data.data;
     await setToken(token);
     setState({ user: null, token, isLoading: false, isAuthenticated: true, isChildDevice: true, childSpender: spender, authError: null });
+    registerForPushNotifications(true);
   }, []);
 
   const logout = useCallback(async () => {
+    try {
+      await unregisterPushToken(state.isChildDevice);
+    } catch {
+      // Best-effort — don't block logout
+    }
     try {
       await api.post('/auth/logout');
     } catch {

@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { FamilyProvider } from '@/lib/family';
+import { useNotificationListeners } from '@/lib/notifications';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 
@@ -17,7 +18,8 @@ export { ErrorBoundary } from 'expo-router';
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { isLoading } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
+  useNotificationListeners();
 
   if (isLoading) {
     return (
