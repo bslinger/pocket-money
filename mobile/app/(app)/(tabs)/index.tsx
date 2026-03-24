@@ -66,23 +66,57 @@ export default function DashboardScreen() {
 
         {/* Kids */}
         {data.families.map((family) =>
-          family.spenders?.map((spender) => (
-            <TouchableOpacity
-              key={spender.id}
-              style={styles.kidCard}
-              onPress={() => router.push(`/(app)/(tabs)/kids/${spender.id}`)}
-            >
-              <View style={[styles.avatar, { backgroundColor: spender.color ?? colors.eucalyptus[400] }]}>
-                <Text style={styles.avatarText}>{spender.name[0]}</Text>
+          family.spenders?.map((spender) => {
+            const balance = spender.accounts?.reduce((sum, a) => sum + parseFloat(a.balance), 0) ?? 0;
+            const topGoal = spender.savings_goals?.find(g => !g.is_completed);
+            const goalProgress = topGoal
+              ? Math.min(100, (parseFloat(topGoal.allocated_amount ?? '0') / parseFloat(topGoal.target_amount)) * 100)
+              : 0;
+
+            return (
+              <View key={spender.id} style={styles.kidCard}>
+                <TouchableOpacity
+                  style={styles.kidCardTop}
+                  onPress={() => router.push(`/(app)/(tabs)/kids/${spender.id}`)}
+                >
+                  <View style={[styles.avatar, { backgroundColor: spender.color ?? colors.eucalyptus[400] }]}>
+                    <Text style={styles.avatarText}>{spender.name[0]}</Text>
+                  </View>
+                  <View style={styles.kidInfo}>
+                    <Text style={styles.kidName}>{spender.name}</Text>
+                    <Text style={styles.kidBalanceAmount}>${balance.toFixed(2)}</Text>
+                  </View>
+                </TouchableOpacity>
+
+                {topGoal && (
+                  <View style={styles.kidGoal}>
+                    <Text style={styles.kidGoalName} numberOfLines={1}>{topGoal.name}</Text>
+                    <View style={styles.kidGoalBarBg}>
+                      <View style={[styles.kidGoalBar, { width: `${goalProgress}%` }]} />
+                    </View>
+                    <Text style={styles.kidGoalAmount}>
+                      ${parseFloat(topGoal.allocated_amount ?? '0').toFixed(2)} of ${parseFloat(topGoal.target_amount).toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+
+                <View style={styles.kidActions}>
+                  <TouchableOpacity
+                    style={styles.kidSpendButton}
+                    onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, type: 'debit' } })}
+                  >
+                    <Text style={styles.kidSpendText}>— Spend</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.kidAddButton}
+                    onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, type: 'credit' } })}
+                  >
+                    <Text style={styles.kidAddText}>+ Add</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={styles.kidInfo}>
-                <Text style={styles.kidName}>{spender.name}</Text>
-                <Text style={styles.kidBalance}>
-                  ${spender.accounts?.reduce((sum, a) => sum + parseFloat(a.balance), 0).toFixed(2)}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )),
+            );
+          }),
         )}
 
         {/* Pending Approvals */}
@@ -151,12 +185,23 @@ const styles = StyleSheet.create({
   statCard: { flex: 1, backgroundColor: colors.white, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.bark[200] },
   statLabel: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginBottom: 4 },
   statValue: { fontFamily: fonts.display, fontSize: 20, color: colors.bark[700] },
-  kidCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: 12, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: colors.bark[200] },
-  avatar: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  avatarText: { fontFamily: fonts.body, color: colors.white, fontSize: 18 },
+  kidCard: { backgroundColor: colors.white, borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: colors.bark[200], overflow: 'hidden' },
+  kidCardTop: { flexDirection: 'row', alignItems: 'center', padding: 14 },
+  avatar: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
+  avatarText: { fontFamily: fonts.body, color: colors.white, fontSize: 16 },
   kidInfo: { marginLeft: 12, flex: 1 },
-  kidName: { fontFamily: fonts.body, fontSize: 16, color: colors.bark[700] },
-  kidBalance: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600], marginTop: 2 },
+  kidName: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700] },
+  kidBalanceAmount: { fontFamily: fonts.display, fontSize: 20, color: colors.bark[700], marginTop: 2 },
+  kidGoal: { paddingHorizontal: 14, paddingBottom: 10 },
+  kidGoalName: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginBottom: 4 },
+  kidGoalBarBg: { height: 6, backgroundColor: colors.bark[200], borderRadius: 3, overflow: 'hidden' },
+  kidGoalBar: { height: '100%', backgroundColor: colors.wattle[400], borderRadius: 3 },
+  kidGoalAmount: { fontFamily: fonts.body, fontSize: 11, color: colors.bark[600], marginTop: 3 },
+  kidActions: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.bark[200] },
+  kidSpendButton: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRightWidth: 1, borderRightColor: colors.bark[200] },
+  kidSpendText: { fontFamily: fonts.body, fontSize: 13, color: colors.redearth[400] },
+  kidAddButton: { flex: 1, paddingVertical: 10, alignItems: 'center' },
+  kidAddText: { fontFamily: fonts.body, fontSize: 13, color: colors.gumleaf[400] },
   section: { marginTop: 20 },
   sectionTitle: { fontFamily: fonts.display, fontSize: 18, color: colors.bark[700], marginBottom: 12 },
   approvalCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.white, borderRadius: 12, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: colors.bark[200] },
