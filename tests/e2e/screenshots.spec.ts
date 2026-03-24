@@ -6,14 +6,17 @@ const SCREENSHOT_DIR = path.join(process.cwd(), 'mobile/.maestro/screenshots/web
 // Mobile viewport to match Maestro screenshots
 test.use({ viewport: { width: 390, height: 844 } });
 
-test.describe('Web screenshots for mobile comparison', () => {
+test.describe('Login screenshot', () => {
+    test.use({ storageStatePath: null });
+
     test('login page', async ({ page }) => {
-        test.use({ storageStatePath: null } as any);
         await page.goto('/login');
         await page.waitForLoadState('networkidle');
         await page.screenshot({ path: `${SCREENSHOT_DIR}/01-login.png`, fullPage: false });
     });
+});
 
+test.describe('Web screenshots for mobile comparison', () => {
     test('dashboard', async ({ page }) => {
         await page.goto('/dashboard');
         await page.waitForLoadState('networkidle');
