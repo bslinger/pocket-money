@@ -1,9 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
+
+/** True when running inside Expo Go (which can't get native push tokens since SDK 53). */
+const isExpoGo = Constants.appOwnership === 'expo';
 
 // Configure foreground notification behaviour
 Notifications.setNotificationHandler({
@@ -20,6 +24,11 @@ Notifications.setNotificationHandler({
  * Request permission and register the device's native push token with the backend.
  */
 export async function registerForPushNotifications(isChildDevice: boolean): Promise<void> {
+  if (isExpoGo) {
+    console.log('Push notifications not available in Expo Go — skipping registration');
+    return;
+  }
+
   try {
     const { status: existing } = await Notifications.getPermissionsAsync();
     let finalStatus = existing;
@@ -52,6 +61,8 @@ export async function registerForPushNotifications(isChildDevice: boolean): Prom
  * Unregister the device's push token from the backend.
  */
 export async function unregisterPushToken(isChildDevice: boolean): Promise<void> {
+  if (isExpoGo) return;
+
   try {
     const tokenData = await Notifications.getDevicePushTokenAsync();
     const endpoint = isChildDevice ? '/child/device-tokens' : '/device-tokens';
