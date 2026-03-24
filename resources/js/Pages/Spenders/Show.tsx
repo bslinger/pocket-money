@@ -489,7 +489,7 @@ export default function SpenderShow({
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Accounts</h2>
                             {isParent && (
-                                <Button variant="outline" size="sm" asChild>
+                                <Button size="sm" asChild>
                                     <Link href={route('accounts.create', { spender_id: spender.id })}>
                                         <PlusCircle className="h-4 w-4 mr-1.5" />
                                         Add account
@@ -596,6 +596,9 @@ export default function SpenderShow({
                 <TransactionsTab
                     transactions={transactions}
                     family={family}
+                    spender={spender}
+                    isParent={isParent}
+                    onNewTransaction={(account, type) => setQuickTxModal({ account, type })}
                 />
             )}
 
@@ -831,21 +834,44 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
 function TransactionsTab({
     transactions,
     family,
+    spender,
+    isParent,
+    onNewTransaction,
 }: {
     transactions: (Transaction & { account: Account })[];
     family: Family | null;
+    spender: Spender;
+    isParent: boolean;
+    onNewTransaction: (account: Account, type: 'credit' | 'debit') => void;
 }) {
+    const firstAccount = spender.accounts?.[0];
+
     if (transactions.length === 0) {
         return (
             <Card>
-                <CardContent className="py-10 text-center text-muted-foreground text-sm">
-                    No transactions yet.
+                <CardContent className="py-10 text-center space-y-3">
+                    <p className="text-muted-foreground text-sm">No transactions yet.</p>
+                    {isParent && firstAccount && (
+                        <Button size="sm" className="gap-1.5" onClick={() => onNewTransaction(firstAccount, 'credit')}>
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            New Transaction
+                        </Button>
+                    )}
                 </CardContent>
             </Card>
         );
     }
 
     return (
+        <div className="space-y-4">
+            {isParent && firstAccount && (
+                <div className="flex justify-end">
+                    <Button size="sm" className="gap-1.5" onClick={() => onNewTransaction(firstAccount, 'credit')}>
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        New Transaction
+                    </Button>
+                </div>
+            )}
         <Card>
             <CardContent className="pt-4 divide-y">
                 {transactions.map(tx => {
@@ -881,5 +907,6 @@ function TransactionsTab({
                 })}
             </CardContent>
         </Card>
+        </div>
     );
 }
