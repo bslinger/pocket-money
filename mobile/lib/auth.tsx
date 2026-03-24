@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import type { User, ClaimDeviceResponse } from '@quiddo/shared';
-import { api, getToken, setToken, clearToken } from './api';
+import { api, getToken, setToken, clearToken, suppressAutoClear } from './api';
+import * as apiModule from './api';
 
 interface AuthState {
   user: User | null;
@@ -10,6 +11,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isChildDevice: boolean;
   childSpender: ClaimDeviceResponse['spender'] | null;
+  authError: string | null;
 }
 
 interface AuthContextValue extends AuthState {
@@ -29,6 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: false,
     isChildDevice: false,
     childSpender: null,
+    authError: null,
   });
 
   const router = useRouter();
@@ -39,13 +42,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       const storedToken = await getToken();
       if (!storedToken) {
-        setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null });
+        setState(s => ({ ...s, isLoading: false }));
         return;
       }
+
+      // Suppress 401 auto-clear while we probe both auth endpoints
+      apiModule.suppressAutoClear = true;
 
       // Try parent auth first
       try {
         const response = await api.get('/auth/user');
+        apiModule.suppressAutoClear = false;
         setState({
           user: response.data.data,
           token: storedToken,
@@ -53,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
           isChildDevice: false,
           childSpender: null,
+          authError: null,
         });
         return;
       } catch {
@@ -61,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const response = await api.get('/child/dashboard');
+        apiModule.suppressAutoClear = false;
         const { spender } = response.data.data;
         setState({
           user: null,
@@ -69,10 +78,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
           isChildDevice: true,
           childSpender: spender,
+          authError: null,
         });
       } catch {
+        apiModule.suppressAutoClear = false;
         await clearToken();
-        setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null });
+        setState({
+          user: null,
+          token: null,
+          isLoading: false,
+          isAuthenticated: false,
+          isChildDevice: false,
+          childSpender: null,
+          authError: 'Your session has expired. Please sign in again.',
+        });
       }
     })();
   }, []);
@@ -96,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await api.post('/auth/login', { email, password, device_name: deviceName });
     const { user, token } = response.data.data;
     await setToken(token);
-    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null });
+    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
   }, []);
 
   const register = useCallback(async (
@@ -115,14 +134,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     const { user, token } = response.data.data;
     await setToken(token);
-    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null });
+    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
   }, []);
 
   const childLogin = useCallback(async (code: string, deviceName: string) => {
     const response = await api.post('/spender-devices/claim', { code, device_name: deviceName });
     const { token, spender } = response.data.data;
     await setToken(token);
-    setState({ user: null, token, isLoading: false, isAuthenticated: true, isChildDevice: true, childSpender: spender });
+    setState({ user: null, token, isLoading: false, isAuthenticated: true, isChildDevice: true, childSpender: spender, authError: null });
   }, []);
 
   const logout = useCallback(async () => {
@@ -132,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Ignore errors — we're logging out regardless
     }
     await clearToken();
-    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null });
+    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null, authError: null });
   }, []);
 
   return (

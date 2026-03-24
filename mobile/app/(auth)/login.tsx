@@ -6,10 +6,10 @@ import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 
 export default function LoginScreen() {
-  const { login } = useAuth();
+  const { login, authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(authError ?? '');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
