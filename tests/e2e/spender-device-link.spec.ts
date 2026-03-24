@@ -15,7 +15,7 @@ test.describe('Spender device linking', () => {
     });
 
     test('full lifecycle: generate code, child connects, parent revokes', async ({ page, browser, workerIndex }) => {
-        // ── Parent: navigate to Emma's spender page ──
+        // Navigate to Emma's spender page
         await page.goto('/spenders');
         await page.waitForLoadState('networkidle');
         const emmaLink = page.getByRole('link', { name: 'Emma' });
@@ -41,7 +41,7 @@ test.describe('Spender device linking', () => {
 
         const baseUrl = new URL(page.url()).origin;
 
-        // ── Child: claim the code from a separate context (simulating mobile) ──
+        // Child claims the code from a separate context (simulating mobile)
         const childContext = await browser.newContext({
             extraHTTPHeaders: { 'X-Test-DB': String(workerIndex) },
         });
@@ -65,18 +65,19 @@ test.describe('Spender device linking', () => {
         expect(dashData.data.accounts).toBeInstanceOf(Array);
         await childContext.close();
 
-        // ── Parent: sees the device and revokes it ──
+        // Parent sees the device
         await page.reload();
         await page.waitForLoadState('networkidle');
         await expect(page.getByText('Test iPad')).toBeVisible({ timeout: 5000 });
 
+        // Parent revokes the device
         const revokeBtn = page.locator('a:has(svg.lucide-trash-2), button:has(svg.lucide-trash-2)').first();
         await revokeBtn.scrollIntoViewIfNeeded();
         await revokeBtn.click();
         await page.waitForLoadState('networkidle');
         await expect(page.getByText('Test iPad')).not.toBeVisible({ timeout: 5000 });
 
-        // ── Revoked token is rejected ──
+        // Revoked token is rejected
         const revokedContext = await browser.newContext({
             extraHTTPHeaders: { 'X-Test-DB': String(workerIndex) },
         });

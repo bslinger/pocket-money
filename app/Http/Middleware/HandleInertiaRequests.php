@@ -34,7 +34,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'flash' => [
-                'linkCode' => fn () => $request->session()->get('linkCode'),
+                'linkCode' => $request->session()->get('linkCode'),
             ],
             'auth' => [
                 'user' => $request->user(),

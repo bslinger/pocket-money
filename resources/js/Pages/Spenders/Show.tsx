@@ -196,18 +196,58 @@ function ChildLoginCard({ spender, pendingInvitations }: { spender: Spender; pen
     );
 }
 
-function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: SpenderDevice[] }) {
-    const { auth, flash } = usePage().props as any;
+function calcSecondsLeft(expiresAt: string | null) {
+    if (!expiresAt) return 0;
+    return Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+}
+
+function useCountdown(expiresAt: string | null) {
+    const [secondsLeft, setSecondsLeft] = useState(() => calcSecondsLeft(expiresAt));
+
+    // Reset immediately when expiresAt changes (not deferred to useEffect)
+    const [prevExpiresAt, setPrevExpiresAt] = useState(expiresAt);
+    if (expiresAt !== prevExpiresAt) {
+        setPrevExpiresAt(expiresAt);
+        setSecondsLeft(calcSecondsLeft(expiresAt));
+    }
+
+    useEffect(() => {
+        if (!expiresAt) return;
+        const id = setInterval(() => setSecondsLeft(calcSecondsLeft(expiresAt)), 1000);
+        return () => clearInterval(id);
+    }, [expiresAt]);
+
+    const minutes = Math.floor(secondsLeft / 60);
+    const seconds = secondsLeft % 60;
+    return { secondsLeft, display: `${minutes}:${seconds.toString().padStart(2, '0')}` };
+}
+
+function LinkedDevicesCard({ spender, devices, flashLinkCode }: { spender: Spender; devices: SpenderDevice[]; flashLinkCode?: { code: string; expires_at: string } | null }) {
+    const { auth } = usePage().props as any;
     const isParent: boolean = auth.isParent ?? false;
     const [generating, setGenerating] = useState(false);
-    const linkCode = flash?.linkCode as { code: string; expires_at: string } | undefined;
     const [showModal, setShowModal] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    // Open modal when a fresh link code arrives via flash
+    // Track code in local state so we can clear it on expiry
+    const [activeCode, setActiveCode] = useState<{ code: string; expires_at: string } | null>(flashLinkCode ?? null);
+
+    // Pick up new flash codes
+    const flashCodeValue = flashLinkCode?.code ?? null;
     useEffect(() => {
-        if (linkCode) setShowModal(true);
-    }, [linkCode]);
+        if (flashLinkCode && flashCodeValue) {
+            setActiveCode(flashLinkCode);
+            setShowModal(true);
+        }
+    }, [flashCodeValue]);
+
+    const { secondsLeft, display: countdown } = useCountdown(activeCode?.expires_at ?? null);
+    const isExpired = activeCode !== null && secondsLeft <= 0;
+
+    // Clear expired code
+    useEffect(() => {
+        if (isExpired) setActiveCode(null);
+    }, [isExpired]);
 
     if (!isParent) return null;
 
@@ -215,11 +255,23 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
         setGenerating(true);
         router.post(route('spenders.generate-link-code', spender.id), {}, {
             preserveScroll: true,
-            onFinish: () => {
-                setGenerating(false);
-                setShowModal(true);
+            onSuccess: (page: any) => {
+                const code = page.props?.flash?.linkCode;
+                if (code) {
+                    setActiveCode(code);
+                    setShowModal(true);
+                }
             },
+            onFinish: () => setGenerating(false),
         });
+    }
+
+    function handleButtonClick() {
+        if (activeCode && !isExpired) {
+            setShowModal(true);
+        } else {
+            handleGenerate();
+        }
     }
 
     function handleCopy(code: string) {
@@ -228,12 +280,12 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
         setTimeout(() => setCopied(false), 2000);
     }
 
-    const qrValue = linkCode ? `quiddo://link?code=${linkCode.code}` : '';
+    const qrValue = activeCode ? `quiddo://link?code=${activeCode.code}` : '';
 
     return (
         <>
-            <Modal show={showModal && !!linkCode} maxWidth="sm" onClose={() => setShowModal(false)}>
-                {linkCode && (
+            <Modal show={showModal && !!activeCode && !isExpired} maxWidth="sm" onClose={() => setShowModal(false)}>
+                {activeCode && (
                     <div className="p-6 text-center space-y-5">
                         <div>
                             <h3 className="text-lg font-semibold text-bark-700">Link {spender.name}'s device</h3>
@@ -258,10 +310,10 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
                             <p className="text-xs text-muted-foreground uppercase tracking-wide">Or enter this code manually</p>
                             <div className="flex items-center justify-center gap-2">
                                 <span className="text-3xl font-mono font-bold tracking-[0.3em] text-eucalyptus-400">
-                                    {linkCode.code}
+                                    {activeCode.code}
                                 </span>
                                 <button
-                                    onClick={() => handleCopy(linkCode.code)}
+                                    onClick={() => handleCopy(activeCode.code)}
                                     className="text-muted-foreground hover:text-foreground p-1"
                                 >
                                     {copied ? <Check className="h-4 w-4 text-gumleaf-400" /> : <Copy className="h-4 w-4" />}
@@ -269,8 +321,8 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
                             </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">
-                            This code expires in 10 minutes
+                        <p className={`text-xs ${secondsLeft < 60 ? 'text-redearth-400' : 'text-muted-foreground'}`}>
+                            Expires in {countdown}
                         </p>
 
                         <Button variant="outline" size="sm" onClick={() => setShowModal(false)} className="w-full">
@@ -296,11 +348,11 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
                         variant="outline"
                         size="sm"
                         className="w-full gap-1.5"
-                        onClick={linkCode ? () => setShowModal(true) : handleGenerate}
+                        onClick={handleButtonClick}
                         disabled={generating}
                     >
                         <QrCode className="h-3.5 w-3.5" />
-                        {generating ? 'Generating...' : linkCode ? 'Show Link Code' : 'Generate Link Code'}
+                        {generating ? 'Generating...' : activeCode && !isExpired ? 'Show Link Code' : 'Generate Link Code'}
                     </Button>
 
                     {devices.length > 0 && (
@@ -331,7 +383,7 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
                         </div>
                     )}
 
-                    {devices.length === 0 && !linkCode && (
+                    {devices.length === 0 && !activeCode && (
                         <p className="text-sm text-muted-foreground">No devices linked yet.</p>
                     )}
                 </CardContent>
@@ -345,11 +397,13 @@ export default function SpenderShow({
     pendingInvitations,
     transactions,
     spenderDevices,
+    flash,
 }: {
     spender: Spender;
     pendingInvitations: ChildInvitation[];
     transactions: (Transaction & { account: Account })[];
     spenderDevices: SpenderDevice[];
+    flash?: { linkCode?: { code: string; expires_at: string } | null };
 }) {
     const { auth } = usePage().props as any;
     const isParent: boolean = auth.isParent ?? false;
@@ -523,7 +577,7 @@ export default function SpenderShow({
                     <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
 
                     {/* Linked devices card — parents only */}
-                    <LinkedDevicesCard spender={spender} devices={spenderDevices} />
+                    <LinkedDevicesCard spender={spender} devices={spenderDevices} flashLinkCode={flash?.linkCode} />
                 </div>
             )}
 
