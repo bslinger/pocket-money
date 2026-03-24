@@ -583,7 +583,7 @@ export default function SpenderShow({
 
             {/* Goals tab */}
             {activeTab === 'goals' && (
-                <GoalsTab spender={spender} currencySymbol={currencySymbol} />
+                <GoalsTab spender={spender} currencySymbol={currencySymbol} isParent={isParent} />
             )}
 
             {/* Chores tab */}
@@ -613,14 +613,22 @@ export default function SpenderShow({
     );
 }
 
-function GoalsTab({ spender, currencySymbol }: { spender: Spender; currencySymbol: string }) {
+function GoalsTab({ spender, currencySymbol, isParent }: { spender: Spender; currencySymbol: string; isParent: boolean }) {
     const allGoals = spender.savings_goals ?? [];
 
     if (allGoals.length === 0) {
         return (
             <Card>
-                <CardContent className="py-10 text-center text-muted-foreground text-sm">
-                    No savings goals yet.
+                <CardContent className="py-10 text-center space-y-3">
+                    <p className="text-muted-foreground text-sm">No savings goals yet.</p>
+                    {isParent && (
+                        <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                            <Link href={route('goals.create') + `?spender=${spender.id}`}>
+                                <PlusCircle className="h-3.5 w-3.5" />
+                                Add Goal
+                            </Link>
+                        </Button>
+                    )}
                 </CardContent>
             </Card>
         );
@@ -638,6 +646,16 @@ function GoalsTab({ spender, currencySymbol }: { spender: Spender; currencySymbo
 
     return (
         <div className="space-y-6">
+            {isParent && (
+                <div className="flex justify-end">
+                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                        <Link href={route('goals.create') + `?spender=${spender.id}`}>
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            Add Goal
+                        </Link>
+                    </Button>
+                </div>
+            )}
             {[...accountMap.entries()].map(([accountId, { name, goals }]) => {
                 const active = goals.filter(g => !g.is_completed);
                 const completed = goals.filter(g => g.is_completed);
@@ -715,8 +733,16 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
     if (chores.length === 0) {
         return (
             <Card>
-                <CardContent className="py-10 text-center text-muted-foreground text-sm">
-                    No chores assigned to {spender.name}.
+                <CardContent className="py-10 text-center space-y-3">
+                    <p className="text-muted-foreground text-sm">No chores assigned to {spender.name}.</p>
+                    {isParent && (
+                        <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                            <Link href={route('chores.create') + `?spender=${spender.id}`}>
+                                <PlusCircle className="h-3.5 w-3.5" />
+                                Add Chore
+                            </Link>
+                        </Button>
+                    )}
                 </CardContent>
             </Card>
         );
@@ -734,6 +760,16 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
 
     return (
         <Card>
+            {isParent && (
+                <div className="flex justify-end px-4 pt-4">
+                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                        <Link href={route('chores.create') + `?spender=${spender.id}`}>
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            Add Chore
+                        </Link>
+                    </Button>
+                </div>
+            )}
             <CardContent className="pt-4 divide-y">
                 {chores.map(chore => {
                     const current = currentPeriodCompletion.get(chore.id);

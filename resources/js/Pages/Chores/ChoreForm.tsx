@@ -22,9 +22,10 @@ interface Props {
   spenders: Spender[];
   mode: 'create' | 'edit';
   chore?: Chore & { spenders: Spender[] };
+  defaultSpenderIds?: string[];
 }
 
-export default function ChoreForm({ families, spenders, mode, chore }: Props) {
+export default function ChoreForm({ families, spenders, mode, chore, defaultSpenderIds }: Props) {
   const { data, setData, post, put, processing, errors } = useForm({
     family_id:         chore?.family_id ?? (families[0]?.id ?? ''),
     name:              chore?.name ?? '',
@@ -36,7 +37,7 @@ export default function ChoreForm({ families, spenders, mode, chore }: Props) {
     requires_approval: chore?.requires_approval ?? true,
     up_for_grabs:      chore?.up_for_grabs ?? false,
     is_active:         chore?.is_active ?? true,
-    spender_ids:       chore?.spenders?.map(s => s.id) ?? [] as string[],
+    spender_ids:       chore?.spenders?.map(s => s.id) ?? defaultSpenderIds ?? [] as string[],
   });
 
   function toggleDay(dayIndex: number) {

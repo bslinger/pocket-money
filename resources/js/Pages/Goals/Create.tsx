@@ -10,8 +10,12 @@ interface Props {
 }
 
 export default function GoalCreate({ spenders, accounts }: Props) {
+  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  const spenderParam = params.get('spender');
+  const defaultSpenderId = spenderParam && spenders.some(s => s.id === spenderParam) ? spenderParam : (spenders[0]?.id ?? '');
+
   const { data, setData, post, processing, errors } = useForm({
-    spender_id: spenders[0]?.id ?? '',
+    spender_id: defaultSpenderId,
     account_id: '',
     name: '',
     target_amount: '',
