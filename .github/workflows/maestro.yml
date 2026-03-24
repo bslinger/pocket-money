@@ -1,0 +1,205 @@
+name: Maestro E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - 'app/**'
+      - 'routes/api.php'
+      - 'database/**'
+
+jobs:
+  maestro:
+    name: Maestro mobile E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: pocket_money
+          POSTGRES_USER: sail
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # ── KVM for hardware-accelerated emulator ──────────────────────────
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # ── Laravel backend ────────────────────────────────────────────────
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, pdo_pgsql
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Configure .env
+        run: |
+          cp .env.example .env
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^MAIL_MAILER=.*/MAIL_MAILER=log/' .env
+          php artisan key:generate
+
+      - name: Run migrations and seed
+        run: php artisan migrate --seed --force
+
+      - name: Start Laravel server
+        run: php artisan serve --host=0.0.0.0 --port=8000 &
+
+      - name: Wait for Laravel to be ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000 > /dev/null 2>&1 && break
+            sleep 1
+          done
+
+      # ── Node.js + Expo ─────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      # ── Install Maestro CLI ────────────────────────────────────────────
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      # ── AVD cache (speeds up repeat runs) ──────────────────────────────
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api-34-x86_64-${{ runner.os }}
+
+      # ── Run tests inside Android emulator ──────────────────────────────
+      - name: Run Maestro flows
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            set -euo pipefail
+
+            echo "::group::Emulator info"
+            adb devices
+            adb shell getprop ro.build.version.sdk
+            echo "::endgroup::"
+
+            # ── Fetch and install Expo Go APK ──────────────────────────
+            echo "::group::Install Expo Go"
+            EXPO_GO_URL=$(curl -s "https://expo.dev/--/api/v2/versions/latest" | python3 -c "import sys,json; print(json.load(sys.stdin)['androidUrl'])")
+            echo "Downloading Expo Go from: $EXPO_GO_URL"
+            curl -Lo /tmp/expo-go.apk "$EXPO_GO_URL"
+            adb install -r /tmp/expo-go.apk
+            echo "::endgroup::"
+
+            # ── Start Expo dev server ──────────────────────────────────
+            echo "::group::Start Expo"
+            cd mobile
+            EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api/v1 npx expo start --port 8081 --localhost &
+            EXPO_PID=$!
+
+            # Wait for Metro bundler
+            echo "Waiting for Metro bundler..."
+            for i in $(seq 1 60); do
+              curl -sf http://127.0.0.1:8081/status > /dev/null 2>&1 && break
+              sleep 2
+            done
+            echo "Metro bundler is ready"
+            echo "::endgroup::"
+
+            # ── Open app on emulator ───────────────────────────────────
+            echo "::group::Launch app"
+            adb shell am start -a android.intent.action.VIEW -d "exp://10.0.2.2:8081" host.exp.exponent
+            sleep 15
+            echo "::endgroup::"
+
+            # ── Run Maestro flows sequentially ─────────────────────────
+            echo "::group::Maestro tests"
+            mkdir -p .maestro/screenshots
+
+            FAILED=0
+            for flow in .maestro/[0-9]*.yaml; do
+              echo ""
+              echo "━━━ Running: $flow ━━━"
+              maestro test "$flow" \
+                -e EMAIL=ben@example.com \
+                -e PASSWORD=test1234 \
+                -e EXPO_URL="exp://10.0.2.2:8081" \
+                --no-ansi || FAILED=1
+
+              # Take a recovery screenshot on failure
+              if [ $FAILED -eq 1 ]; then
+                BASENAME=$(basename "$flow" .yaml)
+                adb exec-out screencap -p > ".maestro/screenshots/FAIL-${BASENAME}.png" 2>/dev/null || true
+              fi
+            done
+            echo "::endgroup::"
+
+            # ── Zip screenshots ────────────────────────────────────────
+            echo "::group::Package screenshots"
+            cd .maestro
+            if ls screenshots/*.png 1>/dev/null 2>&1; then
+              zip -j /tmp/maestro-screenshots.zip screenshots/*.png
+              echo "Zipped $(ls screenshots/*.png | wc -l) screenshots"
+            else
+              echo "No screenshots found"
+              mkdir -p screenshots
+              touch screenshots/.gitkeep
+              zip -j /tmp/maestro-screenshots.zip screenshots/.gitkeep
+            fi
+            echo "::endgroup::"
+
+            # Clean up Expo
+            kill $EXPO_PID 2>/dev/null || true
+
+            # Fail the job if any flow failed
+            exit $FAILED
+
+      # ── Upload screenshots artifact ────────────────────────────────────
+      - name: Upload Maestro screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: maestro-screenshots
+          path: /tmp/maestro-screenshots.zip
+          retention-days: 14
+
+      # ── Upload raw screenshots (unzipped, for PR review) ───────────────
+      - name: Upload raw screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: maestro-screenshots-raw
+          path: mobile/.maestro/screenshots/
+          retention-days: 14
