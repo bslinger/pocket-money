@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthenticateSpenderDevice;
 use App\Http\Middleware\CollectCoverage;
 use App\Http\Middleware\EnsureFamilyMember;
 use App\Http\Middleware\EnsureFamilySubscribed;
@@ -36,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'require.parent' => RequireParent::class,
             'ensure.family' => EnsureFamilyMember::class,
             'subscribed.family' => EnsureFamilySubscribed::class,
+            'auth.spender_device' => AuthenticateSpenderDevice::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

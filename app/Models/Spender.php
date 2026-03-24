@@ -99,4 +99,16 @@ class Spender extends Model
     {
         return $this->hasMany(ChildInvitation::class);
     }
+
+    /** @return HasMany<SpenderLinkCode, $this> */
+    public function linkCodes(): HasMany
+    {
+        return $this->hasMany(SpenderLinkCode::class);
+    }
+
+    /** @return HasMany<SpenderDevice, $this> */
+    public function devices(): HasMany
+    {
+        return $this->hasMany(SpenderDevice::class);
+    }
 }

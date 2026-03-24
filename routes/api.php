@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ChildDashboardController;
 use App\Http\Controllers\Api\V1\ChoreCompletionController;
 use App\Http\Controllers\Api\V1\ChoreController;
 use App\Http\Controllers\Api\V1\ChoreRewardController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Api\V1\PocketMoneyController;
 use App\Http\Controllers\Api\V1\RecurringTransactionController;
 use App\Http\Controllers\Api\V1\SavingsGoalController;
 use App\Http\Controllers\Api\V1\SpenderController;
+use App\Http\Controllers\Api\V1\SpenderLinkCodeController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\TransferController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/spender-devices/claim', [SpenderLinkCodeController::class, 'claim']);
 
 // ---------------------------------------------------------------------------
 // Authenticated (Sanctum token auth)
@@ -108,4 +111,18 @@ Route::middleware('auth:sanctum')->group(function (): void {
     // Device Tokens (push notifications)
     Route::post('/device-tokens', [DeviceTokenController::class, 'store']);
     Route::delete('/device-tokens', [DeviceTokenController::class, 'destroy']);
+
+    // Spender Link Codes & Devices (parent manages child device linking)
+    Route::post('/spenders/{spender}/link-code', [SpenderLinkCodeController::class, 'store']);
+    Route::get('/spenders/{spender}/devices', [SpenderLinkCodeController::class, 'devices']);
+    Route::delete('/spender-devices/{device}', [SpenderLinkCodeController::class, 'revokeDevice']);
+});
+
+// ---------------------------------------------------------------------------
+// Child device auth (spender device token, no user account needed)
+// ---------------------------------------------------------------------------
+Route::middleware('auth.spender_device')->group(function (): void {
+    Route::get('/child/dashboard', [ChildDashboardController::class, 'index']);
+    Route::post('/child/chores/{chore}/complete', [ChildDashboardController::class, 'completeChore']);
+    Route::get('/child/accounts/{account}/transactions', [ChildDashboardController::class, 'transactions']);
 });
