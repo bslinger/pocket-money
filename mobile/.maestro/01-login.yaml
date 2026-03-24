@@ -27,21 +27,46 @@ appId: host.exp.exponent
     commands:
       - tapOn: "No, thanks"
 
-# Navigate to dashboard after login
+# Navigate to dashboard — tap tab twice to scroll to top
 - extendedWaitUntil:
     visible: "Quiddo"
     timeout: 15000
 - tapOn:
     text: "Dashbo.*"
+- tapOn:
+    text: "Dashbo.*"
+
+# Scroll to top to ensure Family Balance is visible
+- swipe:
+    direction: DOWN
+    duration: 500
+- swipe:
+    direction: DOWN
+    duration: 500
+- swipe:
+    direction: DOWN
+    duration: 500
+
 - extendedWaitUntil:
     visible: "Family Balance"
     timeout: 10000
 
 - takeScreenshot: screenshots/02-dashboard
 
-# Scroll down to show approval section
-- scrollUntilVisible:
-    element: "Needs your approval"
-    direction: DOWN
-    timeout: 5000
+# Scroll to bottom to show approval section
+- swipe:
+    direction: UP
+    duration: 500
+- swipe:
+    direction: UP
+    duration: 500
+- swipe:
+    direction: UP
+    duration: 500
+- swipe:
+    direction: UP
+    duration: 500
+- swipe:
+    direction: UP
+    duration: 500
 - takeScreenshot: screenshots/02b-dashboard-approvals

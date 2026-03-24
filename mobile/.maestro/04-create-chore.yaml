@@ -1,7 +1,7 @@
 appId: host.exp.exponent
 ---
 # Create a chore flow
-# Assumes user is already logged in
+# Assumes user is already logged in and on a tab screen
 
 - openLink: ${EXPO_URL}
 
@@ -26,3 +26,6 @@ appId: host.exp.exponent
 - hideKeyboard
 
 - takeScreenshot: screenshots/10-create-chore-filled
+
+# Navigate back to tab bar for next flow
+- pressKey: back

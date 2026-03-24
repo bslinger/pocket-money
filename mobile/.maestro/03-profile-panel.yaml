@@ -1,15 +1,13 @@
 appId: host.exp.exponent
 ---
 # Open profile panel and capture screenshot
-# Assumes user is already logged in
+# Assumes user is already logged in and on a tab screen
 
 - openLink: ${EXPO_URL}
 
-# Navigate to dashboard
-- tapOn:
-    text: "Dashbo.*"
+# Wait for app to be ready (any tab content visible)
 - extendedWaitUntil:
-    visible: "Family Balance"
+    visible: "Quiddo"
     timeout: 10000
 
 # Tap profile menu button

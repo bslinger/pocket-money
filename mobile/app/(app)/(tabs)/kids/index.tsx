@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
+import { Feather } from '@expo/vector-icons';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
@@ -79,11 +80,24 @@ export default function KidsListScreen() {
               </View>
               <View style={styles.cardInfo}>
                 <Text style={styles.cardName}>{item.name}</Text>
-                <Text style={styles.cardAccounts}>
-                  {(item.accounts ?? []).length} account{(item.accounts ?? []).length !== 1 ? 's' : ''}
-                </Text>
+                <Text style={styles.cardBalance}>${balance.toFixed(2)}</Text>
               </View>
-              <Text style={styles.cardBalance}>${balance.toFixed(2)}</Text>
+              <View style={styles.cardActions}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={(e) => { e.stopPropagation(); router.push(`/(app)/(tabs)/kids/${item.id}`); }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Feather name="eye" size={16} color={colors.bark[600]} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={(e) => { e.stopPropagation(); router.push(`/(app)/kids/${item.id}/edit`); }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Feather name="edit-2" size={16} color={colors.bark[600]} />
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
           );
         }}
@@ -144,9 +158,19 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: colors.white, fontSize: 20, fontWeight: '600' },
   cardInfo: { marginLeft: 12, flex: 1 },
-  cardName: { fontSize: 16, fontWeight: '600', color: colors.bark[700] },
-  cardAccounts: { fontSize: 13, color: colors.bark[600], marginTop: 2 },
-  cardBalance: { fontSize: 18, fontWeight: '700', color: colors.bark[700] },
+  cardName: { fontFamily: fonts.body, fontSize: 16, color: colors.bark[700] },
+  cardBalance: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600], marginTop: 2 },
+  cardActions: { flexDirection: 'row', gap: 8, marginLeft: 8 },
+  actionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+  },
   empty: { padding: 32, alignItems: 'center' },
   emptyText: { fontSize: 15, color: colors.bark[600], textAlign: 'center' },
   // Skeleton

@@ -1,13 +1,29 @@
 appId: host.exp.exponent
 ---
 # Navigate through all tabs and capture screenshots
-# Assumes user is already logged in from 01-login
+# Assumes user is already logged in
 
 - openLink: ${EXPO_URL}
 
-# Go to dashboard tab
+# Wait for app — Quiddo header is always visible
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Dashboard — tap twice + scroll to top
 - tapOn:
     text: "Dashbo.*"
+- tapOn:
+    text: "Dashbo.*"
+- swipe:
+    direction: DOWN
+    duration: 500
+- swipe:
+    direction: DOWN
+    duration: 500
+- swipe:
+    direction: DOWN
+    duration: 500
 - extendedWaitUntil:
     visible: "Family Balance"
     timeout: 10000
@@ -41,3 +57,7 @@ appId: host.exp.exponent
     visible: "Pocket Money"
     timeout: 5000
 - takeScreenshot: screenshots/07-pocket-money
+
+# Return to dashboard for next flow
+- tapOn:
+    text: "Dashbo.*"
