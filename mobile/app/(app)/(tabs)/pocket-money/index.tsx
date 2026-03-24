@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 import type { ApiResponse, Spender, PocketMoneySchedule, Chore } from '@quiddo/shared';
 
 interface ReleaseSpender {
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  title: { fontSize: 24, fontWeight: '700', color: colors.bark[700] },
+  title: { fontFamily: fonts.display, fontSize: 24, fontWeight: '700', color: colors.bark[700] },
   payAllButton: {
     backgroundColor: colors.gumleaf[400],
     borderRadius: 8,

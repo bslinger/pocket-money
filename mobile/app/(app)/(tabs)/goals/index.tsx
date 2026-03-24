@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 import type { SavingsGoal, Spender, ApiResponse } from '@quiddo/shared';
 
 interface GoalWithSpender extends SavingsGoal {
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  title: { fontSize: 24, fontWeight: '700', color: colors.bark[700] },
+  title: { fontFamily: fonts.display, fontSize: 24, fontWeight: '700', color: colors.bark[700] },
   newButton: {
     backgroundColor: colors.eucalyptus[400],
     borderRadius: 8,

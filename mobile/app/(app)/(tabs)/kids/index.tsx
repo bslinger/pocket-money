@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 import type { Spender, ApiResponse } from '@quiddo/shared';
 
 export default function KidsListScreen() {
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  title: { fontSize: 24, fontWeight: '700', color: colors.bark[700] },
+  title: { fontFamily: fonts.display, fontSize: 24, fontWeight: '700', color: colors.bark[700] },
   addButton: {
     backgroundColor: colors.eucalyptus[400],
     borderRadius: 8,
