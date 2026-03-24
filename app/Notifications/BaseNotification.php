@@ -2,6 +2,8 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Apn\ApnChannel;
 use NotificationChannels\Apn\ApnMessage;
@@ -9,8 +11,10 @@ use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
-abstract class BaseNotification extends Notification
+abstract class BaseNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     abstract protected function title(): string;
 
     abstract protected function body(): string;
