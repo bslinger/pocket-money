@@ -97,6 +97,110 @@ jobs:
             ~/.android/adb*
           key: avd-api-34-x86_64-${{ runner.os }}
 
+      # ── Write test script (android-emulator-runner needs a single file) ─
+      - name: Write Maestro test script
+        run: |
+          cat > /tmp/run-maestro.sh << 'MAESTRO_SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          echo "::group::Emulator info"
+          adb devices
+          adb shell getprop ro.build.version.sdk
+          echo "::endgroup::"
+
+          # ── Fetch and install Expo Go APK ──────────────────────────
+          echo "::group::Install Expo Go"
+
+          # Try the Expo versions API first, fall back to npx expo
+          EXPO_GO_URL=""
+          API_RESPONSE=$(curl -sf -H "Expo-Platform: android" "https://expo.dev/--/api/v2/versions/latest" 2>/dev/null || true)
+          if [ -n "$API_RESPONSE" ]; then
+            EXPO_GO_URL=$(echo "$API_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('androidUrl',''))" 2>/dev/null || true)
+          fi
+
+          if [ -n "$EXPO_GO_URL" ]; then
+            echo "Downloading Expo Go from API: $EXPO_GO_URL"
+            curl -Lo /tmp/expo-go.apk "$EXPO_GO_URL"
+            adb install -r /tmp/expo-go.apk
+          else
+            echo "API unavailable, installing Expo Go via npx expo"
+            cd mobile
+            EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api/v1 npx expo start --android --non-interactive &
+            START_PID=$!
+            # Wait for Expo Go to be installed (it downloads + installs before bundling)
+            sleep 45
+            kill $START_PID 2>/dev/null || true
+            wait $START_PID 2>/dev/null || true
+            cd ..
+          fi
+          echo "::endgroup::"
+
+          # ── Start Expo dev server ──────────────────────────────────
+          echo "::group::Start Expo"
+          cd mobile
+          EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api/v1 npx expo start --port 8081 --localhost &
+          EXPO_PID=$!
+
+          # Wait for Metro bundler
+          echo "Waiting for Metro bundler..."
+          for i in $(seq 1 90); do
+            if curl -sf http://127.0.0.1:8081/status > /dev/null 2>&1; then
+              echo "Metro bundler is ready"
+              break
+            fi
+            sleep 2
+          done
+          echo "::endgroup::"
+
+          # ── Open app on emulator ───────────────────────────────────
+          echo "::group::Launch app"
+          adb shell am start -a android.intent.action.VIEW -d "exp://10.0.2.2:8081" host.exp.exponent
+          sleep 15
+          echo "::endgroup::"
+
+          # ── Run Maestro flows sequentially ─────────────────────────
+          echo "::group::Maestro tests"
+          mkdir -p .maestro/screenshots
+
+          FAILED=0
+          for flow in .maestro/[0-9]*.yaml; do
+            echo ""
+            echo "━━━ Running: $(basename "$flow") ━━━"
+            if ! maestro test "$flow" \
+              -e EMAIL=ben@example.com \
+              -e PASSWORD=test1234 \
+              -e EXPO_URL="exp://10.0.2.2:8081" \
+              --no-ansi; then
+              FAILED=1
+              # Take a recovery screenshot on failure
+              BASENAME=$(basename "$flow" .yaml)
+              adb exec-out screencap -p > ".maestro/screenshots/FAIL-${BASENAME}.png" 2>/dev/null || true
+            fi
+          done
+          echo "::endgroup::"
+
+          # ── Zip screenshots ────────────────────────────────────────
+          echo "::group::Package screenshots"
+          cd .maestro
+          if ls screenshots/*.png 1>/dev/null 2>&1; then
+            zip -j /tmp/maestro-screenshots.zip screenshots/*.png
+            echo "Zipped $(ls screenshots/*.png | wc -l) screenshots"
+          else
+            echo "No screenshots found"
+            mkdir -p screenshots
+            echo "no screenshots captured" > screenshots/README.txt
+            zip -j /tmp/maestro-screenshots.zip screenshots/README.txt
+          fi
+          echo "::endgroup::"
+
+          # Clean up Expo
+          kill $EXPO_PID 2>/dev/null || true
+
+          exit $FAILED
+          MAESTRO_SCRIPT
+          chmod +x /tmp/run-maestro.sh
+
       # ── Run tests inside Android emulator ──────────────────────────────
       - name: Run Maestro flows
         uses: ReactiveCircus/android-emulator-runner@v2
@@ -107,84 +211,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
-          script: |
-            set -eu
-
-            echo "::group::Emulator info"
-            adb devices
-            adb shell getprop ro.build.version.sdk
-            echo "::endgroup::"
-
-            # ── Fetch and install Expo Go APK ──────────────────────────
-            echo "::group::Install Expo Go"
-            EXPO_GO_URL=$(curl -s "https://expo.dev/--/api/v2/versions/latest" | python3 -c "import sys,json; print(json.load(sys.stdin)['androidUrl'])")
-            echo "Downloading Expo Go from: $EXPO_GO_URL"
-            curl -Lo /tmp/expo-go.apk "$EXPO_GO_URL"
-            adb install -r /tmp/expo-go.apk
-            echo "::endgroup::"
-
-            # ── Start Expo dev server ──────────────────────────────────
-            echo "::group::Start Expo"
-            cd mobile
-            EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api/v1 npx expo start --port 8081 --localhost &
-            EXPO_PID=$!
-
-            # Wait for Metro bundler
-            echo "Waiting for Metro bundler..."
-            for i in $(seq 1 60); do
-              curl -sf http://127.0.0.1:8081/status > /dev/null 2>&1 && break
-              sleep 2
-            done
-            echo "Metro bundler is ready"
-            echo "::endgroup::"
-
-            # ── Open app on emulator ───────────────────────────────────
-            echo "::group::Launch app"
-            adb shell am start -a android.intent.action.VIEW -d "exp://10.0.2.2:8081" host.exp.exponent
-            sleep 15
-            echo "::endgroup::"
-
-            # ── Run Maestro flows sequentially ─────────────────────────
-            echo "::group::Maestro tests"
-            mkdir -p .maestro/screenshots
-
-            FAILED=0
-            for flow in .maestro/[0-9]*.yaml; do
-              echo ""
-              echo "━━━ Running: $flow ━━━"
-              maestro test "$flow" \
-                -e EMAIL=ben@example.com \
-                -e PASSWORD=test1234 \
-                -e EXPO_URL="exp://10.0.2.2:8081" \
-                --no-ansi || FAILED=1
-
-              # Take a recovery screenshot on failure
-              if [ $FAILED -eq 1 ]; then
-                BASENAME=$(basename "$flow" .yaml)
-                adb exec-out screencap -p > ".maestro/screenshots/FAIL-${BASENAME}.png" 2>/dev/null || true
-              fi
-            done
-            echo "::endgroup::"
-
-            # ── Zip screenshots ────────────────────────────────────────
-            echo "::group::Package screenshots"
-            cd .maestro
-            if ls screenshots/*.png 1>/dev/null 2>&1; then
-              zip -j /tmp/maestro-screenshots.zip screenshots/*.png
-              echo "Zipped $(ls screenshots/*.png | wc -l) screenshots"
-            else
-              echo "No screenshots found"
-              mkdir -p screenshots
-              touch screenshots/.gitkeep
-              zip -j /tmp/maestro-screenshots.zip screenshots/.gitkeep
-            fi
-            echo "::endgroup::"
-
-            # Clean up Expo
-            kill $EXPO_PID 2>/dev/null || true
-
-            # Fail the job if any flow failed
-            exit $FAILED
+          script: bash /tmp/run-maestro.sh
 
       # ── Upload screenshots artifact ────────────────────────────────────
       - name: Upload Maestro screenshots
