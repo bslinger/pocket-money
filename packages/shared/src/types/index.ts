@@ -398,3 +398,13 @@ export interface ChildDashboard {
     completed_at: string;
   }[];
 }
+
+// ---------------------------------------------------------------------------
+// Push notifications
+// ---------------------------------------------------------------------------
+
+export interface PushToken {
+  id: string;
+  platform: 'ios' | 'android';
+  created_at: string;
+}
