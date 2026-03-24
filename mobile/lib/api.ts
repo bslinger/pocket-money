@@ -8,7 +8,8 @@ const TOKEN_KEY = 'auth_token';
  * When true, 401 responses will NOT auto-clear the stored token.
  * Used during boot when we probe multiple auth endpoints.
  */
-export let suppressAutoClear = false;
+let _suppressAutoClear = false;
+export function setSuppressAutoClear(val: boolean) { _suppressAutoClear = val; }
 
 export const api = axios.create({
   baseURL: Constants.expoConfig?.extra?.apiUrl ?? process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost/api/v1',
@@ -31,7 +32,7 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401 && !suppressAutoClear) {
+    if (error.response?.status === 401 && !_suppressAutoClear) {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
     }
     return Promise.reject(error);

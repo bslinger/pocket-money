@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import type { User, ClaimDeviceResponse } from '@quiddo/shared';
-import { api, getToken, setToken, clearToken, suppressAutoClear } from './api';
-import * as apiModule from './api';
+import { api, getToken, setToken, clearToken, setSuppressAutoClear } from './api';
 
 interface AuthState {
   user: User | null;
@@ -47,12 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Suppress 401 auto-clear while we probe both auth endpoints
-      apiModule.suppressAutoClear = true;
+      setSuppressAutoClear(true);
 
       // Try parent auth first
       try {
         const response = await api.get('/auth/user');
-        apiModule.suppressAutoClear = false;
+        setSuppressAutoClear(false);
         setState({
           user: response.data.data,
           token: storedToken,
@@ -69,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const response = await api.get('/child/dashboard');
-        apiModule.suppressAutoClear = false;
+        setSuppressAutoClear(false);
         const { spender } = response.data.data;
         setState({
           user: null,
@@ -81,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           authError: null,
         });
       } catch {
-        apiModule.suppressAutoClear = false;
+        setSuppressAutoClear(false);
         await clearToken();
         setState({
           user: null,
