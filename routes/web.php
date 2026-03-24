@@ -90,6 +90,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/spenders/{spender}/link-child', [SpenderController::class, 'linkChild'])->name('spenders.link-child');
         Route::delete('/spenders/{spender}/linked-children/{user}', [SpenderController::class, 'unlinkChild'])->name('spenders.unlink-child');
         Route::delete('/child-invitations/{childInvitation}', [ChildInvitationController::class, 'cancel'])->name('child-invitations.cancel');
+        Route::post('/spenders/{spender}/link-code', [SpenderController::class, 'generateLinkCode'])->name('spenders.generate-link-code');
+        Route::delete('/spender-devices/{device}', [SpenderController::class, 'revokeDevice'])->name('spender-devices.revoke');
         Route::post('/spenders/{id}/restore', [SpenderController::class, 'restore'])->name('spenders.restore');
         Route::resource('accounts', AccountController::class)->except('show');
         Route::resource('accounts.transactions', TransactionController::class);

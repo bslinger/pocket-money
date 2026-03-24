@@ -8,6 +8,8 @@ use App\Models\ChildInvitation;
 use App\Models\PocketMoneySchedule;
 use App\Models\SavingsGoal;
 use App\Models\Spender;
+use App\Models\SpenderDevice;
+use App\Models\SpenderLinkCode;
 use App\Models\SpenderUser;
 use App\Models\Transaction;
 use App\Models\User;
@@ -95,10 +97,15 @@ class SpenderController extends Controller
             ->limit(100)
             ->get();
 
+        $spenderDevices = $isParentInFamily
+            ? $spender->devices()->whereNull('revoked_at')->orderByDesc('last_active_at')->get()
+            : collect();
+
         return Inertia::render('Spenders/Show', [
             'spender' => $spender,
             'pendingInvitations' => $pendingInvitations,
             'transactions' => $transactions,
+            'spenderDevices' => $spenderDevices,
         ]);
     }
 
@@ -223,5 +230,40 @@ class SpenderController extends Controller
         $spender->restore();
 
         return redirect()->route('families.show', $spender->family_id);
+    }
+
+    public function generateLinkCode(Spender $spender)
+    {
+        $user = auth()->user();
+        abort_unless($user->families()->where('families.id', $spender->family_id)->exists(), 403);
+
+        $code = SpenderLinkCode::create([
+            'spender_id' => $spender->id,
+            'family_id' => $spender->family_id,
+            'code' => SpenderLinkCode::generateCode(),
+            'created_by' => $user->id,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        /** @var Carbon $expiresAt */
+        $expiresAt = $code->expires_at;
+
+        return back()->with('linkCode', [
+            'code' => $code->code,
+            'expires_at' => $expiresAt->toIso8601String(),
+        ]);
+    }
+
+    public function revokeDevice(SpenderDevice $device)
+    {
+        $user = auth()->user();
+
+        /** @var Spender $spender */
+        $spender = $device->spender;
+        abort_unless($user->families()->where('families.id', $spender->family_id)->exists(), 403);
+
+        $device->revoke();
+
+        return back();
     }
 }

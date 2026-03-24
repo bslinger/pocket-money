@@ -10,7 +10,9 @@ import { Badge } from '@/Components/ui/badge';
 import {
     Eye, Pencil, PlusCircle, Link2, Unlink, User, Mail, X, CheckCircle2,
     Smartphone, Plus, Minus, Check, Clock, ArrowUpRight, ArrowDownLeft,
+    QrCode, Trash2, Copy,
 } from 'lucide-react';
+import type { SpenderDevice } from '@quiddo/shared';
 import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol } from '@/lib/utils';
 import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
 import { formatDistanceToNow } from 'date-fns';
@@ -192,14 +194,121 @@ function ChildLoginCard({ spender, pendingInvitations }: { spender: Spender; pen
     );
 }
 
+function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: SpenderDevice[] }) {
+    const { auth, flash } = usePage().props as any;
+    const isParent: boolean = auth.isParent ?? false;
+    const [generating, setGenerating] = useState(false);
+    const linkCode = flash?.linkCode as { code: string; expires_at: string } | undefined;
+    const [copied, setCopied] = useState(false);
+
+    if (!isParent) return null;
+
+    function handleGenerate() {
+        setGenerating(true);
+        router.post(route('spenders.generate-link-code', spender.id), {}, {
+            preserveScroll: true,
+            onFinish: () => setGenerating(false),
+        });
+    }
+
+    function handleCopy(code: string) {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Smartphone className="h-4 w-4" />
+                    Linked Devices
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                    Link a child's device so they can view their accounts and mark chores complete — no email needed.
+                </p>
+
+                {linkCode && (
+                    <div className="rounded-lg border-2 border-eucalyptus-400/30 bg-eucalyptus-400/5 p-4 text-center space-y-2">
+                        <p className="text-xs text-muted-foreground">Enter this code on the child's device</p>
+                        <div className="flex items-center justify-center gap-2">
+                            <span className="text-2xl font-mono font-bold tracking-widest text-eucalyptus-400">
+                                {linkCode.code}
+                            </span>
+                            <button
+                                onClick={() => handleCopy(linkCode.code)}
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                {copied ? <Check className="h-4 w-4 text-gumleaf-400" /> : <Copy className="h-4 w-4" />}
+                            </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Expires in 10 minutes
+                        </p>
+                    </div>
+                )}
+
+                {!linkCode && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-1.5"
+                        onClick={handleGenerate}
+                        disabled={generating}
+                    >
+                        <QrCode className="h-3.5 w-3.5" />
+                        {generating ? 'Generating...' : 'Generate Link Code'}
+                    </Button>
+                )}
+
+                {devices.length > 0 && (
+                    <div className="space-y-2 pt-1">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active devices</p>
+                        {devices.map(device => (
+                            <div key={device.id} className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <Smartphone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                    <span className="text-sm truncate">{device.device_name || 'Unnamed device'}</span>
+                                    {device.last_active_at && (
+                                        <span className="text-xs text-muted-foreground shrink-0">
+                                            {formatDistanceToNow(new Date(device.last_active_at), { addSuffix: true })}
+                                        </span>
+                                    )}
+                                </div>
+                                <Link
+                                    href={route('spender-devices.revoke', device.id)}
+                                    method="delete"
+                                    as="button"
+                                    preserveScroll
+                                    className="text-destructive hover:text-destructive/80 shrink-0"
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {devices.length === 0 && !linkCode && (
+                    <p className="text-sm text-muted-foreground">No devices linked yet.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function SpenderShow({
     spender,
     pendingInvitations,
     transactions,
+    spenderDevices,
 }: {
     spender: Spender;
     pendingInvitations: ChildInvitation[];
     transactions: (Transaction & { account: Account })[];
+    spenderDevices: SpenderDevice[];
 }) {
     const { auth } = usePage().props as any;
     const isParent: boolean = auth.isParent ?? false;
@@ -371,6 +480,9 @@ export default function SpenderShow({
 
                     {/* Child login card — parents only */}
                     <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
+
+                    {/* Linked devices card — parents only */}
+                    <LinkedDevicesCard spender={spender} devices={spenderDevices} />
                 </div>
             )}
 
