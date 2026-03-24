@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -121,9 +121,13 @@ function ChildDeviceDashboard({ data, onRefresh }: { data: any; onRefresh: () =>
       >
         {/* Avatar + Name + Balance */}
         <View style={childStyles.profileSection}>
-          <View style={[childStyles.avatar, { backgroundColor: spenderColor }]}>
-            <Text style={childStyles.avatarText}>{spender?.name?.[0]?.toUpperCase()}</Text>
-          </View>
+          {spender?.avatar_url ? (
+            <Image source={{ uri: spender.avatar_url }} style={[childStyles.avatar, { backgroundColor: spenderColor }]} />
+          ) : (
+            <View style={[childStyles.avatar, { backgroundColor: spenderColor }]}>
+              <Text style={childStyles.avatarText}>{spender?.name?.[0]?.toUpperCase()}</Text>
+            </View>
+          )}
           <Text style={childStyles.spenderName}>{spender?.name}</Text>
           <Text style={[childStyles.balance, { color: spenderColor }]}>
             ${balance.toFixed(2)}
