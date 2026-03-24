@@ -25,7 +25,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="kids"
+        name="kids/index"
         options={{
           title: 'Kids',
           headerShown: false,
@@ -33,7 +33,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="chores"
+        name="kids/[id]"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="chores/index"
         options={{
           title: 'Chores',
           headerShown: false,
@@ -41,7 +45,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="goals"
+        name="chores/[id]"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="goals/index"
         options={{
           title: 'Goals',
           headerShown: false,
@@ -49,7 +57,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="pocket-money"
+        name="pocket-money/index"
         options={{
           title: 'Pocket Money',
           headerShown: false,
