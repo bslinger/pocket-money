@@ -62,6 +62,7 @@ export default function ChoresScreen() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['chores'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 
@@ -90,6 +91,7 @@ export default function ChoresScreen() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['chores'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
 

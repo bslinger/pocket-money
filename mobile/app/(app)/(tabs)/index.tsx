@@ -236,19 +236,24 @@ export default function DashboardScreen() {
     },
   });
 
+  const queryClient = useQueryClient();
+
   const handleApprove = async (completionId: string) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await api.patch(`/chore-completions/${completionId}/approve`);
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   };
 
   const handleDecline = async (completionId: string) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await api.patch(`/chore-completions/${completionId}/decline`);
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   };
 
   const handleApproveAll = async (completionIds: string[]) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await api.post('/chore-completions/bulk-approve', { completion_ids: completionIds });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   };
 
   if (isLoading || !data) {
