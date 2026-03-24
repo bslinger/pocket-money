@@ -56,8 +56,9 @@ frankenphp-worker.php
 # Coverage artifacts
 /storage/coverage.xml
 
-# Maestro screenshots (generated, not committed)
+# Screenshots and comparisons (generated, not committed)
 mobile/.maestro/screenshots/
+/screenshots/
 
 # Claude Code local settings
 .claude/settings.local.json

@@ -17,6 +17,8 @@
     "test:e2e:coverage": "COLLECT_COVERAGE=true playwright test && node --import tsx/esm tests/e2e/coverage-report.mts",
     "screenshots:web": "playwright test tests/e2e/screenshots.spec.ts",
     "screenshots:mobile": "for f in mobile/.maestro/0*.yaml; do maestro test -e EXPO_URL=exp://$(hostname -I | awk '{print $1}'):8081 -e EMAIL=ben@example.com -e PASSWORD=test1234 $f || exit 1; done",
+    "screenshots:compare": "python3 scripts/compare-screenshots.py",
+    "screenshots:all": "npm run screenshots:web && npm run screenshots:mobile && npm run screenshots:compare",
     "coverage:e2e": "node --import tsx/esm tests/e2e/coverage-report.mts",
     "coverage:pest": "XDEBUG_MODE=coverage ./vendor/bin/sail artisan test --coverage-html storage/coverage/pest/html --coverage-clover storage/coverage/pest/clover.xml"
   },
