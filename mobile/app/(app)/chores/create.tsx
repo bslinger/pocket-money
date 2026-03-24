@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import EmojiPicker, { type EmojiType } from 'rn-emoji-keyboard';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import type { Spender, ApiResponse, ChoreRewardType, ChoreFrequency } from '@quiddo/shared';
@@ -20,6 +21,7 @@ export default function CreateChoreScreen() {
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([]);
   const [selectedSpenderIds, setSelectedSpenderIds] = useState<string[]>([]);
   const [requiresApproval, setRequiresApproval] = useState(true);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const { data: spenders, isLoading } = useQuery({
     queryKey: ['spenders'],
@@ -90,12 +92,33 @@ export default function CreateChoreScreen() {
 
       {/* Emoji */}
       <Text style={styles.label}>Emoji (optional)</Text>
-      <TextInput
-        style={[styles.input, { width: 80, textAlign: 'center', fontSize: 24 }]}
-        value={emoji}
-        onChangeText={setEmoji}
-        placeholder="🧹"
-        placeholderTextColor={colors.bark[600]}
+      <View style={styles.emojiRow}>
+        <TouchableOpacity style={styles.emojiButton} onPress={() => setEmojiPickerOpen(true)}>
+          <Text style={styles.emojiButtonText}>{emoji || '😀'}</Text>
+          {!emoji && <Text style={styles.emojiButtonHint}>Tap to pick</Text>}
+        </TouchableOpacity>
+        {emoji ? (
+          <TouchableOpacity style={styles.emojiClear} onPress={() => setEmoji('')}>
+            <Text style={styles.emojiClearText}>Clear</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      <EmojiPicker
+        open={emojiPickerOpen}
+        onClose={() => setEmojiPickerOpen(false)}
+        onEmojiSelected={(emojiObject: EmojiType) => {
+          setEmoji(emojiObject.emoji);
+          setEmojiPickerOpen(false);
+        }}
+        enableSearchBar
+        enableRecentlyUsed
+        categoryPosition="top"
+        theme={{
+          container: colors.white,
+          header: colors.bark[700],
+          category: { container: colors.bark[100], icon: colors.bark[600], iconActive: colors.eucalyptus[400], containerActive: colors.eucalyptus[400] + '20' },
+          search: { background: colors.bark[100], text: colors.bark[700], placeholder: colors.bark[600] },
+        }}
       />
 
       {/* Reward Type */}
@@ -232,6 +255,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.bark[700],
   },
+  emojiRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  emojiButton: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.bark[200],
+    borderStyle: 'dashed',
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emojiButtonText: { fontSize: 36 },
+  emojiButtonHint: { fontSize: 10, color: colors.bark[600], position: 'absolute', bottom: 6 },
+  emojiClear: { paddingVertical: 4 },
+  emojiClearText: { fontSize: 13, color: colors.redearth[400] },
   optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   optionChip: {
     borderWidth: 1,
