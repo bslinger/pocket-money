@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
+import { useRef, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Dimensions, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,6 +8,9 @@ import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
+
+const PANEL_WIDTH = 300;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 interface Family {
   id: string;
@@ -21,6 +24,23 @@ export default function AppHeader() {
   const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const slideAnim = useRef(new Animated.Value(PANEL_WIDTH)).current;
+  const overlayAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (menuOpen) {
+      Animated.parallel([
+        Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
+        Animated.timing(overlayAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(slideAnim, { toValue: PANEL_WIDTH, duration: 200, useNativeDriver: true }),
+        Animated.timing(overlayAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [menuOpen]);
+
   const { data: families } = useQuery({
     queryKey: ['families'],
     queryFn: async () => {
@@ -29,7 +49,6 @@ export default function AppHeader() {
     },
   });
 
-  // TODO: track active family in state/storage
   const activeFamily = families?.[0];
 
   async function switchFamily(familyId: string) {
@@ -41,6 +60,11 @@ export default function AppHeader() {
   async function handleLogout() {
     setMenuOpen(false);
     await logout();
+  }
+
+  function closeAndNavigate(path: string) {
+    setMenuOpen(false);
+    router.push(path as any);
   }
 
   return (
@@ -56,15 +80,15 @@ export default function AppHeader() {
         </TouchableOpacity>
       </View>
 
-      <Modal
-        visible={menuOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setMenuOpen(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <Pressable style={styles.overlayLeft} onPress={() => setMenuOpen(false)} />
-          <View style={[styles.panel, { paddingTop: insets.top + 16 }]}>
+      <Modal visible={menuOpen} transparent animationType="none" onRequestClose={() => setMenuOpen(false)}>
+        <View style={styles.modalContainer}>
+          {/* Overlay */}
+          <Animated.View style={[styles.overlay, { opacity: overlayAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.3] }) }]}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setMenuOpen(false)} />
+          </Animated.View>
+
+          {/* Panel sliding from right */}
+          <Animated.View style={[styles.panel, { paddingTop: insets.top + 16, transform: [{ translateX: slideAnim }] }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
               {/* User info */}
               <View style={styles.section}>
@@ -85,7 +109,7 @@ export default function AppHeader() {
                   <View style={styles.familyActions}>
                     <TouchableOpacity
                       style={styles.familyActionButton}
-                      onPress={() => { setMenuOpen(false); router.push('/(app)/family'); }}
+                      onPress={() => closeAndNavigate('/(app)/family')}
                     >
                       <Feather name="settings" size={14} color={colors.bark[600]} />
                       <Text style={styles.familyActionText}>Settings</Text>
@@ -116,19 +140,12 @@ export default function AppHeader() {
 
               <View style={styles.divider} />
 
-              {/* Account actions */}
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => { setMenuOpen(false); router.push('/(app)/settings'); }}
-              >
+              <TouchableOpacity style={styles.menuItem} onPress={() => closeAndNavigate('/(app)/settings')}>
                 <Feather name="user" size={18} color={colors.bark[600]} />
                 <Text style={styles.menuItemText}>Profile settings</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => { setMenuOpen(false); router.push('/(app)/billing'); }}
-              >
+              <TouchableOpacity style={styles.menuItem} onPress={() => closeAndNavigate('/(app)/billing')}>
                 <Feather name="credit-card" size={18} color={colors.bark[600]} />
                 <Text style={styles.menuItemText}>Billing</Text>
               </TouchableOpacity>
@@ -140,7 +157,7 @@ export default function AppHeader() {
                 <Text style={[styles.menuItemText, { color: colors.redearth[400] }]}>Log out</Text>
               </TouchableOpacity>
             </ScrollView>
-          </View>
+          </Animated.View>
         </View>
       </Modal>
     </>
@@ -173,16 +190,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
     flexDirection: 'row',
   },
-  overlayLeft: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
   },
   panel: {
-    width: 300,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: PANEL_WIDTH,
     backgroundColor: colors.white,
     paddingHorizontal: 20,
     paddingBottom: 40,
