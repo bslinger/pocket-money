@@ -16,7 +16,7 @@ export default function TabLayout() {
         },
         headerStyle: { backgroundColor: colors.bark[100] },
         headerTintColor: colors.bark[700],
-        headerTitleStyle: { fontFamily: fonts.display, fontWeight: '600' },
+        headerTitleStyle: { fontFamily: fonts.display },
       }}
     >
       <Tabs.Screen

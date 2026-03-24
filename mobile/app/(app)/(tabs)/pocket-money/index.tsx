@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  title: { fontFamily: fonts.display, fontSize: 24, fontWeight: '700', color: colors.bark[700] },
+  title: { fontFamily: fonts.display, fontSize: 24, color: colors.bark[700] },
   payAllButton: {
     backgroundColor: colors.gumleaf[400],
     borderRadius: 8,

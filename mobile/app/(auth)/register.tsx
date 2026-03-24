@@ -59,12 +59,12 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   inner: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 40 },
-  logo: { fontFamily: fonts.display, fontSize: 40, fontWeight: '700', color: colors.eucalyptus[400], textAlign: 'center', marginBottom: 8 },
+  logo: { fontFamily: fonts.display, fontSize: 40, color: colors.eucalyptus[400], textAlign: 'center', marginBottom: 8 },
   subtitle: { fontFamily: fonts.body, fontSize: 16, color: colors.bark[600], textAlign: 'center', marginBottom: 32 },
   error: { fontFamily: fonts.body, color: colors.redearth[400], textAlign: 'center', marginBottom: 16 },
   input: { fontFamily: fonts.body, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, padding: 14, fontSize: 16, color: colors.bark[700], marginBottom: 12 },
   button: { backgroundColor: colors.eucalyptus[400], borderRadius: 8, padding: 16, alignItems: 'center', marginTop: 8 },
-  buttonText: { fontFamily: fonts.body, color: colors.white, fontSize: 16, fontWeight: '600' },
+  buttonText: { fontFamily: fonts.body, color: colors.white, fontSize: 16 },
   link: { marginTop: 16, alignSelf: 'center' },
   linkText: { fontFamily: fonts.body, color: colors.eucalyptus[400], fontSize: 14 },
 });

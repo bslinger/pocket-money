@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  title: { fontFamily: fonts.display, fontSize: 24, fontWeight: '700', color: colors.bark[700] },
+  title: { fontFamily: fonts.display, fontSize: 24, color: colors.bark[700] },
   newButton: {
     backgroundColor: colors.eucalyptus[400],
     borderRadius: 8,
