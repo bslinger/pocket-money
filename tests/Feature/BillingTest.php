@@ -59,7 +59,7 @@ describe('billing', function () {
     });
 
     describe('trial', function () {
-        it('grants a 14-day trial on first family', function () {
+        it('grants a 30-day trial on first family', function () {
             [$user, $family] = parentWithFamily();
 
             expect($family->trial_ends_at)->not->toBeNull();

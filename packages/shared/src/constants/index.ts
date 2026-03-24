@@ -116,7 +116,7 @@ export const IMAGE_MAX_SIZE_BYTES = IMAGE_MAX_SIZE_MB * 1024 * 1024;
 // ---------------------------------------------------------------------------
 
 export const BILLING_PLANS = ['monthly', 'yearly'] as const;
-export const TRIAL_DAYS = 14;
+export const TRIAL_DAYS = 30;
 
 // ---------------------------------------------------------------------------
 // Pagination defaults (from controllers)

@@ -52,7 +52,7 @@ class Family extends Model
             ->exists();
 
         if (! $hasHadTrial) {
-            $this->forceFill(['trial_ends_at' => now()->addDays(14)])->save();
+            $this->forceFill(['trial_ends_at' => now()->addDays(30)])->save();
         }
     }
 

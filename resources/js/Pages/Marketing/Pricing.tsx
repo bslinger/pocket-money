@@ -102,7 +102,7 @@ export default function Pricing({ canLogin, canRegister }: Props) {
         </div>
 
         <p className="text-center text-sm text-bark-400 mt-10">
-          14-day free trial, no credit card required. Prices in Australian dollars.<br />
+          30-day free trial, no credit card required. Prices in Australian dollars.<br />
           One subscription covers your whole family — up to 12 kids.
         </p>
       </section>

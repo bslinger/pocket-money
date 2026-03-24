@@ -517,7 +517,7 @@ export default function Home({ canLogin, canRegister }: Props) {
                   href={route('register')}
                   className="block w-full py-2.5 rounded-full text-sm font-semibold text-center bg-wattle-400 text-bark-700 hover:bg-wattle-300 transition-colors"
                 >
-                  Start 14-day free trial
+                  Start 30-day free trial
                 </Link>
               )}
             </div>
@@ -541,7 +541,7 @@ export default function Home({ canLogin, canRegister }: Props) {
                   href={route('register')}
                   className="block w-full py-2.5 rounded-full text-sm font-semibold text-center border-[1.5px] border-bark-200 text-bark-700 hover:border-bark-300 transition-colors"
                 >
-                  Start 14-day free trial
+                  Start 30-day free trial
                 </Link>
               )}
             </div>

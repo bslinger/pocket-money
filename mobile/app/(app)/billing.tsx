@@ -98,21 +98,21 @@ export default function BillingScreen() {
           <TouchableOpacity style={styles.planCard} onPress={() => handleSubscribe('month')}>
             <View style={styles.planHeader}>
               <Text style={styles.planName}>Monthly</Text>
-              <Text style={styles.planPrice}>$4.99/mo</Text>
+              <Text style={styles.planPrice}>$1.99/mo</Text>
             </View>
-            <Text style={styles.planDesc}>Billed monthly</Text>
+            <Text style={styles.planDesc}>Billed monthly. Cancel anytime.</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.planCard, styles.planCardPopular]} onPress={() => handleSubscribe('year')}>
             <View style={styles.popularBadge}>
-              <Text style={styles.popularBadgeText}>Save 17%</Text>
+              <Text style={styles.popularBadgeText}>Save 37%</Text>
             </View>
             <View style={styles.planHeader}>
-              <Text style={[styles.planName, { color: colors.white }]}>Yearly</Text>
-              <Text style={[styles.planPrice, { color: colors.white }]}>$49.99/yr</Text>
+              <Text style={[styles.planName, { color: colors.white }]}>Annual</Text>
+              <Text style={[styles.planPrice, { color: colors.white }]}>$15/yr</Text>
             </View>
             <Text style={[styles.planDesc, { color: colors.eucalyptus[400] + 'CC' }]}>
-              $4.17/mo billed annually
+              $1.25/mo billed annually
             </Text>
           </TouchableOpacity>
         </View>

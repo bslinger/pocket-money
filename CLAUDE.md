@@ -66,7 +66,7 @@ All domain models use UUID primary keys. Currency amounts are `decimal:2`. Enums
 - **Child:** Linked via `SpenderUser`. Sees child dashboard with their spenders' accounts and chores.
 - `User::isParent()` checks for `familyUsers`. Shared to frontend via `HandleInertiaRequests`.
 - Subscription required for write operations (`subscribed.family` middleware). Read-only when frozen.
-- 14-day trial, one per user across all families.
+- 30-day trial, one per user across all families.
 
 ## API Conventions
 
