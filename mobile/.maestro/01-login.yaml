@@ -1,0 +1,25 @@
+appId: host.exp.exponent
+---
+# Login flow — authenticates and lands on dashboard
+- launchApp:
+    clearState: true
+
+- assertVisible: "Quiddo"
+- assertVisible: "Sign In"
+
+- tapOn: "Email"
+- inputText: "ben@slinger.com.au"
+
+- tapOn: "Password"
+- inputText: "test1234"
+- hideKeyboard
+
+- takeScreenshot: screenshots/01-login-filled
+
+- tapOn: "Sign In"
+
+- assertVisible:
+    text: "Dashboard"
+    timeout: 10000
+
+- takeScreenshot: screenshots/02-dashboard

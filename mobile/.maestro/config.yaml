@@ -1,0 +1,5 @@
+# Maestro test configuration for Quiddo mobile app
+# Run with: maestro test mobile/.maestro/
+# Screenshots saved to: mobile/.maestro/screenshots/
+
+appId: host.exp.exponent

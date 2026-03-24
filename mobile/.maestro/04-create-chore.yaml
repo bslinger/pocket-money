@@ -1,0 +1,27 @@
+appId: host.exp.exponent
+---
+# Create a chore flow
+# Assumes user is already logged in
+
+- launchApp
+
+# Go to chores tab
+- tapOn: "Chores"
+- assertVisible:
+    text: "Chores"
+    timeout: 5000
+
+# Tap new chore button
+- tapOn: "New Chore"
+- assertVisible:
+    text: "Chore Name"
+    timeout: 5000
+
+- takeScreenshot: screenshots/09-create-chore-empty
+
+# Fill in chore name
+- tapOn: "e.g. Make bed, Feed the dog"
+- inputText: "Test Chore"
+- hideKeyboard
+
+- takeScreenshot: screenshots/10-create-chore-filled
