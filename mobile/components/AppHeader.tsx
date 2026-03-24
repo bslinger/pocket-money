@@ -97,12 +97,19 @@ export default function AppHeader() {
                       <Feather name="settings" size={14} color={colors.bark[600]} />
                       <Text style={styles.familyActionText}>Settings</Text>
                     </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.familyActionButton}
+                      onPress={() => closeAndNavigate('/(app)/family')}
+                    >
+                      <Feather name="user-plus" size={14} color={colors.bark[600]} />
+                      <Text style={styles.familyActionText}>Invite</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               )}
 
               {/* Family switcher */}
-              {families && families.length > 1 && (
+              {families && families.length > 0 && (
                 <View style={styles.section}>
                   <Text style={styles.sectionLabel}>Switch family</Text>
                   {families.map((f) => (
@@ -118,6 +125,13 @@ export default function AppHeader() {
                       )}
                     </TouchableOpacity>
                   ))}
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={() => closeAndNavigate('/(app)/family')}
+                  >
+                    <Feather name="plus-circle" size={16} color={colors.eucalyptus[400]} />
+                    <Text style={[styles.menuItemText, { color: colors.eucalyptus[400] }]}>New family</Text>
+                  </TouchableOpacity>
                 </View>
               )}
 
