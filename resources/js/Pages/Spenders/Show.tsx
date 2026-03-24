@@ -585,28 +585,66 @@ export default function SpenderShow({
 
             {/* Goals tab */}
             {activeTab === 'goals' && (
-                <GoalsTab spender={spender} currencySymbol={currencySymbol} isParent={isParent} />
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Goals</h2>
+                        {isParent && (
+                            <Button size="sm" className="gap-1.5" asChild>
+                                <Link href={route('goals.create') + `?spender=${spender.id}`}>
+                                    <PlusCircle className="h-3.5 w-3.5" />
+                                    Add Goal
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                    <GoalsTab spender={spender} currencySymbol={currencySymbol} isParent={isParent} />
+                </div>
             )}
 
             {/* Chores tab */}
             {activeTab === 'chores' && (
-                <ChoresTab spender={spender} isParent={isParent} />
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Chores</h2>
+                        {isParent && (
+                            <Button size="sm" className="gap-1.5" asChild>
+                                <Link href={route('chores.create') + `?spender=${spender.id}`}>
+                                    <PlusCircle className="h-3.5 w-3.5" />
+                                    Add Chore
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                    <ChoresTab spender={spender} isParent={isParent} />
+                </div>
             )}
 
             {/* Transactions tab */}
             {activeTab === 'transactions' && (
-                <TransactionsTab
-                    transactions={transactions}
-                    family={family}
-                    spender={spender}
-                    isParent={isParent}
-                    onNewTransaction={(account, type) => setQuickTxModal({ account, type })}
-                />
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Transactions</h2>
+                        {isParent && spender.accounts?.[0] && (
+                            <Button size="sm" className="gap-1.5" onClick={() => setQuickTxModal({ account: spender.accounts![0], type: 'credit' })}>
+                                <PlusCircle className="h-3.5 w-3.5" />
+                                New Transaction
+                            </Button>
+                        )}
+                    </div>
+                    <TransactionsTab
+                        transactions={transactions}
+                        family={family}
+                        spender={spender}
+                        isParent={isParent}
+                        onNewTransaction={(account, type) => setQuickTxModal({ account, type })}
+                    />
+                </div>
             )}
 
             {/* Manage tab — parent only */}
             {activeTab === 'manage' && isParent && (
-                <div className="space-y-6">
+                <div className="space-y-4">
+                    <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Manage</h2>
                     <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
                     <LinkedDevicesCard spender={spender} devices={spenderDevices} flashLinkCode={flash?.linkCode} />
                 </div>
@@ -632,16 +670,8 @@ function GoalsTab({ spender, currencySymbol, isParent }: { spender: Spender; cur
     if (allGoals.length === 0) {
         return (
             <Card>
-                <CardContent className="py-10 text-center space-y-3">
-                    <p className="text-muted-foreground text-sm">No savings goals yet.</p>
-                    {isParent && (
-                        <Button size="sm" className="gap-1.5" asChild>
-                            <Link href={route('goals.create') + `?spender=${spender.id}`}>
-                                <PlusCircle className="h-3.5 w-3.5" />
-                                Add Goal
-                            </Link>
-                        </Button>
-                    )}
+                <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                    No savings goals yet.
                 </CardContent>
             </Card>
         );
@@ -659,16 +689,6 @@ function GoalsTab({ spender, currencySymbol, isParent }: { spender: Spender; cur
 
     return (
         <div className="space-y-6">
-            {isParent && (
-                <div className="flex justify-end">
-                    <Button size="sm" className="gap-1.5" asChild>
-                        <Link href={route('goals.create') + `?spender=${spender.id}`}>
-                            <PlusCircle className="h-3.5 w-3.5" />
-                            Add Goal
-                        </Link>
-                    </Button>
-                </div>
-            )}
             {[...accountMap.entries()].map(([accountId, { name, goals }]) => {
                 const active = goals.filter(g => !g.is_completed);
                 const completed = goals.filter(g => g.is_completed);
@@ -746,16 +766,8 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
     if (chores.length === 0) {
         return (
             <Card>
-                <CardContent className="py-10 text-center space-y-3">
-                    <p className="text-muted-foreground text-sm">No chores assigned to {spender.name}.</p>
-                    {isParent && (
-                        <Button size="sm" className="gap-1.5" asChild>
-                            <Link href={route('chores.create') + `?spender=${spender.id}`}>
-                                <PlusCircle className="h-3.5 w-3.5" />
-                                Add Chore
-                            </Link>
-                        </Button>
-                    )}
+                <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                    No chores assigned to {spender.name}.
                 </CardContent>
             </Card>
         );
@@ -772,18 +784,7 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
     }
 
     return (
-        <div className="space-y-4">
-            {isParent && (
-                <div className="flex justify-end">
-                    <Button size="sm" className="gap-1.5" asChild>
-                        <Link href={route('chores.create') + `?spender=${spender.id}`}>
-                            <PlusCircle className="h-3.5 w-3.5" />
-                            Add Chore
-                        </Link>
-                    </Button>
-                </div>
-            )}
-            <Card>
+        <Card>
             <CardContent className="pt-4 divide-y">
                 {chores.map(chore => {
                     const current = currentPeriodCompletion.get(chore.id);
@@ -837,7 +838,6 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
                 })}
             </CardContent>
         </Card>
-        </div>
     );
 }
 
@@ -859,29 +859,14 @@ function TransactionsTab({
     if (transactions.length === 0) {
         return (
             <Card>
-                <CardContent className="py-10 text-center space-y-3">
-                    <p className="text-muted-foreground text-sm">No transactions yet.</p>
-                    {isParent && firstAccount && (
-                        <Button size="sm" className="gap-1.5" onClick={() => onNewTransaction(firstAccount, 'credit')}>
-                            <PlusCircle className="h-3.5 w-3.5" />
-                            New Transaction
-                        </Button>
-                    )}
+                <CardContent className="py-10 text-center text-muted-foreground text-sm">
+                    No transactions yet.
                 </CardContent>
             </Card>
         );
     }
 
     return (
-        <div className="space-y-4">
-            {isParent && firstAccount && (
-                <div className="flex justify-end">
-                    <Button size="sm" className="gap-1.5" onClick={() => onNewTransaction(firstAccount, 'credit')}>
-                        <PlusCircle className="h-3.5 w-3.5" />
-                        New Transaction
-                    </Button>
-                </div>
-            )}
         <Card>
             <CardContent className="pt-4 divide-y">
                 {transactions.map(tx => {
@@ -917,6 +902,5 @@ function TransactionsTab({
                 })}
             </CardContent>
         </Card>
-        </div>
     );
 }
