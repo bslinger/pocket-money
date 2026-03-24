@@ -108,7 +108,7 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
 
             echo "::group::Emulator info"
             adb devices
