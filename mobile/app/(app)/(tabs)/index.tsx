@@ -10,6 +10,8 @@ import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 import type { Family, Spender, ChoreCompletion, Transaction } from '@quiddo/shared';
+import { useFamilyChannel, useSpenderChannel } from '@/hooks/useBroadcast';
+import { useFamily } from '@/lib/family';
 
 interface DashboardData {
   is_parent: boolean;
@@ -223,6 +225,11 @@ const childStyles = StyleSheet.create({
 export default function DashboardScreen() {
   const { user, isChildDevice, childSpender } = useAuth();
   const router = useRouter();
+
+  // Real-time updates via Reverb WebSocket
+  const { activeFamily } = useFamily();
+  useFamilyChannel(!isChildDevice ? activeFamily?.id : undefined);
+  useSpenderChannel(isChildDevice ? childSpender?.id : undefined);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['dashboard', isChildDevice ? 'child' : 'parent'],

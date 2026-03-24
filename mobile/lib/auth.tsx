@@ -3,6 +3,7 @@ import { useRouter, useSegments } from 'expo-router';
 import type { User, ClaimDeviceResponse } from '@quiddo/shared';
 import { api, getToken, setToken, clearToken, setSuppressAutoClear } from './api';
 import { registerForPushNotifications, unregisterPushToken } from './notifications';
+import { disconnectEcho } from './echo';
 
 interface AuthState {
   user: User | null;
@@ -150,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    disconnectEcho();
     try {
       await unregisterPushToken(state.isChildDevice);
     } catch {
