@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+type GoalTab = 'active' | 'completed';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
@@ -19,6 +22,7 @@ interface GroupedGoals {
 export default function GoalsListScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState<GoalTab>('active');
 
   const { data: goals, isLoading } = useQuery({
     queryKey: ['goals'],
@@ -65,11 +69,13 @@ export default function GoalsListScreen() {
   }
 
   const activeGoals = (goals ?? []).filter((g) => !g.is_completed && !g.abandoned_at);
+  const completedGoals = (goals ?? []).filter((g) => g.is_completed);
+  const displayGoals = tab === 'active' ? activeGoals : completedGoals;
 
   // Group by spender
   const grouped: GroupedGoals[] = [];
   const spenderMap = new Map<string, GroupedGoals>();
-  for (const goal of activeGoals) {
+  for (const goal of displayGoals) {
     const spenderId = goal.spender_id;
     if (!spenderMap.has(spenderId)) {
       const group: GroupedGoals = {
@@ -96,6 +102,16 @@ export default function GoalsListScreen() {
           onPress={() => router.push('/(app)/goals/create')}
         >
           <Text style={styles.newButtonText}>+ New Goal</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Active / Completed tabs */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity style={[styles.tab, tab === 'active' && styles.tabActive]} onPress={() => setTab('active')}>
+          <Text style={[styles.tabText, tab === 'active' && styles.tabTextActive]}>Active</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tab, tab === 'completed' && styles.tabActive]} onPress={() => setTab('completed')}>
+          <Text style={[styles.tabText, tab === 'completed' && styles.tabTextActive]}>Completed</Text>
         </TouchableOpacity>
       </View>
 
@@ -180,6 +196,11 @@ export default function GoalsListScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   content: { padding: 16 },
+  tabBar: { flexDirection: 'row', backgroundColor: colors.bark[200], borderRadius: 10, padding: 3, marginBottom: 16 },
+  tab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
+  tabActive: { backgroundColor: colors.white },
+  tabText: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600] },
+  tabTextActive: { color: colors.bark[700] },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
