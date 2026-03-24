@@ -124,34 +124,37 @@ export default function ChoresScreen() {
           <Text style={styles.emptyText}>No pending approvals</Text>
         </View>
       ) : (
-        allCompletions.map((completion) => (
-          <View key={completion.id} style={styles.approvalCard}>
-            <View style={styles.approvalInfo}>
-              <Text style={styles.approvalEmoji}>{completion.choreEmoji ?? '✅'}</Text>
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.approvalChore}>{completion.choreName}</Text>
-                <Text style={styles.approvalSpender}>{completion.spender?.name}</Text>
-                <Text style={styles.approvalDate}>
-                  {new Date(completion.completed_at).toLocaleDateString()}
+        <View style={styles.approvalList}>
+          {allCompletions.map((completion, idx) => (
+            <View key={completion.id} style={[styles.approvalRow, idx > 0 && styles.approvalRowBorder]}>
+              <View style={[styles.approvalAvatar, { backgroundColor: completion.spender?.color ?? colors.eucalyptus[400] }]}>
+                <Text style={styles.approvalAvatarText}>{completion.spender?.name?.[0] ?? '?'}</Text>
+              </View>
+              <View style={styles.approvalInfo}>
+                <Text style={styles.approvalChore} numberOfLines={1}>
+                  {completion.choreEmoji ? `${completion.choreEmoji} ` : ''}{completion.choreName}
+                </Text>
+                <Text style={styles.approvalMeta}>
+                  {completion.spender?.name} · {new Date(completion.completed_at).toLocaleDateString()}
                 </Text>
               </View>
+              <View style={styles.approvalActions}>
+                <TouchableOpacity
+                  style={styles.approvalDeclineIcon}
+                  onPress={() => declineMutation.mutate(completion.id)}
+                >
+                  <Text style={{ color: colors.redearth[400], fontSize: 16 }}>✗</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.approvalApproveIcon}
+                  onPress={() => approveMutation.mutate(completion.id)}
+                >
+                  <Text style={{ color: colors.gumleaf[400], fontSize: 16 }}>✓</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.approvalActions}>
-              <TouchableOpacity
-                style={styles.declineButton}
-                onPress={() => declineMutation.mutate(completion.id)}
-              >
-                <Text style={styles.declineButtonText}>Decline</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.approveButton}
-                onPress={() => approveMutation.mutate(completion.id)}
-              >
-                <Text style={styles.approveButtonText}>Approve</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))
+          ))}
+        </View>
       )}
     </View>
   );
@@ -328,35 +331,17 @@ const styles = StyleSheet.create({
   segmentText: { fontSize: 13, fontWeight: '500', color: colors.bark[600] },
   segmentTextActive: { color: colors.bark[700], fontWeight: '600' },
   // Approvals
-  approvalCard: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: colors.bark[200],
-  },
-  approvalInfo: { flexDirection: 'row', alignItems: 'center' },
-  approvalEmoji: { fontSize: 24 },
-  approvalChore: { fontSize: 15, fontWeight: '600', color: colors.bark[700] },
-  approvalSpender: { fontSize: 13, color: colors.bark[600], marginTop: 2 },
-  approvalDate: { fontSize: 12, color: colors.bark[600], marginTop: 2 },
-  approvalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 12 },
-  declineButton: {
-    borderWidth: 1,
-    borderColor: colors.redearth[400],
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  declineButtonText: { color: colors.redearth[400], fontWeight: '600', fontSize: 14 },
-  approveButton: {
-    backgroundColor: colors.gumleaf[400],
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  approveButtonText: { color: colors.white, fontWeight: '600', fontSize: 14 },
+  approvalList: { backgroundColor: colors.white, borderRadius: 12, borderWidth: 1, borderColor: colors.bark[200], overflow: 'hidden' },
+  approvalRow: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
+  approvalRowBorder: { borderTopWidth: 1, borderTopColor: colors.bark[200] },
+  approvalAvatar: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  approvalAvatarText: { fontFamily: fonts.body, color: colors.white, fontSize: 13 },
+  approvalInfo: { flex: 1 },
+  approvalChore: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  approvalMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginTop: 1 },
+  approvalActions: { flexDirection: 'row', gap: 6 },
+  approvalDeclineIcon: { width: 32, height: 32, borderRadius: 8, borderWidth: 1, borderColor: colors.redearth[400] + '40', justifyContent: 'center', alignItems: 'center' },
+  approvalApproveIcon: { width: 32, height: 32, borderRadius: 8, borderWidth: 1, borderColor: colors.gumleaf[400] + '40', justifyContent: 'center', alignItems: 'center' },
   // Schedule
   dayGroup: { marginBottom: 16 },
   dayHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
