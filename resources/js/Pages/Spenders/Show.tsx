@@ -622,7 +622,7 @@ function GoalsTab({ spender, currencySymbol, isParent }: { spender: Spender; cur
                 <CardContent className="py-10 text-center space-y-3">
                     <p className="text-muted-foreground text-sm">No savings goals yet.</p>
                     {isParent && (
-                        <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                        <Button size="sm" className="gap-1.5" asChild>
                             <Link href={route('goals.create') + `?spender=${spender.id}`}>
                                 <PlusCircle className="h-3.5 w-3.5" />
                                 Add Goal
@@ -648,7 +648,7 @@ function GoalsTab({ spender, currencySymbol, isParent }: { spender: Spender; cur
         <div className="space-y-6">
             {isParent && (
                 <div className="flex justify-end">
-                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                    <Button size="sm" className="gap-1.5" asChild>
                         <Link href={route('goals.create') + `?spender=${spender.id}`}>
                             <PlusCircle className="h-3.5 w-3.5" />
                             Add Goal
@@ -736,7 +736,7 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
                 <CardContent className="py-10 text-center space-y-3">
                     <p className="text-muted-foreground text-sm">No chores assigned to {spender.name}.</p>
                     {isParent && (
-                        <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                        <Button size="sm" className="gap-1.5" asChild>
                             <Link href={route('chores.create') + `?spender=${spender.id}`}>
                                 <PlusCircle className="h-3.5 w-3.5" />
                                 Add Chore
@@ -759,10 +759,10 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
     }
 
     return (
-        <Card>
+        <div className="space-y-4">
             {isParent && (
-                <div className="flex justify-end px-4 pt-4">
-                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                <div className="flex justify-end">
+                    <Button size="sm" className="gap-1.5" asChild>
                         <Link href={route('chores.create') + `?spender=${spender.id}`}>
                             <PlusCircle className="h-3.5 w-3.5" />
                             Add Chore
@@ -770,6 +770,7 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
                     </Button>
                 </div>
             )}
+            <Card>
             <CardContent className="pt-4 divide-y">
                 {chores.map(chore => {
                     const current = currentPeriodCompletion.get(chore.id);
@@ -823,6 +824,7 @@ function ChoresTab({ spender, isParent }: { spender: Spender; isParent: boolean 
                 })}
             </CardContent>
         </Card>
+        </div>
     );
 }
 
