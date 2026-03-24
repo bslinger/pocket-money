@@ -1,17 +1,33 @@
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { api } from './api';
 import { queryClient } from './queryClient';
 
-/** True when running inside Expo Go (which can't get native push tokens since SDK 53). */
+/** True when running inside Expo Go (push not available since SDK 53). */
 const isExpoGo = Constants.appOwnership === 'expo';
 
-// Configure foreground notification behaviour (skip in Expo Go where it throws)
-if (!isExpoGo) {
-  Notifications.setNotificationHandler({
+/** Lazy-loaded expo-notifications module (null in Expo Go). */
+let Notifications: typeof import('expo-notifications') | null = null;
+
+async function getNotifications() {
+  if (isExpoGo) return null;
+  if (!Notifications) {
+    try {
+      Notifications = await import('expo-notifications');
+    } catch {
+      return null;
+    }
+  }
+  return Notifications;
+}
+
+// Configure foreground notification behaviour (async, best-effort)
+(async () => {
+  const N = await getNotifications();
+  if (!N) return;
+  N.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
       shouldPlaySound: true,
@@ -20,23 +36,21 @@ if (!isExpoGo) {
       shouldShowList: true,
     }),
   });
-}
+})();
 
 /**
  * Request permission and register the device's native push token with the backend.
  */
 export async function registerForPushNotifications(isChildDevice: boolean): Promise<void> {
-  if (isExpoGo) {
-    console.log('Push notifications not available in Expo Go — skipping registration');
-    return;
-  }
+  const N = await getNotifications();
+  if (!N) return;
 
   try {
-    const { status: existing } = await Notifications.getPermissionsAsync();
+    const { status: existing } = await N.getPermissionsAsync();
     let finalStatus = existing;
 
     if (existing !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
+      const { status } = await N.requestPermissionsAsync();
       finalStatus = status;
     }
 
@@ -45,8 +59,7 @@ export async function registerForPushNotifications(isChildDevice: boolean): Prom
       return;
     }
 
-    // Get the native device token (FCM for Android, APNs for iOS)
-    const tokenData = await Notifications.getDevicePushTokenAsync();
+    const tokenData = await N.getDevicePushTokenAsync();
     const platform = Platform.OS === 'ios' ? 'ios' : 'android';
     const endpoint = isChildDevice ? '/child/device-tokens' : '/device-tokens';
 
@@ -63,10 +76,11 @@ export async function registerForPushNotifications(isChildDevice: boolean): Prom
  * Unregister the device's push token from the backend.
  */
 export async function unregisterPushToken(isChildDevice: boolean): Promise<void> {
-  if (isExpoGo) return;
+  const N = await getNotifications();
+  if (!N) return;
 
   try {
-    const tokenData = await Notifications.getDevicePushTokenAsync();
+    const tokenData = await N.getDevicePushTokenAsync();
     const endpoint = isChildDevice ? '/child/device-tokens' : '/device-tokens';
 
     await api.delete(endpoint, {
@@ -87,35 +101,42 @@ const DEEP_LINK_MAP: Record<string, string> = {
 
 /**
  * Hook that sets up notification listeners for foreground display and tap-to-navigate.
+ * No-op in Expo Go.
  */
 export function useNotificationListeners(): void {
   const router = useRouter();
-  const responseListener = useRef<Notifications.EventSubscription>();
-  const receivedListener = useRef<Notifications.EventSubscription>();
+  const responseListener = useRef<any>();
+  const receivedListener = useRef<any>();
 
   useEffect(() => {
-    // Foreground: invalidate query caches so the UI refreshes
-    receivedListener.current = Notifications.addNotificationReceivedListener(() => {
-      queryClient.invalidateQueries();
-    });
+    let mounted = true;
 
-    // Tap: navigate to the relevant screen
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      const deepLink = response.notification.request.content.data?.deep_link as string | undefined;
-      if (deepLink) {
-        const routerPath = DEEP_LINK_MAP[deepLink] ?? DEEP_LINK_MAP['quiddo://'];
-        if (routerPath) {
-          router.push(routerPath as any);
+    (async () => {
+      const N = await getNotifications();
+      if (!N || !mounted) return;
+
+      receivedListener.current = N.addNotificationReceivedListener(() => {
+        queryClient.invalidateQueries();
+      });
+
+      responseListener.current = N.addNotificationResponseReceivedListener((response) => {
+        const deepLink = response.notification.request.content.data?.deep_link as string | undefined;
+        if (deepLink) {
+          const routerPath = DEEP_LINK_MAP[deepLink] ?? DEEP_LINK_MAP['quiddo://'];
+          if (routerPath) {
+            router.push(routerPath as any);
+          }
         }
-      }
-    });
+      });
+    })();
 
     return () => {
+      mounted = false;
       if (receivedListener.current) {
-        Notifications.removeNotificationSubscription(receivedListener.current);
+        getNotifications().then(N => N?.removeNotificationSubscription(receivedListener.current));
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        getNotifications().then(N => N?.removeNotificationSubscription(responseListener.current));
       }
     };
   }, []);
