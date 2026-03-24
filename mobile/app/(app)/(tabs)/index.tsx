@@ -36,6 +36,16 @@ export default function DashboardScreen() {
     await api.patch(`/chore-completions/${completionId}/approve`);
   };
 
+  const handleDecline = async (completionId: string) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await api.patch(`/chore-completions/${completionId}/decline`);
+  };
+
+  const handleApproveAll = async (completionIds: string[]) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await api.post('/chore-completions/bulk-approve', { completion_ids: completionIds });
+  };
+
   if (isLoading || !data) {
     return (
       <View style={styles.container}>
@@ -121,20 +131,50 @@ export default function DashboardScreen() {
 
         {/* Pending Approvals */}
         {data.pending_completions.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pending Approvals</Text>
-            {data.pending_completions.map((completion) => (
-              <View key={completion.id} style={styles.approvalCard}>
-                <View>
-                  <Text style={styles.approvalChore}>{completion.chore?.name}</Text>
-                  <Text style={styles.approvalSpender}>{completion.spender?.name}</Text>
+          <View style={styles.approvalSection}>
+            <View style={styles.approvalHeader}>
+              <View style={styles.approvalTitleRow}>
+                <Text style={styles.approvalTitle}>Needs your approval</Text>
+                <View style={styles.approvalBadge}>
+                  <Text style={styles.approvalBadgeText}>{data.pending_completions.length}</Text>
                 </View>
+              </View>
+              {data.pending_completions.length > 1 && (
                 <TouchableOpacity
-                  style={styles.approveButton}
-                  onPress={() => handleApprove(completion.id)}
+                  style={styles.approveAllButton}
+                  onPress={() => handleApproveAll(data.pending_completions.map(c => c.id))}
                 >
-                  <Text style={styles.approveButtonText}>Approve</Text>
+                  <Text style={styles.approveAllText}>✓✓ Approve all</Text>
                 </TouchableOpacity>
+              )}
+            </View>
+            {data.pending_completions.map((completion, idx) => (
+              <View key={completion.id} style={[styles.approvalRow, idx > 0 && styles.approvalRowBorder]}>
+                <View style={[styles.approvalAvatar, { backgroundColor: completion.spender?.color ?? colors.eucalyptus[400] }]}>
+                  <Text style={styles.approvalAvatarText}>{completion.spender?.name?.[0] ?? '?'}</Text>
+                </View>
+                <View style={styles.approvalInfo}>
+                  <Text style={styles.approvalChore} numberOfLines={1}>
+                    {completion.chore?.emoji ? `${completion.chore.emoji} ` : ''}{completion.chore?.name}
+                  </Text>
+                  <Text style={styles.approvalMeta}>
+                    {completion.spender?.name} · {new Date(completion.completed_at).toLocaleDateString()}
+                  </Text>
+                </View>
+                <View style={styles.approvalActions}>
+                  <TouchableOpacity
+                    style={styles.approveIconButton}
+                    onPress={() => handleApprove(completion.id)}
+                  >
+                    <Text style={styles.approveIcon}>✓</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.declineIconButton}
+                    onPress={() => handleDecline(completion.id)}
+                  >
+                    <Text style={styles.declineIcon}>✗</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ))}
           </View>
@@ -202,13 +242,26 @@ const styles = StyleSheet.create({
   kidSpendText: { fontFamily: fonts.body, fontSize: 13, color: colors.redearth[400] },
   kidAddButton: { flex: 1, paddingVertical: 10, alignItems: 'center' },
   kidAddText: { fontFamily: fonts.body, fontSize: 13, color: colors.gumleaf[400] },
-  section: { marginTop: 20 },
-  sectionTitle: { fontFamily: fonts.display, fontSize: 18, color: colors.bark[700], marginBottom: 12 },
-  approvalCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.white, borderRadius: 12, padding: 16, marginBottom: 8, borderWidth: 1, borderColor: colors.bark[200] },
-  approvalChore: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700] },
-  approvalSpender: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], marginTop: 2 },
-  approveButton: { backgroundColor: colors.gumleaf[400], borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  approveButtonText: { fontFamily: fonts.body, color: colors.white, fontSize: 14 },
+  approvalSection: { marginTop: 20, backgroundColor: colors.white, borderRadius: 12, borderWidth: 1, borderColor: colors.wattle[400] + '40', overflow: 'hidden' },
+  approvalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: colors.bark[200] },
+  approvalTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  approvalTitle: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700] },
+  approvalBadge: { backgroundColor: colors.wattle[400] + '20', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, borderWidth: 1, borderColor: colors.wattle[400] + '40' },
+  approvalBadgeText: { fontFamily: fonts.body, fontSize: 12, color: colors.wattle[400] },
+  approveAllButton: { borderWidth: 1, borderColor: colors.gumleaf[400] + '40', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
+  approveAllText: { fontFamily: fonts.body, fontSize: 12, color: colors.gumleaf[400] },
+  approvalRow: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
+  approvalRowBorder: { borderTopWidth: 1, borderTopColor: colors.bark[200] },
+  approvalAvatar: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  approvalAvatarText: { fontFamily: fonts.body, color: colors.white, fontSize: 13 },
+  approvalInfo: { flex: 1 },
+  approvalChore: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  approvalMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginTop: 1 },
+  approvalActions: { flexDirection: 'row', gap: 6 },
+  approveIconButton: { width: 32, height: 32, borderRadius: 8, borderWidth: 1, borderColor: colors.gumleaf[400] + '40', justifyContent: 'center', alignItems: 'center' },
+  approveIcon: { fontSize: 16, color: colors.gumleaf[400] },
+  declineIconButton: { width: 32, height: 32, borderRadius: 8, borderWidth: 1, borderColor: colors.redearth[400] + '40', justifyContent: 'center', alignItems: 'center' },
+  declineIcon: { fontSize: 16, color: colors.redearth[400] },
   // Skeleton
   skeletonHeader: { height: 32, backgroundColor: colors.bark[200], borderRadius: 8, marginBottom: 16, width: '60%' },
   skeletonCard: { height: 80, backgroundColor: colors.bark[200], borderRadius: 12, marginBottom: 8 },
