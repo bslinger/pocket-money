@@ -1,0 +1,40 @@
+appId: host.exp.exponent
+---
+# Create goal flow
+# Assumes user is logged in and has at least one kid
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Goals tab
+- tapOn: "Goals"
+- extendedWaitUntil:
+    visible: "Goals"
+    timeout: 5000
+
+# Tap New Goal button
+- tapOn:
+    text: ".*New Goal"
+- extendedWaitUntil:
+    visible: "Create Goal"
+    timeout: 5000
+
+- takeScreenshot: screenshots/17-create-goal-empty
+
+# Fill in goal name
+- tapOn: "e.g. New Bike, Holiday Fund"
+- inputText: "Test Goal"
+- hideKeyboard
+
+# Fill in target amount
+- tapOn: "0.00"
+- inputText: "50"
+- hideKeyboard
+
+- takeScreenshot: screenshots/18-create-goal-filled
+
+# Navigate back
+- pressKey: back

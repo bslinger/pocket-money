@@ -1,0 +1,32 @@
+appId: host.exp.exponent
+---
+# Chore schedule tab flow
+# Assumes user is logged in and has chores
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Chores tab
+- tapOn: "Chores"
+- extendedWaitUntil:
+    visible: "Chores"
+    timeout: 5000
+
+# Switch to Schedule tab
+- tapOn: "Schedule"
+
+- takeScreenshot: screenshots/30-chore-schedule
+
+# Scroll to see full week
+- swipe:
+    direction: UP
+    duration: 500
+
+- takeScreenshot: screenshots/31-chore-schedule-bottom
+
+# Return to dashboard
+- tapOn:
+    text: "Dashbo.*"

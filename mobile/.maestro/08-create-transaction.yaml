@@ -1,0 +1,36 @@
+appId: host.exp.exponent
+---
+# Create transaction flow
+# Assumes user is logged in with at least one kid who has an account
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# From dashboard, tap "+ Add" on the first kid card
+- tapOn:
+    text: ".*Add"
+    index: 0
+
+- extendedWaitUntil:
+    visible: "Create Transaction"
+    timeout: 5000
+
+- takeScreenshot: screenshots/19-create-transaction-empty
+
+# Fill in amount
+- tapOn: "0.00"
+- inputText: "5.50"
+- hideKeyboard
+
+# Fill in description
+- tapOn: "What was this for?"
+- inputText: "Test transaction"
+- hideKeyboard
+
+- takeScreenshot: screenshots/20-create-transaction-filled
+
+# Navigate back
+- pressKey: back

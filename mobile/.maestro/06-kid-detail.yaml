@@ -1,0 +1,52 @@
+appId: host.exp.exponent
+---
+# Kid detail flow — tap first kid and navigate detail tabs
+# Assumes user is logged in and has at least one kid
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Kids tab
+- tapOn: "Kids"
+- extendedWaitUntil:
+    visible: "Kids"
+    timeout: 5000
+
+# Tap the first kid's view button (eye icon)
+- tapOn:
+    id: "eye"
+    index: 0
+    optional: true
+
+# Fallback: tap first kid card directly if no icon found
+- runFlow:
+    when:
+      notVisible: "Accounts"
+    commands:
+      - tapOn:
+          text: "\\$.*"
+          index: 0
+
+- extendedWaitUntil:
+    visible: "Accounts"
+    timeout: 5000
+
+- takeScreenshot: screenshots/13-kid-detail-accounts
+
+# Tap Goals tab
+- tapOn: "Goals"
+- takeScreenshot: screenshots/14-kid-detail-goals
+
+# Tap Chores tab
+- tapOn: "Chores"
+- takeScreenshot: screenshots/15-kid-detail-chores
+
+# Tap Transactions tab
+- tapOn: "Txns"
+- takeScreenshot: screenshots/16-kid-detail-txns
+
+# Navigate back
+- pressKey: back

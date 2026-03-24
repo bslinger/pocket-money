@@ -1,0 +1,45 @@
+appId: host.exp.exponent
+---
+# Chore detail flow — view a chore's details
+# Assumes user is logged in and has at least one chore
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Chores tab
+- tapOn: "Chores"
+- extendedWaitUntil:
+    visible: "Chores"
+    timeout: 5000
+
+# Switch to Manage tab to see all chores
+- tapOn: "Manage"
+
+# Tap the first chore card
+- runFlow:
+    when:
+      visible:
+        text: "daily|weekly|monthly"
+    commands:
+      - tapOn:
+          text: "daily|weekly|monthly"
+          index: 0
+
+- extendedWaitUntil:
+    visible: "Reward Type"
+    timeout: 5000
+
+- takeScreenshot: screenshots/25-chore-detail
+
+# Scroll to see full details
+- swipe:
+    direction: UP
+    duration: 500
+
+- takeScreenshot: screenshots/26-chore-detail-bottom
+
+# Navigate back
+- pressKey: back

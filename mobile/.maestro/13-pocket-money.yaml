@@ -1,0 +1,30 @@
+appId: host.exp.exponent
+---
+# Pocket money screen flow
+# Assumes user is logged in
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Pocket Money tab
+- tapOn:
+    text: "Pocket.*"
+- extendedWaitUntil:
+    visible: "Pocket Money"
+    timeout: 5000
+
+- takeScreenshot: screenshots/28-pocket-money
+
+# Scroll to see all content
+- swipe:
+    direction: UP
+    duration: 500
+
+- takeScreenshot: screenshots/29-pocket-money-detail
+
+# Return to dashboard
+- tapOn:
+    text: "Dashbo.*"

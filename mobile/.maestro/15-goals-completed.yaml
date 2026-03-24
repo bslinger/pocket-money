@@ -1,0 +1,30 @@
+appId: host.exp.exponent
+---
+# Goals completed tab flow
+# Assumes user is logged in
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Goals tab
+- tapOn: "Goals"
+- extendedWaitUntil:
+    visible: "Goals"
+    timeout: 5000
+
+# Switch to Completed tab
+- tapOn: "Completed"
+
+- takeScreenshot: screenshots/32-goals-completed
+
+# Switch back to Active
+- tapOn: "Active"
+
+- takeScreenshot: screenshots/33-goals-active
+
+# Return to dashboard
+- tapOn:
+    text: "Dashbo.*"
