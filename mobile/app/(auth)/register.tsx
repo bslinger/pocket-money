@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 
 export default function RegisterScreen() {
   const { register } = useAuth();
@@ -58,12 +59,12 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   inner: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 40 },
-  logo: { fontSize: 40, fontWeight: '700', color: colors.eucalyptus[400], textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: colors.bark[600], textAlign: 'center', marginBottom: 32 },
-  error: { color: colors.redearth[400], textAlign: 'center', marginBottom: 16 },
-  input: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, padding: 14, fontSize: 16, color: colors.bark[700], marginBottom: 12 },
+  logo: { fontFamily: fonts.display, fontSize: 40, fontWeight: '700', color: colors.eucalyptus[400], textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontFamily: fonts.body, fontSize: 16, color: colors.bark[600], textAlign: 'center', marginBottom: 32 },
+  error: { fontFamily: fonts.body, color: colors.redearth[400], textAlign: 'center', marginBottom: 16 },
+  input: { fontFamily: fonts.body, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, padding: 14, fontSize: 16, color: colors.bark[700], marginBottom: 12 },
   button: { backgroundColor: colors.eucalyptus[400], borderRadius: 8, padding: 16, alignItems: 'center', marginTop: 8 },
-  buttonText: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  buttonText: { fontFamily: fonts.body, color: colors.white, fontSize: 16, fontWeight: '600' },
   link: { marginTop: 16, alignSelf: 'center' },
-  linkText: { color: colors.eucalyptus[400], fontSize: 14 },
+  linkText: { fontFamily: fonts.body, color: colors.eucalyptus[400], fontSize: 14 },
 });

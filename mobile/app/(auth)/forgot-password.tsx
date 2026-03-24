@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { Link } from 'expo-router';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -19,7 +20,8 @@ export default function ForgotPasswordScreen() {
       await api.post('/forgot-password', { email });
       setStatus('Password reset link sent to your email.');
     } catch (e: any) {
-      const msg = e.response?.data?.message ?? e.response?.data?.errors?.email?.[0] ?? 'Failed to send reset link';
+      console.error('Forgot password error:', JSON.stringify(e.response?.data ?? e.message, null, 2));
+      const msg = e.response?.data?.message ?? e.response?.data?.errors?.email?.[0] ?? e.message ?? 'Failed to send reset link';
       setError(msg);
     } finally {
       setLoading(false);
@@ -52,13 +54,13 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   inner: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
-  title: { fontSize: 28, fontWeight: '700', color: colors.bark[700], textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 14, color: colors.bark[600], textAlign: 'center', marginBottom: 24 },
-  error: { color: colors.redearth[400], textAlign: 'center', marginBottom: 16 },
-  success: { color: colors.gumleaf[400], textAlign: 'center', marginBottom: 16 },
-  input: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, padding: 14, fontSize: 16, color: colors.bark[700], marginBottom: 12 },
+  title: { fontFamily: fonts.display, fontSize: 28, fontWeight: '700', color: colors.bark[700], textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600], textAlign: 'center', marginBottom: 24 },
+  error: { fontFamily: fonts.body, color: colors.redearth[400], textAlign: 'center', marginBottom: 16 },
+  success: { fontFamily: fonts.body, color: colors.gumleaf[400], textAlign: 'center', marginBottom: 16 },
+  input: { fontFamily: fonts.body, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, padding: 14, fontSize: 16, color: colors.bark[700], marginBottom: 12 },
   button: { backgroundColor: colors.eucalyptus[400], borderRadius: 8, padding: 16, alignItems: 'center', marginTop: 8 },
-  buttonText: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  buttonText: { fontFamily: fonts.body, color: colors.white, fontSize: 16, fontWeight: '600' },
   link: { marginTop: 16, alignSelf: 'center' },
   linkText: { color: colors.eucalyptus[400], fontSize: 14 },
 });

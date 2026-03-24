@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 
 export default function TabLayout() {
   return (
@@ -8,13 +9,14 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.eucalyptus[400],
         tabBarInactiveTintColor: colors.bark[600],
+        tabBarLabelStyle: { fontFamily: fonts.body, fontSize: 11 },
         tabBarStyle: {
           backgroundColor: colors.white,
           borderTopColor: colors.bark[200],
         },
         headerStyle: { backgroundColor: colors.bark[100] },
         headerTintColor: colors.bark[700],
-        headerTitleStyle: { fontWeight: '600' },
+        headerTitleStyle: { fontFamily: fonts.display, fontWeight: '600' },
       }}
     >
       <Tabs.Screen

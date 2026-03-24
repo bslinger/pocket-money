@@ -6,6 +6,7 @@ import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 import type { Chore, ChoreCompletion, ApiResponse } from '@quiddo/shared';
 import { DAYS_OF_WEEK } from '@quiddo/shared';
 
@@ -307,14 +308,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  title: { fontSize: 24, fontWeight: '700', color: colors.bark[700] },
+  title: { fontFamily: fonts.display, fontSize: 24, fontWeight: '700', color: colors.bark[700] },
   newButton: {
     backgroundColor: colors.eucalyptus[400],
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  newButtonText: { color: colors.white, fontWeight: '600', fontSize: 14 },
+  newButtonText: { fontFamily: fonts.body, color: colors.white, fontWeight: '600', fontSize: 14 },
   segmentBar: {
     flexDirection: 'row',
     backgroundColor: colors.bark[200],

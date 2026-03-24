@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -17,7 +18,8 @@ export default function LoginScreen() {
     try {
       await login(email, password, Platform.OS);
     } catch (e: any) {
-      setError(e.response?.data?.message ?? 'Login failed');
+      console.error('Login error:', e.response?.status, JSON.stringify(e.response?.data ?? e.message));
+      setError(e.response?.data?.message ?? e.message ?? 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -68,10 +70,11 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   inner: { flex: 1, justifyContent: 'center', paddingHorizontal: 24 },
-  logo: { fontSize: 40, fontWeight: '700', color: colors.eucalyptus[400], textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: colors.bark[600], textAlign: 'center', marginBottom: 32 },
-  error: { color: colors.redearth[400], textAlign: 'center', marginBottom: 16 },
+  logo: { fontFamily: fonts.display, fontSize: 40, fontWeight: '700', color: colors.eucalyptus[400], textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontFamily: fonts.body, fontSize: 16, color: colors.bark[600], textAlign: 'center', marginBottom: 32 },
+  error: { fontFamily: fonts.body, color: colors.redearth[400], textAlign: 'center', marginBottom: 16 },
   input: {
+    fontFamily: fonts.body,
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.bark[200],
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  buttonText: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  buttonText: { fontFamily: fonts.body, color: colors.white, fontSize: 16, fontWeight: '600' },
   link: { marginTop: 16, alignSelf: 'center' },
-  linkText: { color: colors.eucalyptus[400], fontSize: 14 },
+  linkText: { fontFamily: fonts.body, color: colors.eucalyptus[400], fontSize: 14 },
 });
