@@ -20,6 +20,6 @@ appId: host.exp.exponent
 
 - assertVisible:
     text: "Dashboard"
-    timeout: 10000
+    maxTimeout: 10000
 
 - takeScreenshot: screenshots/02-dashboard

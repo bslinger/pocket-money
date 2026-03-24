@@ -7,7 +7,7 @@ appId: host.exp.exponent
 
 - assertVisible:
     text: "Quiddo"
-    timeout: 10000
+    maxTimeout: 10000
 
 # Tap the profile icon (top right)
 - tapOn:
@@ -15,7 +15,7 @@ appId: host.exp.exponent
 
 - assertVisible:
     text: "Profile settings"
-    timeout: 5000
+    maxTimeout: 5000
 
 - takeScreenshot: screenshots/08-profile-panel
 

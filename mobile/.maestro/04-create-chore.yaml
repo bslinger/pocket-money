@@ -9,13 +9,13 @@ appId: host.exp.exponent
 - tapOn: "Chores"
 - assertVisible:
     text: "Chores"
-    timeout: 5000
+    maxTimeout: 5000
 
 # Tap new chore button
 - tapOn: "New Chore"
 - assertVisible:
     text: "Chore Name"
-    timeout: 5000
+    maxTimeout: 5000
 
 - takeScreenshot: screenshots/09-create-chore-empty
 
