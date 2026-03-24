@@ -19,7 +19,7 @@ import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol } from '@/li
 import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
 import { formatDistanceToNow } from 'date-fns';
 
-type Tab = 'accounts' | 'goals' | 'chores' | 'transactions';
+type Tab = 'accounts' | 'goals' | 'chores' | 'transactions' | 'manage';
 
 function InviteConfirmModal({ email, spenderName, onConfirm, onCancel, processing }: {
     email: string;
@@ -418,6 +418,7 @@ export default function SpenderShow({
         { id: 'goals', label: 'Goals', count: spender.savings_goals?.filter(g => !g.is_completed).length },
         { id: 'chores', label: 'Chores', count: spender.chores?.length },
         { id: 'transactions', label: 'Transactions', count: transactions.length },
+        ...(isParent ? [{ id: 'manage' as Tab, label: 'Manage' }] : []),
     ];
 
     return (
@@ -573,11 +574,6 @@ export default function SpenderShow({
                         )}
                     </div>
 
-                    {/* Child login card — parents only */}
-                    <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
-
-                    {/* Linked devices card — parents only */}
-                    <LinkedDevicesCard spender={spender} devices={spenderDevices} flashLinkCode={flash?.linkCode} />
                 </div>
             )}
 
@@ -600,6 +596,14 @@ export default function SpenderShow({
                     isParent={isParent}
                     onNewTransaction={(account, type) => setQuickTxModal({ account, type })}
                 />
+            )}
+
+            {/* Manage tab — parent only */}
+            {activeTab === 'manage' && isParent && (
+                <div className="space-y-6">
+                    <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
+                    <LinkedDevicesCard spender={spender} devices={spenderDevices} flashLinkCode={flash?.linkCode} />
+                </div>
             )}
 
             {/* Quick transaction modal for account buttons */}

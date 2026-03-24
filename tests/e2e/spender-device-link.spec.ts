@@ -1,13 +1,16 @@
 import { test, expect } from './fixtures';
 
 test.describe('Spender device linking', () => {
-    test('shows Linked Devices card on spender page', async ({ page }) => {
+    test('shows Linked Devices card on manage tab', async ({ page }) => {
         await page.goto('/spenders');
         await page.waitForLoadState('networkidle');
         const emmaLink = page.getByRole('link', { name: 'Emma' });
         const href = await emmaLink.getAttribute('href');
         await page.goto(href!);
         await page.waitForLoadState('networkidle');
+
+        // Switch to Manage tab
+        await page.getByRole('button', { name: 'Manage' }).click();
 
         await expect(page.getByText('Linked Devices')).toBeVisible();
         await expect(page.getByText('No devices linked yet.')).toBeVisible();
@@ -22,6 +25,9 @@ test.describe('Spender device linking', () => {
         const href = await emmaLink.getAttribute('href');
         await page.goto(href!);
         await page.waitForLoadState('networkidle');
+
+        // Switch to Manage tab
+        await page.getByRole('button', { name: 'Manage' }).click();
 
         // Click "Generate Link Code" — opens QR modal
         const generateBtn = page.getByRole('button', { name: 'Generate Link Code' });
@@ -68,6 +74,7 @@ test.describe('Spender device linking', () => {
         // Parent sees the device
         await page.reload();
         await page.waitForLoadState('networkidle');
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Test iPad')).toBeVisible({ timeout: 5000 });
 
         // Parent revokes the device
