@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Spender, ChildInvitation, Account, Transaction, Family, Chore, ChoreCompletion } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -13,6 +13,8 @@ import {
     QrCode, Trash2, Copy,
 } from 'lucide-react';
 import type { SpenderDevice } from '@quiddo/shared';
+import { QRCodeSVG } from 'qrcode.react';
+import Modal from '@/Components/Modal';
 import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol } from '@/lib/utils';
 import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
 import { formatDistanceToNow } from 'date-fns';
@@ -199,7 +201,13 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
     const isParent: boolean = auth.isParent ?? false;
     const [generating, setGenerating] = useState(false);
     const linkCode = flash?.linkCode as { code: string; expires_at: string } | undefined;
+    const [showModal, setShowModal] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    // Open modal when a fresh link code arrives via flash
+    useEffect(() => {
+        if (linkCode) setShowModal(true);
+    }, [linkCode]);
 
     if (!isParent) return null;
 
@@ -207,7 +215,10 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
         setGenerating(true);
         router.post(route('spenders.generate-link-code', spender.id), {}, {
             preserveScroll: true,
-            onFinish: () => setGenerating(false),
+            onFinish: () => {
+                setGenerating(false);
+                setShowModal(true);
+            },
         });
     }
 
@@ -217,85 +228,115 @@ function LinkedDevicesCard({ spender, devices }: { spender: Spender; devices: Sp
         setTimeout(() => setCopied(false), 2000);
     }
 
-    return (
-        <Card>
-            <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Smartphone className="h-4 w-4" />
-                    Linked Devices
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                <p className="text-xs text-muted-foreground">
-                    Link a child's device so they can view their accounts and mark chores complete — no email needed.
-                </p>
+    const qrValue = linkCode ? `quiddo://link?code=${linkCode.code}` : '';
 
+    return (
+        <>
+            <Modal show={showModal && !!linkCode} maxWidth="sm" onClose={() => setShowModal(false)}>
                 {linkCode && (
-                    <div className="rounded-lg border-2 border-eucalyptus-400/30 bg-eucalyptus-400/5 p-4 text-center space-y-2">
-                        <p className="text-xs text-muted-foreground">Enter this code on the child's device</p>
-                        <div className="flex items-center justify-center gap-2">
-                            <span className="text-2xl font-mono font-bold tracking-widest text-eucalyptus-400">
-                                {linkCode.code}
-                            </span>
-                            <button
-                                onClick={() => handleCopy(linkCode.code)}
-                                className="text-muted-foreground hover:text-foreground"
-                            >
-                                {copied ? <Check className="h-4 w-4 text-gumleaf-400" /> : <Copy className="h-4 w-4" />}
-                            </button>
+                    <div className="p-6 text-center space-y-5">
+                        <div>
+                            <h3 className="text-lg font-semibold text-bark-700">Link {spender.name}'s device</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Scan this QR code or enter the code below on the child's device
+                            </p>
                         </div>
+
+                        <div className="flex justify-center">
+                            <div className="bg-white p-4 rounded-xl border border-bark-200 inline-block">
+                                <QRCodeSVG
+                                    value={qrValue}
+                                    size={200}
+                                    fgColor="#3A3028"
+                                    bgColor="#FFFFFF"
+                                    level="M"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Or enter this code manually</p>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-3xl font-mono font-bold tracking-[0.3em] text-eucalyptus-400">
+                                    {linkCode.code}
+                                </span>
+                                <button
+                                    onClick={() => handleCopy(linkCode.code)}
+                                    className="text-muted-foreground hover:text-foreground p-1"
+                                >
+                                    {copied ? <Check className="h-4 w-4 text-gumleaf-400" /> : <Copy className="h-4 w-4" />}
+                                </button>
+                            </div>
+                        </div>
+
                         <p className="text-xs text-muted-foreground">
-                            Expires in 10 minutes
+                            This code expires in 10 minutes
                         </p>
+
+                        <Button variant="outline" size="sm" onClick={() => setShowModal(false)} className="w-full">
+                            Done
+                        </Button>
                     </div>
                 )}
+            </Modal>
 
-                {!linkCode && (
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <Smartphone className="h-4 w-4" />
+                        Linked Devices
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                        Link a child's device so they can view their accounts and mark chores complete — no email needed.
+                    </p>
+
                     <Button
                         variant="outline"
                         size="sm"
                         className="w-full gap-1.5"
-                        onClick={handleGenerate}
+                        onClick={linkCode ? () => setShowModal(true) : handleGenerate}
                         disabled={generating}
                     >
                         <QrCode className="h-3.5 w-3.5" />
-                        {generating ? 'Generating...' : 'Generate Link Code'}
+                        {generating ? 'Generating...' : linkCode ? 'Show Link Code' : 'Generate Link Code'}
                     </Button>
-                )}
 
-                {devices.length > 0 && (
-                    <div className="space-y-2 pt-1">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active devices</p>
-                        {devices.map(device => (
-                            <div key={device.id} className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <Smartphone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                    <span className="text-sm truncate">{device.device_name || 'Unnamed device'}</span>
-                                    {device.last_active_at && (
-                                        <span className="text-xs text-muted-foreground shrink-0">
-                                            {formatDistanceToNow(new Date(device.last_active_at), { addSuffix: true })}
-                                        </span>
-                                    )}
+                    {devices.length > 0 && (
+                        <div className="space-y-2 pt-1">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Active devices</p>
+                            {devices.map(device => (
+                                <div key={device.id} className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <Smartphone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                        <span className="text-sm truncate">{device.device_name || 'Unnamed device'}</span>
+                                        {device.last_active_at && (
+                                            <span className="text-xs text-muted-foreground shrink-0">
+                                                {formatDistanceToNow(new Date(device.last_active_at), { addSuffix: true })}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <Link
+                                        href={route('spender-devices.revoke', device.id)}
+                                        method="delete"
+                                        as="button"
+                                        preserveScroll
+                                        className="text-destructive hover:text-destructive/80 shrink-0"
+                                    >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                    </Link>
                                 </div>
-                                <Link
-                                    href={route('spender-devices.revoke', device.id)}
-                                    method="delete"
-                                    as="button"
-                                    preserveScroll
-                                    className="text-destructive hover:text-destructive/80 shrink-0"
-                                >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
 
-                {devices.length === 0 && !linkCode && (
-                    <p className="text-sm text-muted-foreground">No devices linked yet.</p>
-                )}
-            </CardContent>
-        </Card>
+                    {devices.length === 0 && !linkCode && (
+                        <p className="text-sm text-muted-foreground">No devices linked yet.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </>
     );
 }
 

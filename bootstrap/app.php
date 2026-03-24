@@ -27,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
             SwitchTestDatabase::class,
         ]);
 
+        $middleware->api(prepend: [
+            SwitchTestDatabase::class,
+        ]);
+
         $middleware->web(append: [
             HandleCors::class,
             HandleInertiaRequests::class,

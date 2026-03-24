@@ -248,10 +248,16 @@ class SpenderController extends Controller
         /** @var Carbon $expiresAt */
         $expiresAt = $code->expires_at;
 
-        return back()->with('linkCode', [
+        $linkCodeData = [
             'code' => $code->code,
             'expires_at' => $expiresAt->toIso8601String(),
-        ]);
+        ];
+
+        if (request()->wantsJson()) {
+            return response()->json(['data' => $linkCodeData], 201);
+        }
+
+        return back()->with('linkCode', $linkCodeData);
     }
 
     public function revokeDevice(SpenderDevice $device)
