@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Account, Transaction } from '@/types/models';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { formatAmount, accountCurrencySymbol } from '@/lib/utils';
-import { ChevronRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 interface Props {
   account: Account & { transactions: Transaction[] };
@@ -22,6 +22,7 @@ export default function AccountShow({ account }: Props) {
             href={route('spenders.show', spender.id)}
             className="flex items-center gap-3 mb-4 px-1 text-sm text-muted-foreground hover:text-foreground transition-colors group"
           >
+            <ChevronLeft className="h-3.5 w-3.5" />
             <Avatar className="h-6 w-6">
               <AvatarImage src={spender.avatar_url ?? undefined} />
               <AvatarFallback style={{ backgroundColor: spender.color ?? '#4A7C59' }} className="text-white text-xs">
@@ -29,7 +30,6 @@ export default function AccountShow({ account }: Props) {
               </AvatarFallback>
             </Avatar>
             <span className="group-hover:underline">{spender.name}</span>
-            <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         )}
         <div className="bg-white border border-bark-200 rounded-card p-6 mb-6">
