@@ -20,12 +20,16 @@ interface DashboardData {
 }
 
 export default function DashboardScreen() {
-  const { user } = useAuth();
+  const { user, isChildDevice, childSpender } = useAuth();
   const router = useRouter();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['dashboard'],
+    queryKey: ['dashboard', isChildDevice ? 'child' : 'parent'],
     queryFn: async () => {
+      if (isChildDevice) {
+        const res = await api.get('/child/dashboard');
+        return res.data.data;
+      }
       const res = await api.get<{ data: DashboardData }>('/dashboard');
       return res.data.data;
     },
@@ -54,6 +58,37 @@ export default function DashboardScreen() {
         <View style={styles.skeletonCard} />
         <View style={styles.skeletonCard} />
       </View>
+    );
+  }
+
+  // Child device view (linked via QR code, no user account)
+  if (isChildDevice) {
+    return (
+      <ScrollView style={[styles.container, { backgroundColor: colors.nightsky[900] }]} contentContainerStyle={styles.content}>
+        <Text style={styles.childName}>{data.spender?.name}</Text>
+        <Text style={styles.childBalance}>
+          ${parseFloat(data.balance ?? '0').toFixed(2)}
+        </Text>
+
+        {/* Goals */}
+        {data.goals?.map((goal: any) => (
+          <View key={goal.id} style={styles.goalCard}>
+            <Text style={styles.goalName}>{goal.name}</Text>
+            <View style={styles.goalProgress}>
+              <View style={[styles.goalBar, { width: `${Math.min(100, (parseFloat(goal.allocated_amount) / parseFloat(goal.target_amount)) * 100)}%` }]} />
+            </View>
+            <Text style={styles.goalAmount}>${goal.allocated_amount} / ${goal.target_amount}</Text>
+          </View>
+        ))}
+
+        {/* Chores */}
+        {data.chores?.map((chore: any) => (
+          <View key={chore.id} style={styles.choreCard}>
+            <Text style={styles.choreEmoji}>{chore.emoji ?? '✅'}</Text>
+            <Text style={styles.choreName}>{chore.name}</Text>
+          </View>
+        ))}
+      </ScrollView>
     );
   }
 
