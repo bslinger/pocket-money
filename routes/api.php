@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\V1\SpenderController;
 use App\Http\Controllers\Api\V1\SpenderLinkCodeController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\TransferController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
@@ -117,6 +119,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/spenders/{spender}/link-code', [SpenderLinkCodeController::class, 'store']);
     Route::get('/spenders/{spender}/devices', [SpenderLinkCodeController::class, 'devices']);
     Route::delete('/spender-devices/{device}', [SpenderLinkCodeController::class, 'revokeDevice']);
+
+    // Broadcasting auth (mobile parent devices)
+    Route::post('/broadcasting/auth', function (Request $request) {
+        return Broadcast::auth($request);
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -128,4 +135,22 @@ Route::middleware('auth.spender_device')->group(function (): void {
     Route::get('/child/accounts/{account}/transactions', [ChildDashboardController::class, 'transactions']);
     Route::post('/child/device-tokens', [ChildDeviceTokenController::class, 'store']);
     Route::delete('/child/device-tokens', [ChildDeviceTokenController::class, 'destroy']);
+
+    // Broadcasting auth (child devices)
+    Route::post('/child/broadcasting/auth', function (Request $request) {
+        $spender = $request->attributes->get('spender');
+        $channelName = str_replace('private-', '', $request->input('channel_name', ''));
+
+        // Child devices can only auth to their own spender channel
+        if ($channelName === 'spender.'.$spender->id) {
+            $socketId = $request->input('socket_id');
+            $secret = config('broadcasting.connections.reverb.app_secret');
+            $key = config('broadcasting.connections.reverb.app_key');
+            $signature = hash_hmac('sha256', $socketId.':'.$request->input('channel_name'), $secret);
+
+            return response()->json(['auth' => $key.':'.$signature]);
+        }
+
+        abort(403);
+    });
 });

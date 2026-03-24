@@ -7,6 +7,7 @@ use App\Http\Requests\StoreSplitTransactionRequest;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -64,6 +65,8 @@ class TransactionController extends Controller
             }
         });
 
+        rescue(fn () => NotificationService::transactionRecorded($account));
+
         return redirect()->route('accounts.show', $account);
     }
 
@@ -95,6 +98,8 @@ class TransactionController extends Controller
             $transaction->update($request->validated());
         });
 
+        rescue(fn () => NotificationService::transactionRecorded($account));
+
         return redirect()->route('accounts.show', $account);
     }
 
@@ -110,6 +115,8 @@ class TransactionController extends Controller
 
             $transaction->delete();
         });
+
+        rescue(fn () => NotificationService::transactionRecorded($account));
 
         return redirect()->route('accounts.show', $account);
     }

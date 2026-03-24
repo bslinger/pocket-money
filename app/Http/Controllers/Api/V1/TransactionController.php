@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Resources\TransactionResource;
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,8 @@ class TransactionController extends Controller
             return $transaction;
         });
 
+        rescue(fn () => NotificationService::transactionRecorded($account));
+
         return response()->json([
             'data' => new TransactionResource($transaction),
         ], 201);
@@ -81,6 +84,8 @@ class TransactionController extends Controller
             $account->increment('balance', $newDelta);
         });
 
+        rescue(fn () => NotificationService::transactionRecorded($account));
+
         return response()->json([
             'data' => new TransactionResource($transaction->fresh()),
         ]);
@@ -96,6 +101,8 @@ class TransactionController extends Controller
             $account->increment('balance', $delta);
             $transaction->delete();
         });
+
+        rescue(fn () => NotificationService::transactionRecorded($account));
 
         return response()->json(['message' => 'Transaction deleted']);
     }

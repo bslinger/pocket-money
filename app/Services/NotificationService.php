@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Account;
 use App\Models\ChoreCompletion;
 use App\Models\ChoreReward;
 use App\Models\Family;
@@ -17,6 +18,7 @@ use App\Notifications\ChoreSubmittedForApproval;
 use App\Notifications\FamilyMemberJoined;
 use App\Notifications\PocketMoneyReceived;
 use App\Notifications\SavingsGoalReached;
+use App\Notifications\TransactionRecorded;
 use Illuminate\Support\Collection;
 
 class NotificationService
@@ -30,6 +32,7 @@ class NotificationService
         $family = $spender->family;
 
         self::notifyFamilyParents($family, new ChoreSubmittedForApproval);
+        BroadcastService::familyUpdated($family);
     }
 
     public static function choreApproved(ChoreCompletion $completion): void
@@ -37,6 +40,11 @@ class NotificationService
         /** @var Spender $spender */
         $spender = $completion->spender;
         $spender->notify(new ChoreApproved);
+
+        /** @var Family $family */
+        $family = $spender->family;
+        BroadcastService::spenderUpdated($spender);
+        BroadcastService::familyUpdated($family);
     }
 
     public static function choreDeclined(ChoreCompletion $completion): void
@@ -44,6 +52,11 @@ class NotificationService
         /** @var Spender $spender */
         $spender = $completion->spender;
         $spender->notify(new ChoreDeclined);
+
+        /** @var Family $family */
+        $family = $spender->family;
+        BroadcastService::spenderUpdated($spender);
+        BroadcastService::familyUpdated($family);
     }
 
     /**
@@ -53,14 +66,31 @@ class NotificationService
     {
         $spenderIds = $completions->pluck('spender_id')->unique();
 
-        Spender::whereIn('id', $spenderIds)->get()->each(function (Spender $spender): void {
+        /** @var Family|null $family */
+        $family = null;
+
+        Spender::whereIn('id', $spenderIds)->with('family')->get()->each(function (Spender $spender) use (&$family): void {
             $spender->notify(new BulkChoresApproved);
+            BroadcastService::spenderUpdated($spender);
+
+            /** @var Family $f */
+            $f = $spender->family;
+            $family = $f;
         });
+
+        if ($family instanceof Family) {
+            BroadcastService::familyUpdated($family);
+        }
     }
 
     public static function pocketMoneyPaid(Spender $spender): void
     {
         $spender->notify(new PocketMoneyReceived);
+
+        /** @var Family $family */
+        $family = $spender->family;
+        BroadcastService::spenderUpdated($spender);
+        BroadcastService::familyUpdated($family);
     }
 
     public static function choreRewardUnlocked(ChoreReward $reward): void
@@ -68,6 +98,11 @@ class NotificationService
         /** @var Spender $spender */
         $spender = $reward->spender;
         $spender->notify(new ChoreRewardUnlocked);
+
+        /** @var Family $family */
+        $family = $spender->family;
+        BroadcastService::spenderUpdated($spender);
+        BroadcastService::familyUpdated($family);
     }
 
     public static function savingsGoalReached(SavingsGoal $goal): void
@@ -79,11 +114,14 @@ class NotificationService
         /** @var Family $family */
         $family = $spender->family;
         self::notifyFamilyParents($family, new SavingsGoalReached);
+        BroadcastService::spenderUpdated($spender);
+        BroadcastService::familyUpdated($family);
     }
 
     public static function familyMemberJoined(Family $family): void
     {
         self::notifyFamilyParents($family, new FamilyMemberJoined);
+        BroadcastService::familyUpdated($family);
     }
 
     public static function childAccountLinked(Spender $spender): void
@@ -91,6 +129,22 @@ class NotificationService
         /** @var Family $family */
         $family = $spender->family;
         self::notifyFamilyParents($family, new ChildAccountLinked);
+        BroadcastService::familyUpdated($family);
+    }
+
+    /**
+     * Notify the child that a transaction occurred and broadcast to family + spender.
+     */
+    public static function transactionRecorded(Account $account): void
+    {
+        /** @var Spender $spender */
+        $spender = $account->spender;
+        $spender->notify(new TransactionRecorded);
+
+        /** @var Family $family */
+        $family = $spender->family;
+        BroadcastService::spenderUpdated($spender);
+        BroadcastService::familyUpdated($family);
     }
 
     private static function notifyFamilyParents(Family $family, mixed $notification): void
