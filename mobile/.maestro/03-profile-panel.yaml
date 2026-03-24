@@ -3,22 +3,22 @@ appId: host.exp.exponent
 # Open profile panel and capture screenshot
 # Assumes user is already logged in
 
-- launchApp
+- openLink: ${EXPO_URL}
 
-- assertVisible:
-    text: "Quiddo"
-    maxTimeout: 10000
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 30000
 
-# Tap the profile icon (top right)
+# Tap the profile icon (top right circle)
 - tapOn:
-    point: "95%,5%"
+    point: "93%,6%"
 
-- assertVisible:
-    text: "Profile settings"
-    maxTimeout: 5000
+- extendedWaitUntil:
+    visible: "Profile settings"
+    timeout: 5000
 
 - takeScreenshot: screenshots/08-profile-panel
 
-# Close panel by tapping overlay
+# Close panel by tapping overlay on the left
 - tapOn:
     point: "10%,50%"

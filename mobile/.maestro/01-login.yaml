@@ -1,25 +1,42 @@
 appId: host.exp.exponent
 ---
 # Login flow — authenticates and lands on dashboard
-- launchApp:
-    clearState: true
+# Clear app state for fresh login fields
+- clearState: host.exp.exponent
+- openLink: ${EXPO_URL}
 
-- assertVisible: "Quiddo"
-- assertVisible: "Sign In"
+# Dismiss Expo Go dialogs — tap Continue then close dev menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 30000
+- tapOn: "Continue"
+
+# Dev tools panel may appear — close it via the X button
+- runFlow:
+    when:
+      visible: "Reload"
+    commands:
+      - tapOn:
+          point: "89%,35%"
+
+# Wait for login screen
+- extendedWaitUntil:
+    visible: "Sign In"
+    timeout: 45000
 
 - tapOn: "Email"
-- inputText: "ben@slinger.com.au"
+- inputText: ${EMAIL}
 
 - tapOn: "Password"
-- inputText: "test1234"
+- inputText: ${PASSWORD}
 - hideKeyboard
 
 - takeScreenshot: screenshots/01-login-filled
 
 - tapOn: "Sign In"
 
-- assertVisible:
-    text: "Dashboard"
-    maxTimeout: 10000
+- extendedWaitUntil:
+    visible: "Family Balance"
+    timeout: 15000
 
 - takeScreenshot: screenshots/02-dashboard

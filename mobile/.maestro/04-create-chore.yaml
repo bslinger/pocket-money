@@ -3,19 +3,23 @@ appId: host.exp.exponent
 # Create a chore flow
 # Assumes user is already logged in
 
-- launchApp
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Family Balance"
+    timeout: 30000
 
 # Go to chores tab
 - tapOn: "Chores"
-- assertVisible:
-    text: "Chores"
-    maxTimeout: 5000
+- extendedWaitUntil:
+    visible: "Chores"
+    timeout: 5000
 
 # Tap new chore button
 - tapOn: "New Chore"
-- assertVisible:
-    text: "Chore Name"
-    maxTimeout: 5000
+- extendedWaitUntil:
+    visible: "Chore Name"
+    timeout: 5000
 
 - takeScreenshot: screenshots/09-create-chore-empty
 

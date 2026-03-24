@@ -3,38 +3,39 @@ appId: host.exp.exponent
 # Navigate through all tabs and capture screenshots
 # Assumes user is already logged in from 01-login
 
-- launchApp
+- openLink: ${EXPO_URL}
 
-# Wait for dashboard
-- assertVisible:
-    text: "Dashboard"
-    maxTimeout: 10000
+- extendedWaitUntil:
+    visible: "Family Balance"
+    timeout: 30000
+
 - takeScreenshot: screenshots/03-dashboard-full
 
 # Kids tab
 - tapOn: "Kids"
-- assertVisible:
-    text: "Kids"
-    maxTimeout: 5000
+- extendedWaitUntil:
+    visible: "Kids"
+    timeout: 5000
 - takeScreenshot: screenshots/04-kids
 
 # Chores tab
 - tapOn: "Chores"
-- assertVisible:
-    text: "Chores"
-    maxTimeout: 5000
+- extendedWaitUntil:
+    visible: "Chores"
+    timeout: 5000
 - takeScreenshot: screenshots/05-chores
 
 # Goals tab
 - tapOn: "Goals"
-- assertVisible:
-    text: "Goals"
-    maxTimeout: 5000
+- extendedWaitUntil:
+    visible: "Goals"
+    timeout: 5000
 - takeScreenshot: screenshots/06-goals
 
-# Pocket Money tab
-- tapOn: "Pocket Money"
-- assertVisible:
-    text: "Pocket Money"
-    maxTimeout: 5000
+# Pocket Money tab — text is truncated on tab bar, use partial match
+- tapOn:
+    text: "Pocket.*"
+- extendedWaitUntil:
+    visible: "Pocket Money"
+    timeout: 5000
 - takeScreenshot: screenshots/07-pocket-money
