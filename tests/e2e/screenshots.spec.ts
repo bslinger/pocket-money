@@ -28,6 +28,17 @@ test.describe('Web screenshots for mobile comparison', () => {
         await page.screenshot({ path: `${SCREENSHOT_DIR}/02-dashboard.png`, fullPage: false });
     });
 
+    test('02b - dashboard approvals', async ({ page }) => {
+        await page.goto('/dashboard');
+        await page.waitForLoadState('networkidle');
+        // Scroll to approvals section
+        const approvals = page.getByText('Needs your approval');
+        if (await approvals.isVisible({ timeout: 3000 }).catch(() => false)) {
+            await approvals.scrollIntoViewIfNeeded();
+            await page.screenshot({ path: `${SCREENSHOT_DIR}/02b-dashboard-approvals.png`, fullPage: false });
+        }
+    });
+
     test('03 - dashboard full', async ({ page }) => {
         await page.goto('/dashboard');
         await page.waitForLoadState('networkidle');

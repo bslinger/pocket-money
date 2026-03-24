@@ -35,6 +35,7 @@ HEADER_COLOR = (74, 124, 89) # eucalyptus-400
 SCREEN_LABELS = {
     "01-login-filled": "Login",
     "02-dashboard": "Dashboard",
+    "02b-dashboard-approvals": "Dashboard (approvals)",
     "03-dashboard-full": "Dashboard (full)",
     "04-kids": "Kids",
     "05-chores": "Chores",
