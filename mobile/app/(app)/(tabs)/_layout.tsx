@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { LayoutDashboard, Users, CheckSquare, Target, Coins } from 'lucide-react-native';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '@/lib/colors';
 
 export default function TabLayout() {
@@ -21,7 +21,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => <LayoutDashboard size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Feather name="layout" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -29,7 +29,7 @@ export default function TabLayout() {
         options={{
           title: 'Kids',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <Users size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Feather name="users" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -37,7 +37,7 @@ export default function TabLayout() {
         options={{
           title: 'Chores',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <CheckSquare size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Feather name="check-square" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -45,7 +45,7 @@ export default function TabLayout() {
         options={{
           title: 'Goals',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <Target size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Feather name="target" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -53,7 +53,7 @@ export default function TabLayout() {
         options={{
           title: 'Pocket Money',
           headerShown: false,
-          tabBarIcon: ({ color, size }) => <Coins size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <Feather name="dollar-sign" size={size} color={color} />,
         }}
       />
     </Tabs>
