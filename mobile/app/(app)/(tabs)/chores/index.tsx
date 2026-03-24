@@ -22,13 +22,19 @@ export default function ChoresScreen() {
   const queryClient = useQueryClient();
   const [activeSegment, setActiveSegment] = useState<SegmentKey>('approvals');
 
-  const { data: chores, isLoading: choresLoading } = useQuery({
+  const { data: choresData, isLoading: choresLoading } = useQuery({
     queryKey: ['chores'],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<Chore[]>>('/chores');
-      return res.data.data;
+      const res = await api.get('/chores');
+      return res.data.data as {
+        chores: Chore[];
+        week_completions: (ChoreCompletion & { choreName?: string; choreEmoji?: string | null })[];
+        pending_completions: (ChoreCompletion & { choreName?: string; choreEmoji?: string | null })[];
+      };
     },
   });
+
+  const chores = choresData?.chores;
 
   const approveMutation = useMutation({
     mutationFn: async (completionId: string) => {
@@ -101,18 +107,11 @@ export default function ChoresScreen() {
     );
   }
 
-  const allCompletions: (ChoreCompletion & { choreName: string; choreEmoji: string | null })[] = [];
-  for (const chore of chores ?? []) {
-    for (const completion of chore.completions ?? []) {
-      if (completion.status === 'pending') {
-        allCompletions.push({
-          ...completion,
-          choreName: chore.name,
-          choreEmoji: chore.emoji,
-        });
-      }
-    }
-  }
+  const allCompletions = (choresData?.pending_completions ?? []).map((c) => ({
+    ...c,
+    choreName: c.chore?.name ?? '',
+    choreEmoji: c.chore?.emoji ?? null,
+  }));
 
   const today = new Date().getDay();
   const todayIndex = today === 0 ? 6 : today - 1; // Convert to 0=Mon
