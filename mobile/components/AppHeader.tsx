@@ -2,26 +2,19 @@ import { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Dimensions, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 import { useAuth } from '@/lib/auth';
-import { api } from '@/lib/api';
+import { useFamily } from '@/lib/family';
 
 const PANEL_WIDTH = 300;
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-interface Family {
-  id: string;
-  name: string;
-}
 
 export default function AppHeader() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
-  const queryClient = useQueryClient();
+  const { families, activeFamily, switchFamily } = useFamily();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(PANEL_WIDTH)).current;
@@ -41,19 +34,8 @@ export default function AppHeader() {
     }
   }, [menuOpen]);
 
-  const { data: families } = useQuery({
-    queryKey: ['families'],
-    queryFn: async () => {
-      const res = await api.get('/families');
-      return res.data.data as Family[];
-    },
-  });
-
-  const activeFamily = families?.[0];
-
-  async function switchFamily(familyId: string) {
-    await api.post(`/families/${familyId}/switch`);
-    queryClient.invalidateQueries();
+  async function handleSwitchFamily(familyId: string) {
+    await switchFamily(familyId);
     setMenuOpen(false);
   }
 
@@ -126,7 +108,7 @@ export default function AppHeader() {
                     <TouchableOpacity
                       key={f.id}
                       style={styles.menuItem}
-                      onPress={() => switchFamily(f.id)}
+                      onPress={() => handleSwitchFamily(f.id)}
                     >
                       <View style={[styles.familyDot, { backgroundColor: f.id === activeFamily?.id ? colors.eucalyptus[400] : colors.bark[200] }]} />
                       <Text style={styles.menuItemText}>{f.name}</Text>

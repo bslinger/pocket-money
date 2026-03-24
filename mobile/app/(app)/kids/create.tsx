@@ -5,11 +5,13 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { useFamily } from '@/lib/family';
 import { SPENDER_COLORS } from '@quiddo/shared';
 
 export default function CreateKidScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { activeFamily } = useFamily();
 
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState<string>(SPENDER_COLORS[0]);
@@ -19,6 +21,7 @@ export default function CreateKidScreen() {
       return api.post('/spenders', {
         name,
         color: selectedColor,
+        family_id: activeFamily?.id,
       });
     },
     onSuccess: () => {

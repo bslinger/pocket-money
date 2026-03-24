@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider } from '@/lib/auth';
+import { FamilyProvider } from '@/lib/family';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -38,10 +39,12 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(app)" />
-          </Stack>
+          <FamilyProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(app)" />
+            </Stack>
+          </FamilyProvider>
         </AuthProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
