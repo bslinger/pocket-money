@@ -6,6 +6,7 @@ use App\Enums\FamilyRole;
 use App\Models\Family;
 use App\Models\FamilyUser;
 use App\Models\Invitation;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -21,16 +22,17 @@ class InvitationController extends Controller
     {
         $invitation = Invitation::with('family')->where('token', $token)->first();
 
-        if (!$invitation || $invitation->isExpired()) {
+        if (! $invitation || $invitation->isExpired()) {
             return redirect()->route('dashboard')
                 ->with('error', 'This invitation link is invalid or has expired.');
         }
 
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             // Save token in session, redirect to login
             session(['pending_invitation_token' => $token]);
+
             return redirect()->route('login')
                 ->with('status', 'Please log in (or register) to accept your invitation.');
         }
@@ -52,19 +54,19 @@ class InvitationController extends Controller
     public static function claimPending(Request $request): void
     {
         $token = session('pending_invitation_token');
-        if (!$token) {
+        if (! $token) {
             return;
         }
 
-        /** @var \App\Models\Invitation|null $invitation */
+        /** @var Invitation|null $invitation */
         $invitation = Invitation::with('family')->where('token', $token)->first();
         $user = $request->user();
 
-        if ($invitation && !$invitation->isExpired() && $user
+        if ($invitation && ! $invitation->isExpired() && $user
             && strtolower($user->email) === strtolower($invitation->email)) {
             /** @var Family $family */
             $family = $invitation->family;
-            (new self())->addToFamily($invitation, $user->id);
+            (new self)->addToFamily($invitation, $user->id);
             session()->forget('pending_invitation_token');
             session()->flash('success', "You've joined {$family->name}!");
         } else {
@@ -74,11 +76,16 @@ class InvitationController extends Controller
 
     private function addToFamily(Invitation $invitation, string $userId): void
     {
+        /** @var Family $family */
+        $family = $invitation->family;
+
         FamilyUser::firstOrCreate(
             ['family_id' => $invitation->family_id, 'user_id' => $userId],
-            ['role'      => FamilyRole::Member],
+            ['role' => FamilyRole::Member],
         );
 
         $invitation->delete();
+
+        rescue(fn () => NotificationService::familyMemberJoined($family));
     }
 }

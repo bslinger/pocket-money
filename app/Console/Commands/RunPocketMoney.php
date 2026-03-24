@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\CompletionStatus;
 use App\Models\PocketMoneySchedule;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use App\Services\SpenderService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class RunPocketMoney extends Command
 {
     protected $signature = 'pocket-money:run';
+
     protected $description = 'Pay out scheduled pocket money for eligible spenders';
 
     public function handle(): void
@@ -53,7 +55,7 @@ class RunPocketMoney extends Command
 
         if ($responsibilityChores->isNotEmpty()) {
             $weekStart = now()->startOfWeek();
-            $weekEnd   = now()->endOfWeek();
+            $weekEnd = now()->endOfWeek();
 
             $completedChoreIds = $spender->choreCompletions
                 ->where('status', CompletionStatus::Approved->value)
@@ -63,10 +65,10 @@ class RunPocketMoney extends Command
 
             $requiredChoreIds = $responsibilityChores->pluck('id');
             $allMet = $requiredChoreIds->every(
-                fn(string $id) => $completedChoreIds->contains($id)
+                fn (string $id) => $completedChoreIds->contains($id)
             );
 
-            if (!$allMet) {
+            if (! $allMet) {
                 return false;
             }
         }
@@ -74,15 +76,17 @@ class RunPocketMoney extends Command
         DB::transaction(function () use ($schedule, $spender) {
             $account = $schedule->account ?? SpenderService::mainAccount($spender);
             Transaction::create([
-                'account_id'  => $account->id,
-                'type'        => 'credit',
-                'amount'      => $schedule->amount,
+                'account_id' => $account->id,
+                'type' => 'credit',
+                'amount' => $schedule->amount,
                 'description' => 'Pocket money',
                 'occurred_at' => now(),
-                'created_by'  => $schedule->created_by,
+                'created_by' => $schedule->created_by,
             ]);
             $account->increment('balance', (float) $schedule->amount);
         });
+
+        rescue(fn () => NotificationService::pocketMoneyPaid($spender));
 
         return true;
     }
@@ -97,7 +101,8 @@ class RunPocketMoney extends Command
 
         // monthly: same day next month
         $target = $schedule->day_of_month ?? 1;
-        $next   = $from->copy()->addMonth();
+        $next = $from->copy()->addMonth();
+
         return $next->setDay(min($target, $next->daysInMonth))->startOfDay();
     }
 }

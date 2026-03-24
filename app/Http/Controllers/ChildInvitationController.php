@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChildInvitation;
+use App\Models\Spender;
 use App\Models\SpenderUser;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -19,15 +21,16 @@ class ChildInvitationController extends Controller
     {
         $invitation = ChildInvitation::with('spender')->where('token', $token)->first();
 
-        if (!$invitation || $invitation->isExpired()) {
+        if (! $invitation || $invitation->isExpired()) {
             return redirect()->route('dashboard')
                 ->with('error', 'This invitation link is invalid or has expired.');
         }
 
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             session(['pending_child_invitation' => $token]);
+
             return redirect()->route('login')
                 ->with('status', 'Please log in or create an account to accept your invitation.');
         }
@@ -39,8 +42,9 @@ class ChildInvitationController extends Controller
 
         $this->link($invitation, $user->id);
 
-        /** @var \App\Models\Spender $spender */
+        /** @var Spender $spender */
         $spender = $invitation->spender;
+
         return redirect()->route('dashboard')
             ->with('success', "You've been linked to {$spender->name}'s account!");
     }
@@ -51,6 +55,7 @@ class ChildInvitationController extends Controller
     public function cancel(ChildInvitation $childInvitation): RedirectResponse
     {
         $childInvitation->delete();
+
         return back()->with('success', 'Invitation cancelled.');
     }
 
@@ -60,19 +65,19 @@ class ChildInvitationController extends Controller
     public static function claimPending(Request $request): void
     {
         $token = session('pending_child_invitation');
-        if (!$token) {
+        if (! $token) {
             return;
         }
 
         $invitation = ChildInvitation::with('spender')->where('token', $token)->first();
         $user = $request->user();
 
-        if ($invitation && !$invitation->isExpired() && $user
+        if ($invitation && ! $invitation->isExpired() && $user
             && strtolower($user->email) === strtolower($invitation->email)
         ) {
-            /** @var \App\Models\Spender $spender */
+            /** @var Spender $spender */
             $spender = $invitation->spender;
-            (new self())->link($invitation, $user->id);
+            (new self)->link($invitation, $user->id);
             session()->forget('pending_child_invitation');
             session()->flash('success', "You've been linked to {$spender->name}'s account!");
         } else {
@@ -82,11 +87,16 @@ class ChildInvitationController extends Controller
 
     private function link(ChildInvitation $invitation, string $userId): void
     {
+        /** @var Spender $spender */
+        $spender = $invitation->spender;
+
         SpenderUser::firstOrCreate([
-            'spender_id' => $invitation->spender_id,
-            'user_id'    => $userId,
+            'spender_id' => $spender->id,
+            'user_id' => $userId,
         ]);
 
         $invitation->delete();
+
+        rescue(fn () => NotificationService::childAccountLinked($spender));
     }
 }

@@ -9,6 +9,8 @@
         "php": "^8.4",
         "bentonow/bento-laravel-sdk": "^1.3",
         "inertiajs/inertia-laravel": "^3.0",
+        "laravel-notification-channels/apn": "^6.2",
+        "laravel-notification-channels/fcm": "^6.1",
         "laravel/breeze": "^2.4",
         "laravel/cashier": "^16.5",
         "laravel/framework": "^13.0",

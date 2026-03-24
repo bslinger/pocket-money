@@ -9,6 +9,7 @@ use App\Models\Chore;
 use App\Models\PocketMoneySchedule;
 use App\Models\Spender;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use App\Services\SpenderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -115,6 +116,8 @@ class PocketMoneyController extends Controller
         ]);
 
         $account->increment('balance', $request->input('amount'));
+
+        rescue(fn () => NotificationService::pocketMoneyPaid($spender));
 
         return response()->json(['message' => 'Pocket money paid']);
     }

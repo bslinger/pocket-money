@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -77,5 +78,23 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isChildFor(Spender $spender): bool
     {
         return $this->spenderUsers()->where('spender_id', $spender->id)->exists();
+    }
+
+    /** @return MorphMany<PushToken, $this> */
+    public function pushTokens(): MorphMany
+    {
+        return $this->morphMany(PushToken::class, 'tokenable');
+    }
+
+    /** @return array<int, string> */
+    public function routeNotificationForFcm(): array
+    {
+        return $this->pushTokens()->where('platform', 'android')->pluck('token')->all();
+    }
+
+    /** @return array<int, string> */
+    public function routeNotificationForApn(): array
+    {
+        return $this->pushTokens()->where('platform', 'ios')->pluck('token')->all();
     }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ChildDashboardController;
+use App\Http\Controllers\Api\V1\ChildDeviceTokenController;
 use App\Http\Controllers\Api\V1\ChoreCompletionController;
 use App\Http\Controllers\Api\V1\ChoreController;
 use App\Http\Controllers\Api\V1\ChoreRewardController;
@@ -125,4 +126,6 @@ Route::middleware('auth.spender_device')->group(function (): void {
     Route::get('/child/dashboard', [ChildDashboardController::class, 'index']);
     Route::post('/child/chores/{chore}/complete', [ChildDashboardController::class, 'completeChore']);
     Route::get('/child/accounts/{account}/transactions', [ChildDashboardController::class, 'transactions']);
+    Route::post('/child/device-tokens', [ChildDeviceTokenController::class, 'store']);
+    Route::delete('/child/device-tokens', [ChildDeviceTokenController::class, 'destroy']);
 });

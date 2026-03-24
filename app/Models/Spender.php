@@ -10,11 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Spender extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, Notifiable, SoftDeletes;
 
     public $incrementing = false;
 
@@ -110,5 +112,23 @@ class Spender extends Model
     public function devices(): HasMany
     {
         return $this->hasMany(SpenderDevice::class);
+    }
+
+    /** @return MorphMany<PushToken, $this> */
+    public function pushTokens(): MorphMany
+    {
+        return $this->morphMany(PushToken::class, 'tokenable');
+    }
+
+    /** @return array<int, string> */
+    public function routeNotificationForFcm(): array
+    {
+        return $this->pushTokens()->where('platform', 'android')->pluck('token')->all();
+    }
+
+    /** @return array<int, string> */
+    public function routeNotificationForApn(): array
+    {
+        return $this->pushTokens()->where('platform', 'ios')->pluck('token')->all();
     }
 }

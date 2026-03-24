@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\CompletionStatus;
 use App\Enums\ChoreRewardType;
+use App\Enums\CompletionStatus;
 use App\Models\Chore;
 use App\Models\ChoreCompletion;
 use App\Models\ChoreReward;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use App\Services\SpenderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ChoreCompletionController extends Controller
 {
@@ -31,16 +31,16 @@ class ChoreCompletionController extends Controller
         $parentViewingAsThisSpender = $user->isParent()
             && $viewingAsSpenderId === $spenderId
             && $user->families()
-                ->whereHas('spenders', fn($q) => $q->where('spenders.id', $spenderId))
+                ->whereHas('spenders', fn ($q) => $q->where('spenders.id', $spenderId))
                 ->exists();
 
-        if (!$parentViewingAsThisSpender) {
+        if (! $parentViewingAsThisSpender) {
             $linked = $user->spenders()->where('spenders.id', $spenderId)->exists();
             abort_unless($linked, 403);
         }
 
         // Check up_for_grabs collision: if not up_for_grabs, spender must be assigned
-        if (!$chore->up_for_grabs) {
+        if (! $chore->up_for_grabs) {
             $assigned = $chore->spenders()->where('spenders.id', $spenderId)->exists();
             abort_unless($assigned, 403);
         }
@@ -55,12 +55,14 @@ class ChoreCompletionController extends Controller
             return back()->with('error', 'Already awaiting approval.');
         }
 
-        ChoreCompletion::create([
-            'chore_id'     => $chore->id,
-            'spender_id'   => $spenderId,
-            'status'       => CompletionStatus::Pending,
+        $completion = ChoreCompletion::create([
+            'chore_id' => $chore->id,
+            'spender_id' => $spenderId,
+            'status' => CompletionStatus::Pending,
             'completed_at' => now(),
         ]);
+
+        rescue(fn () => NotificationService::choreSubmittedForApproval($completion));
 
         return back()->with('success', 'Marked as done! Waiting for approval.');
     }
@@ -69,7 +71,7 @@ class ChoreCompletionController extends Controller
     {
         DB::transaction(function () use ($completion) {
             $completion->update([
-                'status'      => CompletionStatus::Approved,
+                'status' => CompletionStatus::Approved,
                 'reviewed_at' => now(),
                 'reviewed_by' => auth()->id(),
             ]);
@@ -77,12 +79,12 @@ class ChoreCompletionController extends Controller
             if ($completion->chore->reward_type === ChoreRewardType::Earns) {
                 $account = SpenderService::mainAccount($completion->spender);
                 $transaction = Transaction::create([
-                    'account_id'  => $account->id,
-                    'type'        => 'credit',
-                    'amount'      => $completion->chore->amount,
-                    'description' => 'Chore reward: ' . $completion->chore->name,
+                    'account_id' => $account->id,
+                    'type' => 'credit',
+                    'amount' => $completion->chore->amount,
+                    'description' => 'Chore reward: '.$completion->chore->name,
                     'occurred_at' => now(),
-                    'created_by'  => auth()->id(),
+                    'created_by' => auth()->id(),
                 ]);
                 $account->increment('balance', (float) $completion->chore->amount);
                 $completion->update(['transaction_id' => $transaction->id]);
@@ -91,6 +93,8 @@ class ChoreCompletionController extends Controller
 
         // Auto-pay any chore rewards with no payout date that are now fully complete
         $this->maybePayChoreRewards($completion);
+
+        rescue(fn () => NotificationService::choreApproved($completion));
 
         return back()->with('success', 'Chore approved.');
     }
@@ -114,7 +118,7 @@ class ChoreCompletionController extends Controller
     public function bulkApprove(Request $request)
     {
         $request->validate([
-            'ids'   => ['required', 'array', 'min:1'],
+            'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['uuid', 'exists:chore_completions,id'],
         ]);
 
@@ -127,7 +131,7 @@ class ChoreCompletionController extends Controller
             foreach ($completions as $completion) {
                 /** @var ChoreCompletion $completion */
                 $completion->update([
-                    'status'      => CompletionStatus::Approved,
+                    'status' => CompletionStatus::Approved,
                     'reviewed_at' => now(),
                     'reviewed_by' => auth()->id(),
                 ]);
@@ -135,18 +139,20 @@ class ChoreCompletionController extends Controller
                 if ($completion->chore->reward_type === ChoreRewardType::Earns) {
                     $account = SpenderService::mainAccount($completion->spender);
                     $transaction = Transaction::create([
-                        'account_id'  => $account->id,
-                        'type'        => 'credit',
-                        'amount'      => $completion->chore->amount,
-                        'description' => 'Chore reward: ' . $completion->chore->name,
+                        'account_id' => $account->id,
+                        'type' => 'credit',
+                        'amount' => $completion->chore->amount,
+                        'description' => 'Chore reward: '.$completion->chore->name,
                         'occurred_at' => now(),
-                        'created_by'  => auth()->id(),
+                        'created_by' => auth()->id(),
                     ]);
                     $account->increment('balance', (float) $completion->chore->amount);
                     $completion->update(['transaction_id' => $transaction->id]);
                 }
             }
         });
+
+        rescue(fn () => NotificationService::bulkChoresApproved($completions));
 
         return back()->with('success', 'All chores approved.');
     }
@@ -178,12 +184,12 @@ class ChoreCompletionController extends Controller
                     ->exists();
 
                 if ($pocketMoneyThisWeek) {
-                    $warning = 'Pocket money was already paid this week for ' . $completion->spender->name . '. Check if it should be reversed.';
+                    $warning = 'Pocket money was already paid this week for '.$completion->spender->name.'. Check if it should be reversed.';
                 }
             }
 
             $completion->update([
-                'status'      => CompletionStatus::Pending,
+                'status' => CompletionStatus::Pending,
                 'reviewed_at' => null,
                 'reviewed_by' => null,
             ]);
@@ -191,8 +197,9 @@ class ChoreCompletionController extends Controller
 
         $flash = 'Approval undone — chore is back to pending.';
         if ($warning) {
-            return back()->with('warning', $flash . ' ' . $warning);
+            return back()->with('warning', $flash.' '.$warning);
         }
+
         return back()->with('success', $flash);
     }
 
@@ -202,11 +209,13 @@ class ChoreCompletionController extends Controller
         $request->validate(['note' => ['nullable', 'string', 'max:255']]);
 
         $completion->update([
-            'status'      => CompletionStatus::Declined,
+            'status' => CompletionStatus::Declined,
             'reviewed_at' => now(),
             'reviewed_by' => auth()->id(),
-            'note'        => $request->input('note'),
+            'note' => $request->input('note'),
         ]);
+
+        rescue(fn () => NotificationService::choreDeclined($completion));
 
         return back()->with('success', 'Chore declined.');
     }

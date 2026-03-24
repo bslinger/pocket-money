@@ -9,6 +9,7 @@ use App\Models\ChoreCompletion;
 use App\Models\SavingsGoal;
 use App\Models\Spender;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -92,6 +93,10 @@ class ChildDashboardController extends Controller
             'completed_at' => now(),
             'status' => $chore->requires_approval ? 'pending' : 'approved',
         ]);
+
+        if ($chore->requires_approval) {
+            rescue(fn () => NotificationService::choreSubmittedForApproval($completion));
+        }
 
         return response()->json([
             'data' => [

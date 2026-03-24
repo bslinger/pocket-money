@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\PushToken;
+use App\Models\Spender;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class DeviceTokenController extends Controller
+class ChildDeviceTokenController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
@@ -16,7 +17,10 @@ class DeviceTokenController extends Controller
             'platform' => ['required', 'in:ios,android'],
         ]);
 
-        PushToken::register($request->user(), $request->token, $request->platform);
+        /** @var Spender $spender */
+        $spender = $request->attributes->get('spender');
+
+        PushToken::register($spender, $request->token, $request->platform);
 
         return response()->json(['message' => 'Device token registered'], 201);
     }

@@ -6,6 +6,7 @@ use App\Enums\CompletionStatus;
 use App\Models\Chore;
 use App\Models\Spender;
 use App\Models\Transaction;
+use App\Services\NotificationService;
 use App\Services\SpenderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -112,6 +113,8 @@ class PocketMoneyReleaseController extends Controller
             ]);
             $account->increment('balance', (float) $request->input('amount'));
         });
+
+        rescue(fn () => NotificationService::pocketMoneyPaid($spender));
 
         return back()->with('success', 'Pocket money paid!');
     }

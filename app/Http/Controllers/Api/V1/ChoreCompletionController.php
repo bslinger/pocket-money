@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ChoreCompletionResource;
 use App\Models\Chore;
 use App\Models\ChoreCompletion;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,6 +52,8 @@ class ChoreCompletionController extends Controller
 
         $completion->load(['chore', 'spender']);
 
+        rescue(fn () => NotificationService::choreSubmittedForApproval($completion));
+
         return response()->json([
             'data' => new ChoreCompletionResource($completion),
         ], 201);
@@ -85,6 +88,8 @@ class ChoreCompletionController extends Controller
             'reviewed_by' => $user->id,
             'note' => $request->input('note'),
         ]);
+
+        rescue(fn () => NotificationService::choreDeclined($completion));
 
         return response()->json([
             'data' => new ChoreCompletionResource($completion->fresh(['chore', 'spender'])),
