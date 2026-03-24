@@ -3,8 +3,8 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
+import { queryClient } from './queryClient';
 
 /** True when running inside Expo Go (which can't get native push tokens since SDK 53). */
 const isExpoGo = Constants.appOwnership === 'expo';
@@ -88,7 +88,6 @@ const DEEP_LINK_MAP: Record<string, string> = {
  */
 export function useNotificationListeners(): void {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const responseListener = useRef<Notifications.EventSubscription>();
   const receivedListener = useRef<Notifications.EventSubscription>();
 
