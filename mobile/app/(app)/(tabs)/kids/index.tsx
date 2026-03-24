@@ -50,11 +50,6 @@ export default function KidsListScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.totalCard}>
-        <Text style={styles.totalLabel}>Total Family Balance</Text>
-        <Text style={styles.totalValue}>${totalBalance.toFixed(2)}</Text>
-      </View>
-
       <FlashList
         data={spenders ?? []}
         estimatedItemSize={80}
