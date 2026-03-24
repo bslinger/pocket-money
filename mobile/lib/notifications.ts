@@ -9,16 +9,18 @@ import { queryClient } from './queryClient';
 /** True when running inside Expo Go (which can't get native push tokens since SDK 53). */
 const isExpoGo = Constants.appOwnership === 'expo';
 
-// Configure foreground notification behaviour
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Configure foreground notification behaviour (skip in Expo Go where it throws)
+if (!isExpoGo) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 /**
  * Request permission and register the device's native push token with the backend.
