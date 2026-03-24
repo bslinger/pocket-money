@@ -57,6 +57,7 @@ export default function AppHeader() {
           style={styles.profileButton}
           onPress={() => setMenuOpen(true)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Profile menu"
         >
           <Feather name="user" size={20} color={colors.bark[600]} />
         </TouchableOpacity>

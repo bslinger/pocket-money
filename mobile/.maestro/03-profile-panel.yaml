@@ -5,13 +5,15 @@ appId: host.exp.exponent
 
 - openLink: ${EXPO_URL}
 
-- extendedWaitUntil:
-    visible: "Quiddo"
-    timeout: 30000
-
-# Tap the profile icon (top right circle)
+# Navigate to dashboard
 - tapOn:
-    point: "93%,6%"
+    text: "Dashbo.*"
+- extendedWaitUntil:
+    visible: "Family Balance"
+    timeout: 10000
+
+# Tap profile menu button
+- tapOn: "Profile menu"
 
 - extendedWaitUntil:
     visible: "Profile settings"
@@ -19,6 +21,6 @@ appId: host.exp.exponent
 
 - takeScreenshot: screenshots/08-profile-panel
 
-# Close panel by tapping overlay on the left
+# Close panel
 - tapOn:
     point: "10%,50%"

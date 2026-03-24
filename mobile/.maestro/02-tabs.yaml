@@ -5,10 +5,12 @@ appId: host.exp.exponent
 
 - openLink: ${EXPO_URL}
 
+# Go to dashboard tab
+- tapOn:
+    text: "Dashbo.*"
 - extendedWaitUntil:
     visible: "Family Balance"
-    timeout: 30000
-
+    timeout: 10000
 - takeScreenshot: screenshots/03-dashboard-full
 
 # Kids tab
@@ -32,7 +34,7 @@ appId: host.exp.exponent
     timeout: 5000
 - takeScreenshot: screenshots/06-goals
 
-# Pocket Money tab — text is truncated on tab bar, use partial match
+# Pocket Money tab
 - tapOn:
     text: "Pocket.*"
 - extendedWaitUntil:

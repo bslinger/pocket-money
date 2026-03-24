@@ -1,39 +1,31 @@
 appId: host.exp.exponent
 ---
 # Login flow — authenticates and lands on dashboard
-# Clear app state for fresh login fields
-- clearState: host.exp.exponent
+# Prerequisite: `npx expo start` running locally
+
 - openLink: ${EXPO_URL}
 
-# Dismiss Expo Go dialogs — tap Continue then close dev menu
-- extendedWaitUntil:
-    visible: "Continue"
-    timeout: 30000
-- tapOn: "Continue"
-
-# Dev tools panel may appear — close it via the X button
+# If on login screen, fill and submit
 - runFlow:
     when:
-      visible: "Reload"
+      visible: "Sign In"
     commands:
-      - tapOn:
-          point: "89%,35%"
+      - tapOn: "Email"
+      - eraseText: 50
+      - inputText: ${EMAIL}
+      - tapOn: "Password"
+      - eraseText: 50
+      - inputText: ${PASSWORD}
+      - hideKeyboard
+      - takeScreenshot: screenshots/01-login-filled
+      - tapOn: "Sign In"
 
-# Wait for login screen
-- extendedWaitUntil:
-    visible: "Sign In"
-    timeout: 45000
-
-- tapOn: "Email"
-- inputText: ${EMAIL}
-
-- tapOn: "Password"
-- inputText: ${PASSWORD}
-- hideKeyboard
-
-- takeScreenshot: screenshots/01-login-filled
-
-- tapOn: "Sign In"
+# Dismiss 1Password if it appears
+- runFlow:
+    when:
+      visible: "No, thanks"
+    commands:
+      - tapOn: "No, thanks"
 
 - extendedWaitUntil:
     visible: "Family Balance"

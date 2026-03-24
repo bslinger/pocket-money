@@ -5,10 +5,6 @@ appId: host.exp.exponent
 
 - openLink: ${EXPO_URL}
 
-- extendedWaitUntil:
-    visible: "Family Balance"
-    timeout: 30000
-
 # Go to chores tab
 - tapOn: "Chores"
 - extendedWaitUntil:
@@ -16,7 +12,8 @@ appId: host.exp.exponent
     timeout: 5000
 
 # Tap new chore button
-- tapOn: "New Chore"
+- tapOn:
+    text: ".*New Chore"
 - extendedWaitUntil:
     visible: "Chore Name"
     timeout: 5000
