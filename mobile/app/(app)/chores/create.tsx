@@ -6,12 +6,14 @@ import * as Haptics from 'expo-haptics';
 import EmojiPicker, { type EmojiType } from 'rn-emoji-keyboard';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { useFamily } from '@/lib/family';
 import type { Spender, ApiResponse, ChoreRewardType, ChoreFrequency } from '@quiddo/shared';
 import { CHORE_FREQUENCIES, CHORE_REWARD_TYPES, DAYS_OF_WEEK } from '@quiddo/shared';
 
 export default function CreateChoreScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { activeFamily } = useFamily();
 
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('');
@@ -34,6 +36,7 @@ export default function CreateChoreScreen() {
   const createMutation = useMutation({
     mutationFn: async () => {
       return api.post('/chores', {
+        family_id: activeFamily?.id,
         name,
         emoji: emoji || null,
         reward_type: rewardType,
