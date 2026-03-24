@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter, useSegments } from 'expo-router';
-import type { User } from '@quiddo/shared';
+import type { User, ClaimDeviceResponse } from '@quiddo/shared';
 import { api, getToken, setToken, clearToken } from './api';
 
 interface AuthState {
@@ -8,11 +8,14 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isChildDevice: boolean;
+  childSpender: ClaimDeviceResponse['spender'] | null;
 }
 
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string, deviceName: string) => Promise<void>;
   register: (name: string, email: string, password: string, passwordConfirmation: string, deviceName: string) => Promise<void>;
+  childLogin: (code: string, deviceName: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -24,6 +27,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     token: null,
     isLoading: true,
     isAuthenticated: false,
+    isChildDevice: false,
+    childSpender: null,
   });
 
   const router = useRouter();
@@ -33,21 +38,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       const storedToken = await getToken();
-      if (storedToken) {
-        try {
-          const response = await api.get('/auth/user');
-          setState({
-            user: response.data.data,
-            token: storedToken,
-            isLoading: false,
-            isAuthenticated: true,
-          });
-        } catch {
-          await clearToken();
-          setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
-        }
-      } else {
-        setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+      if (!storedToken) {
+        setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null });
+        return;
+      }
+
+      // Try parent auth first
+      try {
+        const response = await api.get('/auth/user');
+        setState({
+          user: response.data.data,
+          token: storedToken,
+          isLoading: false,
+          isAuthenticated: true,
+          isChildDevice: false,
+          childSpender: null,
+        });
+        return;
+      } catch {
+        // Not a parent token — try child device
+      }
+
+      try {
+        const response = await api.get('/child/dashboard');
+        const { spender } = response.data.data;
+        setState({
+          user: null,
+          token: storedToken,
+          isLoading: false,
+          isAuthenticated: true,
+          isChildDevice: true,
+          childSpender: spender,
+        });
+      } catch {
+        await clearToken();
+        setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null });
       }
     })();
   }, []);
@@ -61,6 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!state.isAuthenticated && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (state.isAuthenticated && inAuthGroup) {
+      // Both parent and child devices go to the same tabs — the dashboard
+      // component already renders a child-specific view when isParent is false
       router.replace('/(app)/(tabs)');
     }
   }, [state.isAuthenticated, state.isLoading, segments]);
@@ -69,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await api.post('/auth/login', { email, password, device_name: deviceName });
     const { user, token } = response.data.data;
     await setToken(token);
-    setState({ user, token, isLoading: false, isAuthenticated: true });
+    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null });
   }, []);
 
   const register = useCallback(async (
@@ -88,7 +115,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     const { user, token } = response.data.data;
     await setToken(token);
-    setState({ user, token, isLoading: false, isAuthenticated: true });
+    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null });
+  }, []);
+
+  const childLogin = useCallback(async (code: string, deviceName: string) => {
+    const response = await api.post('/spender-devices/claim', { code, device_name: deviceName });
+    const { token, spender } = response.data.data;
+    await setToken(token);
+    setState({ user: null, token, isLoading: false, isAuthenticated: true, isChildDevice: true, childSpender: spender });
   }, []);
 
   const logout = useCallback(async () => {
@@ -98,11 +132,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Ignore errors — we're logging out regardless
     }
     await clearToken();
-    setState({ user: null, token: null, isLoading: false, isAuthenticated: false });
+    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, register, childLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

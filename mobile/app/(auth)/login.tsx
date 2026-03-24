@@ -62,6 +62,10 @@ export default function LoginScreen() {
         <Link href="/(auth)/register" style={styles.link}>
           <Text style={styles.linkText}>Don't have an account? Sign up</Text>
         </Link>
+
+        <Link href="/(auth)/child-link" style={styles.childLink}>
+          <Text style={styles.childLinkText}>I'm a kid — link my device</Text>
+        </Link>
       </View>
     </KeyboardAvoidingView>
   );
@@ -94,4 +98,6 @@ const styles = StyleSheet.create({
   buttonText: { fontFamily: fonts.body, color: colors.white, fontSize: 16 },
   link: { marginTop: 16, alignSelf: 'center' },
   linkText: { fontFamily: fonts.body, color: colors.eucalyptus[400], fontSize: 14 },
+  childLink: { marginTop: 24, alignSelf: 'center', borderTopWidth: 1, borderTopColor: colors.bark[200], paddingTop: 16, width: '100%', alignItems: 'center' },
+  childLinkText: { fontFamily: fonts.body, color: colors.wattle[400], fontSize: 14 },
 });
