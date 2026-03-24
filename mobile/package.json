@@ -6,7 +6,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@quiddo/shared": "*",
@@ -28,8 +30,8 @@
     "expo-symbols": "~55.0.5",
     "expo-web-browser": "~55.0.10",
     "lucide-react-native": "^0.577.0",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-native": "0.83.2",
     "react-native-gesture-handler": "~2.30.0",
     "react-native-mmkv": "^4.3.0",
@@ -43,7 +45,12 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
+    "jest": "^30.3.0",
+    "jest-expo": "^55.0.11",
+    "react-test-renderer": "19.2.4",
     "typescript": "~5.9.2"
   },
   "private": true
