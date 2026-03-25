@@ -196,8 +196,9 @@ export default function CreateAccountScreen() {
             onClose={() => setEmojiPickerOpen(false)}
             onEmojiSelected={(emojiObject: EmojiType) => {
               setCurrencySymbol(emojiObject.emoji);
-              // Auto-guess name from emoji description
-              const name = emojiObject.name?.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') ?? '';
+              // Use the last word as it's typically the most specific noun
+              const words = (emojiObject.name ?? '').split(' ');
+              const name = (words[words.length - 1] ?? '').charAt(0).toUpperCase() + (words[words.length - 1] ?? '').slice(1);
               if (name) {
                 setCurrencyName(name);
                 setCurrencyNamePlural(name.endsWith('s') ? name : name + 's');

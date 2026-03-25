@@ -19,10 +19,11 @@ export function formatAmount(amount: number | string, symbol = '$'): string {
 
 /**
  * Suggest a currency name from the names array provided by emoji-picker-react's EmojiClickData.
- * Takes the first name and title-cases it, e.g. ["star", "glowing star"] → "Star".
+ * Uses the last name which is typically the most specific,
+ * e.g. ["food & drink", "olive"] → "Olive", not "Food & Drink".
  */
 export function guessNameFromEmoji(names: string[]): string {
-    const raw = names[0] ?? '';
+    const raw = names[names.length - 1] ?? names[0] ?? '';
     return raw.replace(/\b\w/g, c => c.toUpperCase());
 }
 
