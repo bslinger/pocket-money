@@ -79,6 +79,22 @@ describe('spenders', function () {
             expect(Spender::where('name', 'Emma')->where('family_id', $family->id)->exists())->toBeTrue();
         });
 
+        it('auto-creates a Savings account for a new spender', function () {
+            [$user, $family] = parentWithFamily();
+
+            $this->actingAs($user)
+                ->post(route('spenders.store'), [
+                    'family_id' => $family->id,
+                    'name' => 'Liam',
+                    'color' => '#f59e0b',
+                ]);
+
+            $spender = Spender::where('name', 'Liam')->first();
+            expect($spender->accounts)->toHaveCount(1);
+            expect($spender->accounts->first()->name)->toBe('Savings');
+            expect($spender->accounts->first()->balance)->toEqual('0.00');
+        });
+
         it('validates that name is required', function () {
             [$user, $family] = parentWithFamily();
 

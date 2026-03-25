@@ -65,6 +65,11 @@ class SpenderController extends Controller
     {
         $spender = Spender::create($request->validated());
 
+        $spender->accounts()->create([
+            'name' => 'Savings',
+            'balance' => 0,
+        ]);
+
         return response()->json([
             'data' => new SpenderResource($spender),
         ], 201);

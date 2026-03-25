@@ -173,6 +173,11 @@ class SpenderController extends Controller
     {
         $spender = Spender::create($request->validated());
 
+        $spender->accounts()->create([
+            'name' => 'Savings',
+            'balance' => 0,
+        ]);
+
         rescue(function () use ($request, $spender): void {
             Bento::trackEvent(collect([
                 new EventData(
