@@ -54,7 +54,7 @@ function ChildChoreItem({ chore, completions, spenderId }: { chore: any; complet
         <Text style={childStyles.choreDeclined}>Your parent sent this back</Text>
       )}
       <View style={childStyles.choreRow}>
-        <Text style={childStyles.choreEmoji}>{chore.emoji ?? '📋'}</Text>
+        <Text style={childStyles.choreEmoji}>{chore.emoji ?? '🧹'}</Text>
         <View style={{ flex: 1 }}>
           <Text style={childStyles.choreName}>{chore.name}</Text>
           {chore.reward_type === 'earns' && chore.amount && (
@@ -420,7 +420,7 @@ export default function DashboardScreen() {
           {/* Chores */}
           {spender.chores?.map((chore) => (
             <View key={chore.id} style={styles.choreCard}>
-              <Text style={styles.choreEmoji}>{chore.emoji ?? '✅'}</Text>
+              <Text style={styles.choreEmoji}>{chore.emoji ?? '🧹'}</Text>
               <Text style={styles.choreName}>{chore.name}</Text>
             </View>
           ))}

@@ -16,6 +16,7 @@ class Chore extends Model
     use HasFactory, HasUuids;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -32,14 +33,18 @@ class Chore extends Model
         'created_by',
     ];
 
+    protected $attributes = [
+        'emoji' => '🧹',
+    ];
+
     protected $casts = [
-        'reward_type'       => ChoreRewardType::class,
-        'frequency'         => ChoreFrequency::class,
-        'days_of_week'      => 'array',
+        'reward_type' => ChoreRewardType::class,
+        'frequency' => ChoreFrequency::class,
+        'days_of_week' => 'array',
         'requires_approval' => 'boolean',
-        'up_for_grabs'      => 'boolean',
-        'is_active'         => 'boolean',
-        'amount'            => 'decimal:2',
+        'up_for_grabs' => 'boolean',
+        'is_active' => 'boolean',
+        'amount' => 'decimal:2',
     ];
 
     public function family(): BelongsTo

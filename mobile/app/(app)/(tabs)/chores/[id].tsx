@@ -35,7 +35,7 @@ export default function ChoreDetailScreen() {
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
-  const [emoji, setEmoji] = useState('');
+  const [emoji, setEmoji] = useState('🧹');
   const [rewardType, setRewardType] = useState<ChoreRewardType>('no_reward');
   const [amount, setAmount] = useState('');
   const [frequency, setFrequency] = useState<ChoreFrequency>('weekly');
@@ -291,7 +291,7 @@ export default function ChoreDetailScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.headerEmoji}>{chore.emoji ?? '📋'}</Text>
+        <Text style={styles.headerEmoji}>{chore.emoji ?? '🧹'}</Text>
         <Text style={styles.headerName}>{chore.name}</Text>
         <View style={[styles.statusPill, { backgroundColor: chore.is_active ? colors.gumleaf[400] + '20' : colors.bark[200] }]}>
           <Text style={[styles.statusPillText, { color: chore.is_active ? colors.gumleaf[400] : colors.bark[600] }]}>

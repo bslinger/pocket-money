@@ -209,7 +209,7 @@ export default function ChoresScreen() {
                   style={styles.scheduleChore}
                   onPress={() => router.push(`/(app)/(tabs)/chores/${chore.id}`)}
                 >
-                  <Text style={styles.scheduleEmoji}>{chore.emoji ?? '📋'}</Text>
+                  <Text style={styles.scheduleEmoji}>{chore.emoji ?? '🧹'}</Text>
                   <View style={styles.scheduleInfo}>
                     <Text style={styles.scheduleName}>{chore.name}</Text>
                     {chore.spenders && chore.spenders.length > 0 && (
@@ -246,7 +246,7 @@ export default function ChoresScreen() {
           onPress={() => router.push(`/(app)/(tabs)/chores/${chore.id}`)}
         >
           <View style={styles.manageRow}>
-            <Text style={styles.manageEmoji}>{chore.emoji ?? '📋'}</Text>
+            <Text style={styles.manageEmoji}>{chore.emoji ?? '🧹'}</Text>
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.manageName}>{chore.name}</Text>
               <Text style={styles.manageSub}>

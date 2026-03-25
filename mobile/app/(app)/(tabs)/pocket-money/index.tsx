@@ -128,7 +128,7 @@ export default function PocketMoneyScreen() {
                   <View style={[styles.checkCircle, rc.completed && styles.checkCircleCompleted]}>
                     {rc.completed && <Text style={styles.checkMark}>✓</Text>}
                   </View>
-                  {rc.chore.emoji ? (
+                  {rc.chore.emoji && rc.chore.emoji !== '' ? (
                     <Text style={styles.choreEmoji}>{rc.chore.emoji}</Text>
                   ) : null}
                   <Text style={[styles.choreName, rc.completed && styles.choreNameCompleted]}>

@@ -196,7 +196,7 @@ export default function KidDetailScreen() {
             onPress={() => router.push(`/(app)/(tabs)/chores/${chore.id}`)}
           >
             <View style={styles.itemRow}>
-              <Text style={styles.choreEmoji}>{chore.emoji ?? '✅'}</Text>
+              <Text style={styles.choreEmoji}>{chore.emoji ?? '🧹'}</Text>
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={styles.itemName}>{chore.name}</Text>
                 <Text style={styles.itemSub}>

@@ -17,7 +17,7 @@ export default function CreateChoreScreen() {
   const { activeFamily } = useFamily();
 
   const [name, setName] = useState('');
-  const [emoji, setEmoji] = useState('');
+  const [emoji, setEmoji] = useState('🧹');
   const [rewardType, setRewardType] = useState<ChoreRewardType>('no_reward');
   const [amount, setAmount] = useState('');
   const [frequency, setFrequency] = useState<ChoreFrequency>('weekly');

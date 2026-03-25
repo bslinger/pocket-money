@@ -29,7 +29,7 @@ export default function ChoreForm({ families, spenders, mode, chore, defaultSpen
   const { data, setData, post, put, processing, errors } = useForm({
     family_id:         chore?.family_id ?? (families[0]?.id ?? ''),
     name:              chore?.name ?? '',
-    emoji:             chore?.emoji ?? '',
+    emoji:             chore?.emoji ?? '🧹',
     reward_type:       (chore?.reward_type ?? 'earns') as 'earns' | 'responsibility' | 'no_reward',
     amount:            chore?.amount ?? '',
     frequency:         (chore?.frequency ?? 'weekly') as 'daily' | 'weekly' | 'monthly' | 'one_off',
