@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -16,6 +16,23 @@ const REWARD_TYPE_LABELS: Record<string, string> = { earns: 'Earns', responsibil
 function formatFrequency(f: string) { return FREQUENCY_LABELS[f] ?? f; }
 function formatRewardType(r: string) { return REWARD_TYPE_LABELS[r] ?? r; }
 
+function formatScheduleDetail(chore: Chore): string {
+  if (chore.frequency === 'weekly' && chore.days_of_week && chore.days_of_week.length > 0) {
+    const dayNames = chore.days_of_week.map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.label ?? '').filter(Boolean);
+    return dayNames.join(', ');
+  }
+  if (chore.frequency === 'monthly' && chore.day_of_month != null) {
+    const suffix = chore.day_of_month === 1 || chore.day_of_month === 21 || chore.day_of_month === 31 ? 'st'
+      : chore.day_of_month === 2 || chore.day_of_month === 22 ? 'nd'
+      : chore.day_of_month === 3 || chore.day_of_month === 23 ? 'rd' : 'th';
+    return `${chore.day_of_month}${suffix} of month`;
+  }
+  if (chore.frequency === 'one_off' && chore.one_off_date) {
+    return chore.one_off_date;
+  }
+  return '';
+}
+
 type SegmentKey = 'approvals' | 'schedule' | 'manage';
 
 const SEGMENTS: { key: SegmentKey; label: string }[] = [
@@ -30,8 +47,9 @@ export default function ChoresScreen() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const initialTab = (params.tab === 'approvals' ? 'approvals' : params.tab === 'schedule' ? 'schedule' : 'manage') as SegmentKey;
   const [activeSegment, setActiveSegment] = useState<SegmentKey>(initialTab);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data: choresData, isLoading: choresLoading } = useQuery({
+  const { data: choresData, isLoading: choresLoading, refetch } = useQuery({
     queryKey: ['chores'],
     queryFn: async () => {
       const res = await api.get('/chores');
@@ -42,6 +60,12 @@ export default function ChoresScreen() {
       };
     },
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const chores = choresData?.chores;
 
@@ -250,7 +274,9 @@ export default function ChoresScreen() {
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.manageName}>{chore.name}</Text>
               <Text style={styles.manageSub}>
-                {formatFrequency(chore.frequency)} · {formatRewardType(chore.reward_type)}
+                {formatFrequency(chore.frequency)}
+                {formatScheduleDetail(chore) ? ` (${formatScheduleDetail(chore)})` : ''}
+                {' · '}{formatRewardType(chore.reward_type)}
                 {chore.amount ? ` · $${parseFloat(chore.amount).toFixed(2)}` : ''}
               </Text>
             </View>
@@ -287,7 +313,7 @@ export default function ChoresScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>Chores</Text>
         <TouchableOpacity

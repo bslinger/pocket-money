@@ -57,10 +57,14 @@ function isChoreScheduledOnDate(chore: Chore, date: Date): boolean {
       return !chore.days_of_week || chore.days_of_week.length === 0
         ? true
         : chore.days_of_week.includes(dayIdx);
-    case 'monthly':
-      return date.getDate() === new Date(chore.created_at).getDate();
+    case 'monthly': {
+      const targetDay = chore.day_of_month ?? new Date(chore.created_at).getDate();
+      const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+      return date.getDate() === Math.min(targetDay, daysInMonth);
+    }
     case 'one_off':
-      return false;
+      if (!chore.one_off_date) return false;
+      return date.toISOString().slice(0, 10) === chore.one_off_date;
     default:
       return false;
   }
@@ -90,6 +94,24 @@ const frequencyLabel = (f: Chore['frequency']) => {
   const map = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', one_off: 'One-off' };
   return map[f];
 };
+
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+function scheduleDetail(chore: Chore): string | null {
+  if (chore.frequency === 'weekly' && chore.days_of_week?.length) {
+    return chore.days_of_week.map(d => DAY_NAMES[d] ?? '').filter(Boolean).join(', ');
+  }
+  if (chore.frequency === 'monthly' && chore.day_of_month != null) {
+    const s = chore.day_of_month === 1 || chore.day_of_month === 21 || chore.day_of_month === 31 ? 'st'
+      : chore.day_of_month === 2 || chore.day_of_month === 22 ? 'nd'
+      : chore.day_of_month === 3 || chore.day_of_month === 23 ? 'rd' : 'th';
+    return `${chore.day_of_month}${s}`;
+  }
+  if (chore.frequency === 'one_off' && chore.one_off_date) {
+    return chore.one_off_date;
+  }
+  return null;
+}
 
 export default function ChoresIndex({ families, weekCompletions, pendingCompletions: initialPending }: Props) {
   const [tab, setTab] = useState<Tab>('manage');
@@ -477,7 +499,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
                                     <span className="text-xs text-muted-foreground">{formatAmount(chore.amount, family.currency_symbol)}</span>
                                   )}
                                   <Badge variant="outline" className="text-xs font-normal">
-                                    {frequencyLabel(chore.frequency)}
+                                    {frequencyLabel(chore.frequency)}{scheduleDetail(chore) ? ` · ${scheduleDetail(chore)}` : ''}
                                   </Badge>
                                   {chore.up_for_grabs && (
                                     <Badge variant="outline" className="text-xs font-normal text-eucalyptus-600 border-eucalyptus-200">Up for grabs</Badge>

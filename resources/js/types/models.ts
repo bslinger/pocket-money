@@ -104,6 +104,8 @@ export interface Chore {
   amount: string | null;
   frequency: 'daily' | 'weekly' | 'monthly' | 'one_off';
   days_of_week: number[] | null;
+  day_of_month: number | null;
+  one_off_date: string | null;
   requires_approval: boolean;
   up_for_grabs: boolean;
   is_active: boolean;
