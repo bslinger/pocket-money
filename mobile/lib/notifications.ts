@@ -99,6 +99,19 @@ const DEEP_LINK_MAP: Record<string, string> = {
   'quiddo://': '/(app)/(tabs)',
 };
 
+function resolveDeepLink(deepLink: string): { path: string; params?: Record<string, string> } {
+  const [base, queryString] = deepLink.split('?');
+  const routerPath = DEEP_LINK_MAP[base] ?? DEEP_LINK_MAP['quiddo://'] ?? '/(app)/(tabs)';
+  const params: Record<string, string> = {};
+  if (queryString) {
+    for (const part of queryString.split('&')) {
+      const [key, value] = part.split('=');
+      if (key && value) params[key] = decodeURIComponent(value);
+    }
+  }
+  return { path: routerPath, params: Object.keys(params).length > 0 ? params : undefined };
+}
+
 /**
  * Hook that sets up notification listeners for foreground display and tap-to-navigate.
  * No-op in Expo Go.
@@ -122,9 +135,11 @@ export function useNotificationListeners(): void {
       responseListener.current = N.addNotificationResponseReceivedListener((response) => {
         const deepLink = response.notification.request.content.data?.deep_link as string | undefined;
         if (deepLink) {
-          const routerPath = DEEP_LINK_MAP[deepLink] ?? DEEP_LINK_MAP['quiddo://'];
-          if (routerPath) {
-            router.push(routerPath as any);
+          const { path, params } = resolveDeepLink(deepLink);
+          if (params) {
+            router.push({ pathname: path as any, params });
+          } else {
+            router.push(path as any);
           }
         }
       });

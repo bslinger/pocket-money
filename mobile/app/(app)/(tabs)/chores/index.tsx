@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
@@ -19,15 +19,17 @@ function formatRewardType(r: string) { return REWARD_TYPE_LABELS[r] ?? r; }
 type SegmentKey = 'approvals' | 'schedule' | 'manage';
 
 const SEGMENTS: { key: SegmentKey; label: string }[] = [
-  { key: 'approvals', label: 'Approvals' },
-  { key: 'schedule', label: 'Schedule' },
   { key: 'manage', label: 'Manage' },
+  { key: 'schedule', label: 'Schedule' },
+  { key: 'approvals', label: 'Approvals' },
 ];
 
 export default function ChoresScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [activeSegment, setActiveSegment] = useState<SegmentKey>('approvals');
+  const params = useLocalSearchParams<{ tab?: string }>();
+  const initialTab = (params.tab === 'approvals' ? 'approvals' : params.tab === 'schedule' ? 'schedule' : 'manage') as SegmentKey;
+  const [activeSegment, setActiveSegment] = useState<SegmentKey>(initialTab);
 
   const { data: choresData, isLoading: choresLoading } = useQuery({
     queryKey: ['chores'],

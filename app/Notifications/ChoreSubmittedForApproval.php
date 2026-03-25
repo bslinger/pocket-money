@@ -16,6 +16,6 @@ class ChoreSubmittedForApproval extends BaseNotification
 
     protected function deepLink(): string
     {
-        return 'quiddo://chores';
+        return 'quiddo://chores?tab=approvals';
     }
 }

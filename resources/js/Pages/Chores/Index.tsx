@@ -92,7 +92,7 @@ const frequencyLabel = (f: Chore['frequency']) => {
 };
 
 export default function ChoresIndex({ families, weekCompletions, pendingCompletions: initialPending }: Props) {
-  const [tab, setTab] = useState<Tab>('approval');
+  const [tab, setTab] = useState<Tab>('manage');
   const [pending, setPending] = useState(initialPending);
   // IDs of completions approved this session (shown with Unapprove button until page reload)
   const [localApproved, setLocalApproved] = useState<Set<string>>(new Set());
@@ -264,18 +264,15 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
       {/* Tab bar */}
       <div className="flex gap-1 mb-5 border-b">
         <button
-          onClick={() => setTab('approval')}
+          onClick={() => setTab('manage')}
           className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            tab === 'approval'
+            tab === 'manage'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          <CheckCircle2 className="h-4 w-4" />
-          Needs Approval
-          {pending.filter(c => !localApproved.has(c.id)).length > 0 && (
-            <Badge className="bg-wattle-50 text-wattle-600 border-wattle-200 ml-0.5">{pending.filter(c => !localApproved.has(c.id)).length}</Badge>
-          )}
+          <List className="h-4 w-4" />
+          Manage
         </button>
         <button
           onClick={() => setTab('schedule')}
@@ -289,15 +286,18 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
           Schedule
         </button>
         <button
-          onClick={() => setTab('manage')}
+          onClick={() => setTab('approval')}
           className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            tab === 'manage'
+            tab === 'approval'
               ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          <List className="h-4 w-4" />
-          Manage
+          <CheckCircle2 className="h-4 w-4" />
+          Needs Approval
+          {pending.filter(c => !localApproved.has(c.id)).length > 0 && (
+            <Badge className="bg-wattle-50 text-wattle-600 border-wattle-200 ml-0.5">{pending.filter(c => !localApproved.has(c.id)).length}</Badge>
+          )}
         </button>
       </div>
 

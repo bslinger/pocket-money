@@ -14,7 +14,7 @@ use NotificationChannels\Fcm\FcmChannel;
 
 describe('notification content', function () {
     $notifications = [
-        ['ChoreSubmittedForApproval', ChoreSubmittedForApproval::class, 'A chore needs your approval', 'quiddo://chores'],
+        ['ChoreSubmittedForApproval', ChoreSubmittedForApproval::class, 'A chore needs your approval', 'quiddo://chores?tab=approvals'],
         ['ChoreApproved', ChoreApproved::class, 'Your chore was approved!', 'quiddo://'],
         ['ChoreDeclined', ChoreDeclined::class, 'A chore needs your attention', 'quiddo://'],
         ['BulkChoresApproved', BulkChoresApproved::class, 'Your chores were approved!', 'quiddo://'],
