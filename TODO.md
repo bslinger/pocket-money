@@ -24,6 +24,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Add an edit button to kid pages — completed 2026-03-22 11:03
 - [x] When setting up a kid (in either onboarding or on edit page), provide a larger array of colours in various nice palettes. Have 10 visible like now, the rest in a popup that can be opened or expanded — completed 2026-03-22
 - [ ] Add a QR code flow, where another parent can use their device to scan the QR code and it will bring up the app/site and let them register and connect their account, same way an invite would
+- [ ] On kids page, Accounts tab - put 'Goals' header above the goal areas in each card
 
 ---
 
@@ -76,7 +77,13 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] On the chores page, add filtering by which kid they're assigned to (including up for grabs), and sort by chronological order (and reverse) — completed 2026-03-20 23:25
 - [x] **Bulk approve** — approve multiple pending chores at once from the dashboard — completed 2026-03-20 23:28
 - [x] **Chore history** — view past completions and approval decisions per chore — completed 2026-03-21 00:03
-
+- [x] Mobile Add Chore page: move the Emoji picker to the right of the Chore Name field and shrink it a littler, remove the 'Tap to pick' and 'Clear' as it's no longer optional
+- [x] Mobile Add Chore page: Stack the Reward types vertically, and add the subtitle to match the web version
+- [x] Mobile Add Chore page: Put the frequency options into a 2x2 grid so they look more even
+- [x] Mobile Add Chore page: Add a green check on the right hand side of kids that are assigned to a chore
+- [x] Mobile Add Chore page: submitting a new chore throws a 'family_id is required' error
+- [x] Mobile Add Chore page: missing the Up For Grabs option
+- [x] Unless a chore is 'Up For Grabs', throw a verification error when no kids are selected when they try to submit (mobile and web)
 ---
 
 ## 📱 Kid Experience

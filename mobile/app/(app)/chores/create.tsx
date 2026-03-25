@@ -4,12 +4,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import EmojiPicker, { type EmojiType } from 'rn-emoji-keyboard';
+import { Feather } from '@expo/vector-icons';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 import { useFamily } from '@/lib/family';
 import SpenderAvatar from '@/components/SpenderAvatar';
 import type { Spender, ApiResponse, ChoreRewardType, ChoreFrequency } from '@quiddo/shared';
 import { CHORE_FREQUENCIES, CHORE_REWARD_TYPES, DAYS_OF_WEEK } from '@quiddo/shared';
+
+const REWARD_TYPE_INFO: Record<string, { label: string; subtitle: string }> = {
+  earns: { label: 'Earns $', subtitle: 'A cash reward is paid each time this chore is completed and approved.' },
+  responsibility: { label: 'Responsibility', subtitle: 'Counts toward the weekly allowance. Pocket money is only released when all responsibility chores are done.' },
+  no_reward: { label: 'No reward', subtitle: 'A reminder chore with no payment or tracking attached.' },
+};
 
 export default function CreateChoreScreen() {
   const router = useRouter();
@@ -24,6 +32,7 @@ export default function CreateChoreScreen() {
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([]);
   const [selectedSpenderIds, setSelectedSpenderIds] = useState<string[]>([]);
   const [requiresApproval, setRequiresApproval] = useState(true);
+  const [upForGrabs, setUpForGrabs] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const { data: spenders, isLoading } = useQuery({
@@ -36,16 +45,20 @@ export default function CreateChoreScreen() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
+      if (!activeFamily?.id) {
+        throw new Error('No active family');
+      }
       return api.post('/chores', {
-        family_id: activeFamily?.id,
+        family_id: activeFamily.id,
         name,
-        emoji: emoji || null,
+        emoji: emoji || '🧹',
         reward_type: rewardType,
         amount: rewardType === 'earns' ? amount : null,
         frequency,
         days_of_week: frequency === 'weekly' ? daysOfWeek : null,
         requires_approval: requiresApproval,
-        spender_ids: selectedSpenderIds,
+        up_for_grabs: upForGrabs,
+        spender_ids: upForGrabs ? [] : selectedSpenderIds,
       });
     },
     onSuccess: () => {
@@ -54,7 +67,7 @@ export default function CreateChoreScreen() {
       router.back();
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.response?.data?.message ?? 'Failed to create chore');
+      Alert.alert('Error', err.response?.data?.message ?? err.message ?? 'Failed to create chore');
     },
   });
 
@@ -68,6 +81,14 @@ export default function CreateChoreScreen() {
     setSelectedSpenderIds((prev) =>
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
     );
+  };
+
+  const handleSubmit = () => {
+    if (!upForGrabs && selectedSpenderIds.length === 0) {
+      Alert.alert('No kids selected', 'Please assign this chore to at least one kid, or mark it as Up For Grabs.');
+      return;
+    }
+    createMutation.mutate();
   };
 
   if (isLoading) {
@@ -84,28 +105,19 @@ export default function CreateChoreScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Name */}
+      {/* Name + Emoji on same row */}
       <Text style={styles.label}>Chore Name</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="e.g. Make bed, Feed the dog"
-        placeholderTextColor={colors.bark[600]}
-      />
-
-      {/* Emoji */}
-      <Text style={styles.label}>Emoji (optional)</Text>
-      <View style={styles.emojiRow}>
+      <View style={styles.nameRow}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          value={name}
+          onChangeText={setName}
+          placeholder="e.g. Make bed, Feed the dog"
+          placeholderTextColor={colors.bark[600]}
+        />
         <TouchableOpacity style={styles.emojiButton} onPress={() => setEmojiPickerOpen(true)}>
-          <Text style={styles.emojiButtonText}>{emoji || '😀'}</Text>
-          {!emoji && <Text style={styles.emojiButtonHint}>Tap to pick</Text>}
+          <Text style={styles.emojiButtonText}>{emoji}</Text>
         </TouchableOpacity>
-        {emoji ? (
-          <TouchableOpacity style={styles.emojiClear} onPress={() => setEmoji('')}>
-            <Text style={styles.emojiClearText}>Clear</Text>
-          </TouchableOpacity>
-        ) : null}
       </View>
       <EmojiPicker
         open={emojiPickerOpen}
@@ -125,20 +137,30 @@ export default function CreateChoreScreen() {
         }}
       />
 
-      {/* Reward Type */}
+      {/* Reward Type — stacked vertically with subtitles */}
       <Text style={styles.label}>Reward Type</Text>
-      <View style={styles.optionRow}>
-        {CHORE_REWARD_TYPES.map((rt) => (
-          <TouchableOpacity
-            key={rt}
-            style={[styles.optionChip, rewardType === rt && styles.optionChipActive]}
-            onPress={() => setRewardType(rt)}
-          >
-            <Text style={[styles.optionChipText, rewardType === rt && styles.optionChipTextActive]}>
-              {rt === 'earns' ? 'Earns $' : rt === 'responsibility' ? 'Responsibility' : 'No Reward'}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.rewardTypeList}>
+        {CHORE_REWARD_TYPES.map((rt) => {
+          const info = REWARD_TYPE_INFO[rt];
+          const selected = rewardType === rt;
+          return (
+            <TouchableOpacity
+              key={rt}
+              style={[styles.rewardTypeCard, selected && styles.rewardTypeCardActive]}
+              onPress={() => setRewardType(rt)}
+            >
+              <View style={styles.rewardTypeHeader}>
+                <Text style={[styles.rewardTypeLabel, selected && styles.rewardTypeLabelActive]}>
+                  {info.label}
+                </Text>
+                {selected && <Feather name="check" size={16} color={colors.eucalyptus[400]} />}
+              </View>
+              <Text style={[styles.rewardTypeSub, selected && styles.rewardTypeSubActive]}>
+                {info.subtitle}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {rewardType === 'earns' && (
@@ -158,16 +180,16 @@ export default function CreateChoreScreen() {
         </>
       )}
 
-      {/* Frequency */}
+      {/* Frequency — 2x2 grid */}
       <Text style={styles.label}>Frequency</Text>
-      <View style={styles.optionRow}>
+      <View style={styles.frequencyGrid}>
         {CHORE_FREQUENCIES.map((f) => (
           <TouchableOpacity
             key={f}
-            style={[styles.optionChip, frequency === f && styles.optionChipActive]}
+            style={[styles.frequencyChip, frequency === f && styles.frequencyChipActive]}
             onPress={() => setFrequency(f)}
           >
-            <Text style={[styles.optionChipText, frequency === f && styles.optionChipTextActive]}>
+            <Text style={[styles.frequencyChipText, frequency === f && styles.frequencyChipTextActive]}>
               {f === 'one_off' ? 'One-off' : f.charAt(0).toUpperCase() + f.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -200,40 +222,60 @@ export default function CreateChoreScreen() {
           style={[styles.optionChip, requiresApproval && styles.optionChipActive]}
           onPress={() => setRequiresApproval(true)}
         >
-          <Text style={[styles.optionChipText, requiresApproval && styles.optionChipTextActive]}>
-            Yes
-          </Text>
+          <Text style={[styles.optionChipText, requiresApproval && styles.optionChipTextActive]}>Yes</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.optionChip, !requiresApproval && styles.optionChipActive]}
           onPress={() => setRequiresApproval(false)}
         >
-          <Text style={[styles.optionChipText, !requiresApproval && styles.optionChipTextActive]}>
-            No
-          </Text>
+          <Text style={[styles.optionChipText, !requiresApproval && styles.optionChipTextActive]}>No</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Assign to Spenders */}
-      <Text style={styles.label}>Assign to Kids</Text>
-      <View style={styles.spenderList}>
-        {(spenders ?? []).map((s) => (
-          <TouchableOpacity
-            key={s.id}
-            style={[styles.spenderChip, selectedSpenderIds.includes(s.id) && styles.spenderChipActive]}
-            onPress={() => toggleSpender(s.id)}
-          >
-            <SpenderAvatar name={s.name} color={s.color} avatarUrl={s.avatar_url} size={32} />
-            <Text style={[styles.spenderName, selectedSpenderIds.includes(s.id) && styles.spenderNameActive]}>
-              {s.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Up For Grabs */}
+      <Text style={styles.label}>Up For Grabs</Text>
+      <TouchableOpacity
+        style={styles.upForGrabsToggle}
+        onPress={() => setUpForGrabs(prev => !prev)}
+      >
+        <View style={[styles.toggleDot, upForGrabs && styles.toggleDotActive]} />
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.toggleLabel, upForGrabs && styles.toggleLabelActive]}>
+            {upForGrabs ? 'Yes — any kid can claim it' : 'No — assigned to specific kids'}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* Assign to Spenders (hidden when up for grabs) */}
+      {!upForGrabs && (
+        <>
+          <Text style={styles.label}>Assign to Kids</Text>
+          <View style={styles.spenderList}>
+            {(spenders ?? []).map((s) => {
+              const selected = selectedSpenderIds.includes(s.id);
+              return (
+                <TouchableOpacity
+                  key={s.id}
+                  style={[styles.spenderChip, selected && styles.spenderChipActive]}
+                  onPress={() => toggleSpender(s.id)}
+                >
+                  <SpenderAvatar name={s.name} color={s.color} avatarUrl={s.avatar_url} size={32} />
+                  <Text style={[styles.spenderName, selected && styles.spenderNameActive]}>
+                    {s.name}
+                  </Text>
+                  {selected && (
+                    <Feather name="check-circle" size={18} color={colors.eucalyptus[400]} style={{ marginLeft: 'auto' }} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </>
+      )}
 
       <TouchableOpacity
         style={[styles.createButton, !isValid && styles.createButtonDisabled]}
-        onPress={() => createMutation.mutate()}
+        onPress={handleSubmit}
         disabled={!isValid || createMutation.isPending}
       >
         <Text style={styles.createButtonText}>
@@ -247,8 +289,9 @@ export default function CreateChoreScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   content: { padding: 16, paddingBottom: 40 },
-  label: { fontSize: 14, fontWeight: '600', color: colors.bark[700], marginBottom: 8, marginTop: 20 },
+  label: { fontFamily: fonts.body, fontSize: 14, fontWeight: '600', color: colors.bark[700], marginBottom: 8, marginTop: 20 },
   input: {
+    fontFamily: fonts.body,
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.bark[200],
@@ -257,90 +300,98 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.bark[700],
   },
-  emojiRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  // Name + emoji row
+  nameRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   emojiButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 16,
-    borderWidth: 2,
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
     borderColor: colors.bark[200],
-    borderStyle: 'dashed',
     backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emojiButtonText: { fontSize: 36 },
-  emojiButtonHint: { fontSize: 10, color: colors.bark[600], position: 'absolute', bottom: 6 },
-  emojiClear: { paddingVertical: 4 },
-  emojiClearText: { fontSize: 13, color: colors.redearth[400] },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  optionChip: {
-    borderWidth: 1,
-    borderColor: colors.bark[200],
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    backgroundColor: colors.white,
-  },
-  optionChipActive: { borderColor: colors.eucalyptus[400], backgroundColor: colors.eucalyptus[400] },
-  optionChipText: { fontSize: 14, color: colors.bark[700] },
-  optionChipTextActive: { color: colors.white, fontWeight: '600' },
-  amountRow: { flexDirection: 'row', alignItems: 'center' },
-  dollarSign: { fontSize: 24, fontWeight: '700', color: colors.gumleaf[400], marginRight: 6 },
-  amountInput: {
-    flex: 1,
+  emojiButtonText: { fontSize: 28 },
+  // Reward types — stacked
+  rewardTypeList: { gap: 8 },
+  rewardTypeCard: {
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.bark[200],
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 14,
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.bark[700],
   },
+  rewardTypeCardActive: { borderColor: colors.eucalyptus[400], backgroundColor: colors.eucalyptus[400] + '08' },
+  rewardTypeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  rewardTypeLabel: { fontFamily: fonts.body, fontSize: 15, fontWeight: '600', color: colors.bark[700] },
+  rewardTypeLabelActive: { color: colors.eucalyptus[400] },
+  rewardTypeSub: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginTop: 4, lineHeight: 17 },
+  rewardTypeSubActive: { color: colors.bark[600] },
+  // Amount
+  amountRow: { flexDirection: 'row', alignItems: 'center' },
+  dollarSign: { fontFamily: fonts.display, fontSize: 24, color: colors.gumleaf[400], marginRight: 6 },
+  amountInput: {
+    flex: 1, fontFamily: fonts.body, backgroundColor: colors.white, borderWidth: 1,
+    borderColor: colors.bark[200], borderRadius: 8, padding: 14, fontSize: 20, color: colors.bark[700],
+  },
+  // Frequency — 2x2 grid
+  frequencyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  frequencyChip: {
+    width: '48%' as any,
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: colors.white,
+  },
+  frequencyChipActive: { borderColor: colors.eucalyptus[400], backgroundColor: colors.eucalyptus[400] },
+  frequencyChipText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  frequencyChipTextActive: { color: colors.white, fontWeight: '600' },
+  // Days
   daysRow: { flexDirection: 'row', gap: 6 },
   dayChip: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.bark[200],
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.white,
+    width: 44, height: 44, borderRadius: 22, borderWidth: 1,
+    borderColor: colors.bark[200], justifyContent: 'center', alignItems: 'center', backgroundColor: colors.white,
   },
   dayChipActive: { backgroundColor: colors.eucalyptus[400], borderColor: colors.eucalyptus[400] },
-  dayChipText: { fontSize: 12, color: colors.bark[700] },
+  dayChipText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[700] },
   dayChipTextActive: { color: colors.white, fontWeight: '600' },
+  // Options
+  optionRow: { flexDirection: 'row', gap: 8 },
+  optionChip: {
+    borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8,
+    paddingHorizontal: 14, paddingVertical: 10, backgroundColor: colors.white,
+  },
+  optionChipActive: { borderColor: colors.eucalyptus[400], backgroundColor: colors.eucalyptus[400] },
+  optionChipText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  optionChipTextActive: { color: colors.white, fontWeight: '600' },
+  // Up for grabs
+  upForGrabsToggle: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, padding: 14,
+  },
+  toggleDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.bark[200] },
+  toggleDotActive: { backgroundColor: colors.eucalyptus[400] },
+  toggleLabel: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
+  toggleLabelActive: { color: colors.eucalyptus[400], fontWeight: '600' },
+  // Spenders
   spenderList: { gap: 8 },
   spenderChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.bark[200],
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: colors.white,
+    flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1,
+    borderColor: colors.bark[200], borderRadius: 10, padding: 12, backgroundColor: colors.white,
   },
   spenderChipActive: { borderColor: colors.eucalyptus[400], backgroundColor: colors.eucalyptus[400] + '10' },
-  spenderAvatar: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  spenderAvatarText: { color: colors.white, fontSize: 14, fontWeight: '600' },
-  spenderName: { marginLeft: 10, fontSize: 15, color: colors.bark[700] },
+  spenderName: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700] },
   spenderNameActive: { fontWeight: '600', color: colors.eucalyptus[400] },
+  // Submit
   createButton: {
-    backgroundColor: colors.eucalyptus[400],
-    borderRadius: 10,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 32,
+    backgroundColor: colors.eucalyptus[400], borderRadius: 10, padding: 16,
+    alignItems: 'center', marginTop: 32,
   },
   createButtonDisabled: { opacity: 0.5 },
-  createButtonText: { color: colors.white, fontWeight: '600', fontSize: 16 },
-  skeletonField: {
-    height: 50,
-    backgroundColor: colors.bark[200],
-    borderRadius: 8,
-    margin: 16,
-    marginBottom: 0,
-  },
+  createButtonText: { fontFamily: fonts.body, color: colors.white, fontWeight: '600', fontSize: 16 },
+  // Skeleton
+  skeletonField: { height: 50, backgroundColor: colors.bark[200], borderRadius: 8, margin: 16, marginBottom: 0 },
 });

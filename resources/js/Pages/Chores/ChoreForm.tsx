@@ -56,6 +56,10 @@ export default function ChoreForm({ families, spenders, mode, chore, defaultSpen
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!data.up_for_grabs && (data.spender_ids as string[]).length === 0) {
+      alert('Please assign this chore to at least one kid, or mark it as Up For Grabs.');
+      return;
+    }
     if (mode === 'create') {
       post(route('chores.store'));
     } else {
