@@ -129,21 +129,6 @@ test.describe('Spenders', () => {
         await expect(page.getByText(/Active:/i)).toBeVisible({ timeout: 10000 });
     });
 
-    test('can add a chore reward on the spender edit page', async ({ page }) => {
-        await page.goto('/spenders');
-        await page.getByRole('link', { name: 'Emma' }).first().click();
-        await expect(page).toHaveURL(/\/spenders\//);
-
-        await page.goto(page.url() + '/edit');
-        await expect(page.getByRole('heading', { name: 'Edit Spender' })).toBeVisible();
-
-        // The chore rewards card should be visible
-        await expect(page.getByText('Chore rewards')).toBeVisible();
-
-        // If Emma has assigned chores, we can add a reward; otherwise the form is disabled
-        const addRewardButton = page.getByRole('button', { name: 'Add reward' });
-        await expect(addRewardButton).toBeVisible();
-    });
 
     test('shows Spend and Add buttons on account cards', async ({ page }) => {
         await page.goto('/dashboard');

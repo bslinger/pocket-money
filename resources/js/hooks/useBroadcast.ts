@@ -6,12 +6,12 @@ import { useEffect, useRef } from 'react';
  * or when a user action already triggered a page visit.
  */
 function useDebouncedReload() {
-    const timer = useRef<ReturnType<typeof setTimeout>>();
+    const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     return () => {
         clearTimeout(timer.current);
         timer.current = setTimeout(() => {
-            router.reload({ preserveState: true, preserveScroll: true });
+            router.reload();
         }, 500);
     };
 }
