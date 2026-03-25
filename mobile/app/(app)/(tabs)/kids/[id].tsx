@@ -16,6 +16,11 @@ import type {
   ApiResponse,
 } from '@quiddo/shared';
 
+const FREQUENCY_LABELS: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', one_off: 'One-off' };
+const REWARD_TYPE_LABELS: Record<string, string> = { earns: 'Earns', responsibility: 'Responsibility', no_reward: 'No Reward' };
+function formatFrequency(f: string) { return FREQUENCY_LABELS[f] ?? f; }
+function formatRewardType(r: string) { return REWARD_TYPE_LABELS[r] ?? r; }
+
 type TabKey = 'accounts' | 'goals' | 'chores' | 'transactions' | 'manage';
 
 const TABS: { key: TabKey; icon: keyof typeof Feather.glyphMap; label: string }[] = [
@@ -195,7 +200,7 @@ export default function KidDetailScreen() {
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={styles.itemName}>{chore.name}</Text>
                 <Text style={styles.itemSub}>
-                  {chore.frequency} · {chore.reward_type}
+                  {formatFrequency(chore.frequency)} · {formatRewardType(chore.reward_type)}
                   {chore.amount ? ` · $${parseFloat(chore.amount).toFixed(2)}` : ''}
                 </Text>
               </View>

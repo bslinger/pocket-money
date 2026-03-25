@@ -11,6 +11,11 @@ import SpenderAvatar from '@/components/SpenderAvatar';
 import type { Chore, ChoreCompletion, ApiResponse } from '@quiddo/shared';
 import { DAYS_OF_WEEK } from '@quiddo/shared';
 
+const FREQUENCY_LABELS: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', one_off: 'One-off' };
+const REWARD_TYPE_LABELS: Record<string, string> = { earns: 'Earns', responsibility: 'Responsibility', no_reward: 'No Reward' };
+function formatFrequency(f: string) { return FREQUENCY_LABELS[f] ?? f; }
+function formatRewardType(r: string) { return REWARD_TYPE_LABELS[r] ?? r; }
+
 type SegmentKey = 'approvals' | 'schedule' | 'manage';
 
 const SEGMENTS: { key: SegmentKey; label: string }[] = [
@@ -243,7 +248,7 @@ export default function ChoresScreen() {
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.manageName}>{chore.name}</Text>
               <Text style={styles.manageSub}>
-                {chore.frequency} · {chore.reward_type}
+                {formatFrequency(chore.frequency)} · {formatRewardType(chore.reward_type)}
                 {chore.amount ? ` · $${parseFloat(chore.amount).toFixed(2)}` : ''}
               </Text>
             </View>
