@@ -238,20 +238,6 @@ export const bulkApproveSchema = z.object({
 export type BulkApproveInput = z.infer<typeof bulkApproveSchema>;
 
 // ---------------------------------------------------------------------------
-// Chore Reward
-// ---------------------------------------------------------------------------
-
-/** Mirrors ChoreRewardController@store inline validation */
-export const storeChoreRewardSchema = z.object({
-  amount: z.number().min(0.01),
-  description: z.string().max(255).nullable().optional(),
-  payout_date: z.string().nullable().optional(),
-  account_id: z.string().uuid().nullable().optional(),
-  chore_ids: z.array(z.string().uuid()).min(1),
-});
-export type StoreChoreRewardInput = z.infer<typeof storeChoreRewardSchema>;
-
-// ---------------------------------------------------------------------------
 // Pocket Money
 // ---------------------------------------------------------------------------
 

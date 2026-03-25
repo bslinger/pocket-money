@@ -1,14 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import { Spender, Family, PocketMoneySchedule, PocketMoneyScheduleSplit, Chore, ChoreReward, Account } from '@/types/models';
+import { Spender, Family, PocketMoneySchedule, PocketMoneyScheduleSplit, Account } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { cn } from '@/lib/utils';
 import ImageUpload from '@/Components/ImageUpload';
 import ColorPicker, { COLOURS } from '@/Components/ColorPicker';
-import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -17,11 +16,9 @@ interface Props {
     spender: Spender & { accounts?: Account[] };
     family: Family;
     pocketMoneySchedule: PocketMoneySchedule | null;
-    choreRewards: ChoreReward[];
-    availableChores: Chore[];
 }
 
-export default function SpenderEdit({ spender, family, pocketMoneySchedule, choreRewards, availableChores }: Props) {
+export default function SpenderEdit({ spender, family, pocketMoneySchedule }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         family_id: spender.family_id,
         name:      spender.name,
@@ -81,7 +78,6 @@ export default function SpenderEdit({ spender, family, pocketMoneySchedule, chor
             </form>
 
             <PocketMoneyScheduleCard spender={spender} schedule={pocketMoneySchedule} accounts={accounts} />
-            <ChoreRewardsCard spender={spender} rewards={choreRewards} availableChores={availableChores} accounts={accounts} />
         </AuthenticatedLayout>
     );
 }
@@ -382,162 +378,6 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                             </Button>
                         )}
                     </div>
-                </form>
-            </CardContent>
-        </Card>
-    );
-}
-
-// ── Chore Rewards ──────────────────────────────────────────────────────────────
-
-function ChoreRewardsCard({
-    spender,
-    rewards,
-    availableChores,
-    accounts,
-}: {
-    spender: Spender;
-    rewards: ChoreReward[];
-    availableChores: Chore[];
-    accounts: Account[];
-}) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        amount:      '',
-        description: '',
-        payout_date: '',
-        account_id:  accounts[0]?.id ?? '',
-        chore_ids:   [] as string[],
-    });
-
-    function submit(e: React.FormEvent) {
-        e.preventDefault();
-        post(route('chore-rewards.store', spender.id), {
-            preserveScroll: true,
-            onSuccess: () => reset(),
-        });
-    }
-
-    function toggleChore(id: string) {
-        setData('chore_ids', data.chore_ids.includes(id)
-            ? data.chore_ids.filter(c => c !== id)
-            : [...data.chore_ids, id]);
-    }
-
-    return (
-        <Card className="max-w-lg mt-6">
-            <CardHeader>
-                <CardTitle className="text-base">Chore rewards</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {rewards.length > 0 && (
-                    <div className="space-y-2">
-                        {rewards.map(reward => (
-                            <div key={reward.id} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/50 text-sm">
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium">
-                                        {reward.description || 'Reward'} — {reward.amount}
-                                        {reward.account && <span className="text-muted-foreground font-normal"> → {reward.account.name}</span>}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                        {reward.chores?.map(c => c.name).join(', ')}
-                                        {reward.payout_date && ` · Pay on ${reward.payout_date}`}
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => router.delete(route('chore-rewards.destroy', reward.id), { preserveScroll: true })}
-                                    className="text-muted-foreground hover:text-destructive shrink-0"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                <form onSubmit={submit} className="space-y-3 border-t pt-4">
-                    <p className="text-sm font-medium">Add a reward</p>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <Label htmlFor="cr-amount" className="text-xs">Amount</Label>
-                            <Input
-                                id="cr-amount"
-                                type="number"
-                                min="0.01"
-                                step="0.01"
-                                value={data.amount}
-                                onChange={e => setData('amount', e.target.value)}
-                                placeholder="5.00"
-                            />
-                            {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
-                        </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="cr-payout-date" className="text-xs">Pay on date <span className="text-muted-foreground">(optional)</span></Label>
-                            <Input
-                                id="cr-payout-date"
-                                type="date"
-                                value={data.payout_date}
-                                onChange={e => setData('payout_date', e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {accounts.length > 1 && (
-                        <div className="space-y-1">
-                            <Label className="text-xs">Deposit into account</Label>
-                            <select
-                                value={data.account_id}
-                                onChange={e => setData('account_id', e.target.value)}
-                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                {accounts.map(a => (
-                                    <option key={a.id} value={a.id}>{a.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
-                    <div className="space-y-1">
-                        <Label htmlFor="cr-description" className="text-xs">Description <span className="text-muted-foreground">(optional)</span></Label>
-                        <Input
-                            id="cr-description"
-                            value={data.description}
-                            onChange={e => setData('description', e.target.value)}
-                            placeholder="e.g. Weekend chores bonus"
-                        />
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <Label className="text-xs">Required chores</Label>
-                        {availableChores.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">No active chores assigned to this child.</p>
-                        ) : (
-                            <div className="flex flex-wrap gap-2">
-                                {availableChores.map(chore => (
-                                    <button
-                                        key={chore.id}
-                                        type="button"
-                                        onClick={() => toggleChore(chore.id)}
-                                        className={cn(
-                                            'px-2.5 py-1 rounded-full text-xs border transition-colors',
-                                            data.chore_ids.includes(chore.id)
-                                                ? 'bg-primary text-primary-foreground border-primary'
-                                                : 'bg-background border-border text-muted-foreground hover:border-primary/50'
-                                        )}
-                                    >
-                                        {chore.emoji && <span className="mr-1">{chore.emoji}</span>}
-                                        {chore.name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        {errors.chore_ids && <p className="text-xs text-destructive">{errors.chore_ids}</p>}
-                    </div>
-
-                    <Button type="submit" size="sm" disabled={processing || availableChores.length === 0}>
-                        Add reward
-                    </Button>
                 </form>
             </CardContent>
         </Card>

@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\V1\ChildDashboardController;
 use App\Http\Controllers\Api\V1\ChildDeviceTokenController;
 use App\Http\Controllers\Api\V1\ChoreCompletionController;
 use App\Http\Controllers\Api\V1\ChoreController;
-use App\Http\Controllers\Api\V1\ChoreRewardController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\FamilyController;
@@ -100,10 +99,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::patch('/chore-completions/{completion}/approve', [ChoreCompletionController::class, 'approve']);
     Route::patch('/chore-completions/{completion}/decline', [ChoreCompletionController::class, 'decline']);
     Route::post('/chore-completions/bulk-approve', [ChoreCompletionController::class, 'bulkApprove']);
-
-    // Chore Rewards
-    Route::post('/spenders/{spender}/chore-rewards', [ChoreRewardController::class, 'store']);
-    Route::delete('/chore-rewards/{choreReward}', [ChoreRewardController::class, 'destroy']);
 
     // Pocket Money
     Route::get('/pocket-money/release', [PocketMoneyController::class, 'release']);

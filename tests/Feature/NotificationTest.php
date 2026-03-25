@@ -3,7 +3,6 @@
 use App\Models\Account;
 use App\Models\Chore;
 use App\Models\ChoreCompletion;
-use App\Models\ChoreReward;
 use App\Models\PushToken;
 use App\Models\Spender;
 use App\Models\SpenderDevice;

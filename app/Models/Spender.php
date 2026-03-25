@@ -90,12 +90,6 @@ class Spender extends Model
         return $this->hasMany(PocketMoneySchedule::class);
     }
 
-    /** @return HasMany<ChoreReward, $this> */
-    public function choreRewards(): HasMany
-    {
-        return $this->hasMany(ChoreReward::class);
-    }
-
     /** @return HasMany<ChildInvitation, $this> */
     public function childInvitations(): HasMany
     {

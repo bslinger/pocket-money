@@ -6,7 +6,6 @@ use App\Http\Controllers\BillingTransferController;
 use App\Http\Controllers\ChildInvitationController;
 use App\Http\Controllers\ChoreCompletionController;
 use App\Http\Controllers\ChoreController;
-use App\Http\Controllers\ChoreRewardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\ImageUploadController;
@@ -114,8 +113,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/pocket-money/release', [PocketMoneyReleaseController::class, 'pay'])->name('pocket-money.pay');
         Route::post('/spenders/{spender}/pocket-money-schedule', [PocketMoneyScheduleController::class, 'store'])->name('pocket-money-schedule.store');
         Route::delete('/pocket-money-schedules/{schedule}', [PocketMoneyScheduleController::class, 'destroy'])->name('pocket-money-schedule.destroy');
-        Route::post('/spenders/{spender}/chore-rewards', [ChoreRewardController::class, 'store'])->name('chore-rewards.store');
-        Route::delete('/chore-rewards/{choreReward}', [ChoreRewardController::class, 'destroy'])->name('chore-rewards.destroy');
     });
 
     // Wildcard show routes AFTER resource routes to avoid capturing /spenders/create etc.

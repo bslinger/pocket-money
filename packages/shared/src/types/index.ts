@@ -195,22 +195,6 @@ export interface ChoreCompletion {
   updated_at: string;
 }
 
-export interface ChoreReward {
-  id: string;
-  spender_id: string;
-  account_id: string | null;
-  amount: string; // decimal:2
-  description: string | null;
-  payout_date: string | null;
-  is_paid: boolean;
-  paid_at: string | null;
-  transaction_id: string | null;
-  account?: Account | null;
-  chores?: Chore[];
-  created_at: string;
-  updated_at: string;
-}
-
 // ---------------------------------------------------------------------------
 // Pocket Money
 // ---------------------------------------------------------------------------

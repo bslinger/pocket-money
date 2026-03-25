@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "76384505341",
+    "project_id": "quiddo-279fd",
+    "storage_bucket": "quiddo-279fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:76384505341:android:9682f8fabb48b36db5dd94",
+        "android_client_info": {
+          "package_name": "com.quiddo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiBQPCfXaLNFdu7p_-U0f5YuQU4tO6kVI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

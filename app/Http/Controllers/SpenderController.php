@@ -197,18 +197,10 @@ class SpenderController extends Controller
             ->with(['account', 'splits.account'])
             ->first();
 
-        $choreRewards = $spender->choreRewards()
-            ->with('chores')
-            ->where('is_paid', false)
-            ->orderBy('created_at')
-            ->get();
-
         return Inertia::render('Spenders/Edit', [
             'spender' => $spender,
             'family' => $spender->family,
             'pocketMoneySchedule' => $schedule,
-            'choreRewards' => $choreRewards,
-            'availableChores' => $spender->chores()->where('is_active', true)->get(),
         ]);
     }
 

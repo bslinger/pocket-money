@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\ChoreCompletion;
-use App\Models\ChoreReward;
 use App\Models\Family;
 use App\Models\SavingsGoal;
 use App\Models\Spender;
@@ -13,7 +12,6 @@ use App\Notifications\BulkChoresApproved;
 use App\Notifications\ChildAccountLinked;
 use App\Notifications\ChoreApproved;
 use App\Notifications\ChoreDeclined;
-use App\Notifications\ChoreRewardUnlocked;
 use App\Notifications\ChoreSubmittedForApproval;
 use App\Notifications\FamilyMemberJoined;
 use App\Notifications\PocketMoneyReceived;
@@ -86,18 +84,6 @@ class NotificationService
     public static function pocketMoneyPaid(Spender $spender): void
     {
         $spender->notify(new PocketMoneyReceived);
-
-        /** @var Family $family */
-        $family = $spender->family;
-        BroadcastService::spenderUpdated($spender);
-        BroadcastService::familyUpdated($family);
-    }
-
-    public static function choreRewardUnlocked(ChoreReward $reward): void
-    {
-        /** @var Spender $spender */
-        $spender = $reward->spender;
-        $spender->notify(new ChoreRewardUnlocked);
 
         /** @var Family $family */
         $family = $spender->family;

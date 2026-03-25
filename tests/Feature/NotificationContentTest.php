@@ -4,7 +4,6 @@ use App\Notifications\BulkChoresApproved;
 use App\Notifications\ChildAccountLinked;
 use App\Notifications\ChoreApproved;
 use App\Notifications\ChoreDeclined;
-use App\Notifications\ChoreRewardUnlocked;
 use App\Notifications\ChoreSubmittedForApproval;
 use App\Notifications\FamilyMemberJoined;
 use App\Notifications\PocketMoneyReceived;
@@ -20,7 +19,6 @@ describe('notification content', function () {
         ['ChoreDeclined', ChoreDeclined::class, 'A chore needs your attention', 'quiddo://'],
         ['BulkChoresApproved', BulkChoresApproved::class, 'Your chores were approved!', 'quiddo://'],
         ['PocketMoneyReceived', PocketMoneyReceived::class, 'Pocket money received!', 'quiddo://'],
-        ['ChoreRewardUnlocked', ChoreRewardUnlocked::class, 'You unlocked a reward!', 'quiddo://'],
         ['SavingsGoalReached', SavingsGoalReached::class, 'A savings goal was reached!', 'quiddo://goals'],
         ['FamilyMemberJoined', FamilyMemberJoined::class, 'Someone joined your family', 'quiddo://'],
         ['ChildAccountLinked', ChildAccountLinked::class, 'A child account was linked', 'quiddo://'],
