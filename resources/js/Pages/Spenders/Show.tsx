@@ -18,7 +18,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import Modal from '@/Components/Modal';
 import { formatAmount, spenderCurrencySymbol, accountCurrencySymbol } from '@/lib/utils';
 import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
-import { useFamilyChannel } from '@/hooks/useBroadcast';
+import { useFamilyChannel, useSpenderChannel } from '@/hooks/useBroadcast';
 import { formatDistanceToNow } from 'date-fns';
 
 type Tab = 'accounts' | 'goals' | 'chores' | 'transactions' | 'manage';
@@ -413,6 +413,7 @@ export default function SpenderShow({
     const totalBalance = spender.accounts?.reduce((sum, a) => sum + parseFloat(a.balance), 0) ?? 0;
     const family = spender.family ?? null;
     useFamilyChannel(spender.family_id);
+    useSpenderChannel(spender.id);
     const [quickTxModal, setQuickTxModal] = useState<{ account: Account; type: 'credit' | 'debit' } | null>(null);
     const [activeTab, setActiveTab] = useState<Tab>('accounts');
 

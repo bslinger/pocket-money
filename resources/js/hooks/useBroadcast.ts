@@ -10,7 +10,7 @@ export function useFamilyChannel(familyId: string | undefined) {
 
         const channel = window.Echo.private(`family.${familyId}`);
         channel.listen('.FamilyUpdated', () => {
-            router.reload({ only: ['spenders', 'pendingCompletions', 'recentActivity', 'recentApprovedCompletions', 'totalBalance', 'paidThisMonth', 'spender', 'transactions', 'spenderDevices'] });
+            router.reload();
         });
 
         return () => {
