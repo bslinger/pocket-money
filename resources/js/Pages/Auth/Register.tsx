@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { PasswordInput } from '@/Components/ui/password-input';
 import { Label } from '@/Components/ui/label';
 
 export default function Register() {
@@ -51,9 +52,8 @@ export default function Register() {
 
                 <div className="space-y-1.5">
                     <Label htmlFor="password">Password</Label>
-                    <Input
+                    <PasswordInput
                         id="password"
-                        type="password"
                         autoComplete="new-password"
                         value={data.password}
                         onChange={e => setData('password', e.target.value)}
@@ -64,9 +64,8 @@ export default function Register() {
 
                 <div className="space-y-1.5">
                     <Label htmlFor="password_confirmation">Confirm password</Label>
-                    <Input
+                    <PasswordInput
                         id="password_confirmation"
-                        type="password"
                         autoComplete="new-password"
                         value={data.password_confirmation}
                         onChange={e => setData('password_confirmation', e.target.value)}

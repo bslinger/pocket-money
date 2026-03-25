@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
+import PasswordField from '@/components/PasswordField';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 
@@ -41,8 +42,8 @@ export default function RegisterScreen() {
 
         <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} placeholderTextColor={colors.bark[600]} />
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.bark[600]} />
-        <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry placeholderTextColor={colors.bark[600]} />
-        <TextInput style={styles.input} placeholder="Confirm Password" value={passwordConfirmation} onChangeText={setPasswordConfirmation} secureTextEntry placeholderTextColor={colors.bark[600]} />
+        <PasswordField style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} placeholderTextColor={colors.bark[600]} />
+        <PasswordField style={styles.input} placeholder="Confirm Password" value={passwordConfirmation} onChangeText={setPasswordConfirmation} placeholderTextColor={colors.bark[600]} />
 
         <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Create Account'}</Text>

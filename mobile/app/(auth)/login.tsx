@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
+import PasswordField from '@/components/PasswordField';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 
@@ -42,12 +43,11 @@ export default function LoginScreen() {
           keyboardType="email-address"
           placeholderTextColor={colors.bark[600]}
         />
-        <TextInput
+        <PasswordField
           style={styles.input}
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
           placeholderTextColor={colors.bark[600]}
         />
 

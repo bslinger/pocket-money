@@ -1,3 +1,4 @@
+import { PasswordInput } from '@/Components/ui/password-input';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -186,8 +187,7 @@ export default function SettingsIndex({ user }: Props) {
                 Permanently delete your account and all associated data. This action cannot be undone.
               </p>
               <form onSubmit={submitDelete} className="flex gap-3">
-                <input
-                  type="password"
+                <PasswordInput
                   value={deleteForm.data.password}
                   onChange={e => deleteForm.setData('password', e.target.value)}
                   placeholder="Confirm your password"
