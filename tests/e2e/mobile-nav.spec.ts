@@ -10,6 +10,8 @@ test.describe('Mobile bottom nav', () => {
         await page.setViewportSize(MOBILE);
         await page.goto('/dashboard');
         await page.waitForLoadState('networkidle');
+        // Wait for React hydration — the heading confirms the app has rendered
+        await page.getByRole('heading').first().waitFor({ state: 'visible' });
         const nav = page.locator('nav.fixed.bottom-0');
         await expect(nav).toBeVisible({ timeout: 10000 });
     });

@@ -14,6 +14,7 @@ test.describe('Chores', () => {
         await page.locator('button:has-text("Earns")').click();
         await page.fill('#amount', '1.50');
         await page.locator('select').last().selectOption('weekly');
+        await page.locator('button:has-text("Emma")').waitFor({ state: 'visible' });
         await page.locator('button:has-text("Emma")').click();
         await page.locator('button:has-text("Create Chore")').click();
         await page.waitForURL('/chores');

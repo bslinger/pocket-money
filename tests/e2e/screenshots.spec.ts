@@ -72,8 +72,8 @@ test.describe('Web screenshots for mobile comparison', () => {
     test('08 - profile panel', async ({ page }) => {
         await page.goto('/dashboard');
         await page.waitForLoadState('networkidle');
-        // Open the profile dropdown
-        await page.locator('nav').getByText("Ben's Family").click();
+        // Open the profile dropdown (text span is hidden on mobile viewport — click the button)
+        await page.locator('nav').locator('button').filter({ hasText: "Ben's Family" }).click();
         await page.waitForTimeout(500);
         await page.screenshot({ path: `${SCREENSHOT_DIR}/08-profile-panel.png`, fullPage: false });
     });
