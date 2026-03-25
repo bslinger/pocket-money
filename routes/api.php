@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\SpenderController;
 use App\Http\Controllers\Api\V1\SpenderLinkCodeController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\TransferController;
+use App\Http\Controllers\ImageUploadController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::put('/auth/user', [AuthController::class, 'updateProfile']);
     Route::delete('/auth/user', [AuthController::class, 'deleteAccount']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // Uploads
+    Route::post('/uploads', [ImageUploadController::class, 'store']);
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index']);
