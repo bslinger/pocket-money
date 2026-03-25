@@ -18,10 +18,13 @@ export default function CreateKidScreen() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
+      if (!activeFamily?.id) {
+        throw new Error('No active family');
+      }
       return api.post('/spenders', {
         name,
         color: selectedColor,
-        family_id: activeFamily?.id,
+        family_id: activeFamily.id,
       });
     },
     onSuccess: () => {
