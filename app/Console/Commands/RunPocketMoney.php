@@ -24,7 +24,7 @@ class RunPocketMoney extends Command
             ->where('is_active', true)
             ->whereNotNull('next_run_at')
             ->where('next_run_at', '<=', now())
-            ->with(['spender.chores', 'spender.choreCompletions', 'spender.accounts', 'account'])
+            ->with(['spender.chores', 'spender.choreCompletions', 'spender.accounts', 'account', 'splits.account'])
             ->get();
 
         $this->info("Processing {$due->count()} due pocket money schedules...");
@@ -75,16 +75,43 @@ class RunPocketMoney extends Command
         }
 
         DB::transaction(function () use ($schedule, $spender) {
-            $account = $schedule->account ?? SpenderService::mainAccount($spender);
-            Transaction::create([
-                'account_id' => $account->id,
-                'type' => 'credit',
-                'amount' => $schedule->amount,
-                'description' => 'Pocket money',
-                'occurred_at' => now(),
-                'created_by' => $schedule->created_by,
-            ]);
-            $account->increment('balance', (float) $schedule->amount);
+            $splits = $schedule->splits;
+
+            if ($splits->isNotEmpty()) {
+                $total = (float) $schedule->amount;
+                $remaining = $total;
+                $lastIndex = $splits->count() - 1;
+
+                foreach ($splits as $i => $split) {
+                    $amt = $i === $lastIndex
+                        ? round($remaining, 2)
+                        : round($total * (float) $split->percentage / 100, 2);
+
+                    $remaining -= $amt;
+
+                    Transaction::create([
+                        'account_id' => $split->account_id,
+                        'type' => 'credit',
+                        'amount' => $amt,
+                        'description' => 'Pocket money',
+                        'occurred_at' => now(),
+                        'created_by' => $schedule->created_by,
+                    ]);
+
+                    $split->account->increment('balance', $amt);
+                }
+            } else {
+                $account = $schedule->account ?? SpenderService::mainAccount($spender);
+                Transaction::create([
+                    'account_id' => $account->id,
+                    'type' => 'credit',
+                    'amount' => $schedule->amount,
+                    'description' => 'Pocket money',
+                    'occurred_at' => now(),
+                    'created_by' => $schedule->created_by,
+                ]);
+                $account->increment('balance', (float) $schedule->amount);
+            }
         });
 
         rescue(fn () => NotificationService::pocketMoneyPaid($spender));

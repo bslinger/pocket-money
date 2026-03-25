@@ -194,7 +194,7 @@ class SpenderController extends Controller
 
         $schedule = PocketMoneySchedule::where('spender_id', $spender->id)
             ->where('is_active', true)
-            ->with('account')
+            ->with(['account', 'splits.account'])
             ->first();
 
         $choreRewards = $spender->choreRewards()

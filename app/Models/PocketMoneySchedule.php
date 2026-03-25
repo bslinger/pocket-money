@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property Carbon|null $next_run_at
@@ -16,6 +17,7 @@ class PocketMoneySchedule extends Model
     use HasFactory, HasUuids;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -33,10 +35,10 @@ class PocketMoneySchedule extends Model
     protected function casts(): array
     {
         return [
-            'amount'       => 'decimal:2',
-            'is_active'    => 'boolean',
-            'next_run_at'  => 'datetime',
-            'day_of_week'  => 'integer',
+            'amount' => 'decimal:2',
+            'is_active' => 'boolean',
+            'next_run_at' => 'datetime',
+            'day_of_week' => 'integer',
             'day_of_month' => 'integer',
         ];
     }
@@ -59,6 +61,12 @@ class PocketMoneySchedule extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<PocketMoneyScheduleSplit, $this> */
+    public function splits(): HasMany
+    {
+        return $this->hasMany(PocketMoneyScheduleSplit::class)->orderBy('sort_order');
+    }
+
     /**
      * Compute the first upcoming run date based on frequency and day setting.
      * Used when creating or activating a schedule.
@@ -79,6 +87,7 @@ class PocketMoneySchedule extends Model
             if ($now->dayOfWeek === $targetCarbonDay) {
                 $next = $now->copy()->startOfDay();
             }
+
             return $next;
         }
 
@@ -88,6 +97,7 @@ class PocketMoneySchedule extends Model
         if ($next->lte($now)) {
             $next->addMonth()->setDay(min($target, $next->daysInMonth));
         }
+
         return $next;
     }
 }

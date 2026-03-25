@@ -215,6 +215,15 @@ export interface ChoreReward {
 // Pocket Money
 // ---------------------------------------------------------------------------
 
+export interface PocketMoneyScheduleSplit {
+  id: string;
+  pocket_money_schedule_id: string;
+  account_id: string;
+  percentage: string; // decimal:4
+  sort_order: number;
+  account?: Account;
+}
+
 export interface PocketMoneySchedule {
   id: string;
   spender_id: string;
@@ -226,6 +235,7 @@ export interface PocketMoneySchedule {
   is_active: boolean;
   next_run_at: string | null;
   account?: Account | null;
+  splits?: PocketMoneyScheduleSplit[];
   created_at: string;
   updated_at: string;
 }

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
-import { Spender, Family, PocketMoneySchedule, Chore, ChoreReward, Account } from '@/types/models';
+import { Spender, Family, PocketMoneySchedule, PocketMoneyScheduleSplit, Chore, ChoreReward, Account } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -8,7 +8,8 @@ import { Label } from '@/Components/ui/label';
 import { cn } from '@/lib/utils';
 import ImageUpload from '@/Components/ImageUpload';
 import ColorPicker, { COLOURS } from '@/Components/ColorPicker';
-import { Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -87,8 +88,47 @@ export default function SpenderEdit({ spender, family, pocketMoneySchedule, chor
 
 // ── Pocket Money Schedule ──────────────────────────────────────────────────────
 
+type SplitRow = { account_id: string; percentage: string };
+
+function initSplits(schedule: PocketMoneySchedule | null, accounts: Account[]): SplitRow[] {
+    if (schedule?.splits && schedule.splits.length >= 2) {
+        return schedule.splits.map((s: PocketMoneyScheduleSplit) => ({
+            account_id: s.account_id,
+            percentage: parseFloat(s.percentage).toFixed(2),
+        }));
+    }
+    // Default: equal distribution across all accounts
+    const equal = (100 / accounts.length).toFixed(2);
+    return accounts.map((a, i) => ({
+        account_id: a.id,
+        // Last account gets the remainder to ensure exactly 100
+        percentage: i === accounts.length - 1
+            ? (100 - parseFloat(equal) * (accounts.length - 1)).toFixed(2)
+            : equal,
+    }));
+}
+
+function computeSplitUpdate(prev: SplitRow[], index: number, newPct: number): SplitRow[] {
+    const next = prev.map(s => ({ ...s }));
+    next[index].percentage = newPct.toFixed(2);
+    const remaining = Math.max(100 - newPct, 0);
+    const others = next.filter((_, i) => i !== index);
+    const othersTotal = others.reduce((sum, s) => sum + (parseFloat(s.percentage) || 0), 0);
+    next.forEach((row, i) => {
+        if (i === index) { return; }
+        row.percentage = othersTotal > 0
+            ? ((parseFloat(row.percentage) || 0) / othersTotal * remaining).toFixed(2)
+            : (remaining / others.length).toFixed(2);
+    });
+    return next;
+}
+
 function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spender; schedule: PocketMoneySchedule | null; accounts: Account[] }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const hasExistingSplits = (schedule?.splits?.length ?? 0) >= 2;
+    const [distributeOpen, setDistributeOpen] = useState(hasExistingSplits);
+    const [splits, setSplits] = useState<SplitRow[]>(() => initSplits(schedule, accounts));
+
+    const { data, setData, post, processing, errors } = useForm({
         amount:       schedule?.amount ?? '',
         frequency:    (schedule?.frequency ?? 'weekly') as 'weekly' | 'monthly',
         day_of_week:  schedule?.day_of_week ?? 0,
@@ -96,15 +136,50 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
         account_id:   schedule?.account_id ?? (accounts[0]?.id ?? ''),
     });
 
+    const totalAmount = parseFloat(data.amount) || 0;
+
+    function updateSplit(index: number, field: 'percentage' | 'dollar', rawValue: string) {
+        setSplits(prev => {
+            let newPct: number;
+            if (field === 'dollar') {
+                const dollars = parseFloat(rawValue);
+                newPct = totalAmount > 0 ? Math.min((dollars / totalAmount) * 100, 100) : 0;
+                if (isNaN(newPct)) { newPct = 0; }
+            } else {
+                newPct = parseFloat(rawValue) || 0;
+            }
+            return computeSplitUpdate(prev, index, newPct);
+        });
+    }
+
+    function handlePercentageBlur(index: number) {
+        setSplits(prev => {
+            const pct = Math.min(Math.max(parseFloat(prev[index].percentage) || 0, 0), 100);
+            return computeSplitUpdate(prev, index, pct);
+        });
+    }
+
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        post(route('pocket-money-schedule.store', spender.id), { preserveScroll: true });
+        const useSplits = distributeOpen && accounts.length > 1;
+        router.post(
+            route('pocket-money-schedule.store', spender.id),
+            {
+                ...data,
+                splits: useSplits ? splits : [],
+                account_id: useSplits ? '' : data.account_id,
+            },
+            { preserveScroll: true },
+        );
     }
 
     function cancel() {
-        if (!schedule) return;
+        if (!schedule) { return; }
         router.delete(route('pocket-money-schedule.destroy', schedule.id), { preserveScroll: true });
     }
+
+    const splitTotal = splits.reduce((sum, s) => sum + (parseFloat(s.percentage) || 0), 0);
+    const splitValid = Math.abs(splitTotal - 100) < 0.5;
 
     return (
         <Card className="max-w-lg mt-6">
@@ -118,7 +193,12 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                             Active: {schedule.frequency === 'weekly'
                                 ? `${schedule.amount} every ${DAY_LABELS[schedule.day_of_week ?? 0]}`
                                 : `${schedule.amount} on day ${schedule.day_of_month ?? 1} of each month`}
-                            {schedule.account && <span className="text-gumleaf-600/70"> → {schedule.account.name}</span>}
+                            {schedule.account && !hasExistingSplits && (
+                                <span className="text-gumleaf-600/70"> → {schedule.account.name}</span>
+                            )}
+                            {hasExistingSplits && (
+                                <span className="text-gumleaf-600/70"> → split between {schedule.splits!.length} accounts</span>
+                            )}
                         </p>
                         {schedule.next_run_at && (
                             <p className="text-gumleaf-600 text-xs mt-0.5">
@@ -129,21 +209,6 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                 )}
 
                 <form onSubmit={submit} className="space-y-4">
-                    {accounts.length > 1 && (
-                        <div className="space-y-1.5">
-                            <Label>Deposit into account</Label>
-                            <select
-                                value={data.account_id}
-                                onChange={e => setData('account_id', e.target.value)}
-                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                {accounts.map(a => (
-                                    <option key={a.id} value={a.id}>{a.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
                             <Label htmlFor="pm-amount">Amount</Label>
@@ -209,8 +274,106 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                         </div>
                     )}
 
+                    {/* Single-account selector (only when not distributing) */}
+                    {accounts.length > 1 && !distributeOpen && (
+                        <div className="space-y-1.5">
+                            <Label>Deposit into account</Label>
+                            <select
+                                value={data.account_id}
+                                onChange={e => setData('account_id', e.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                {accounts.map(a => (
+                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {/* Distribution collapsible (only when >1 account) */}
+                    {accounts.length > 1 && (
+                        <div className="border rounded-input overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() => setDistributeOpen(o => !o)}
+                                className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium text-left hover:bg-muted/50 transition-colors"
+                            >
+                                <span>Distribute between accounts</span>
+                                {distributeOpen
+                                    ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    : <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                }
+                            </button>
+
+                            {distributeOpen && (
+                                <div className="px-3 pb-3 pt-1 border-t space-y-4">
+                                    {splits.map((split, i) => {
+                                        const account = accounts.find(a => a.id === split.account_id);
+                                        const pct = parseFloat(split.percentage) || 0;
+                                        const dollars = totalAmount > 0
+                                            ? (totalAmount * pct / 100).toFixed(2)
+                                            : '0.00';
+
+                                        return (
+                                            <div key={split.account_id} className="space-y-2">
+                                                <p className="text-xs font-medium text-foreground">{account?.name ?? 'Account'}</p>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.01"
+                                                    value={pct}
+                                                    onChange={e => updateSplit(i, 'percentage', e.target.value)}
+                                                    onMouseUp={() => handlePercentageBlur(i)}
+                                                    onTouchEnd={() => handlePercentageBlur(i)}
+                                                    className="w-full accent-primary"
+                                                />
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <div className="relative">
+                                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">$</span>
+                                                        <Input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            value={dollars}
+                                                            onChange={e => updateSplit(i, 'dollar', e.target.value)}
+                                                            className="pl-5 text-sm"
+                                                        />
+                                                    </div>
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="number"
+                                                            min="0"
+                                                            max="100"
+                                                            step="0.01"
+                                                            value={split.percentage}
+                                                            onChange={e => updateSplit(i, 'percentage', e.target.value)}
+                                                            onBlur={() => handlePercentageBlur(i)}
+                                                            className="pr-6 text-sm"
+                                                        />
+                                                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {!splitValid && (
+                                        <p className="text-xs text-destructive">
+                                            Total is {splitTotal.toFixed(1)}% — must equal 100%
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="flex gap-2">
-                        <Button type="submit" size="sm" disabled={processing}>
+                        <Button
+                            type="submit"
+                            size="sm"
+                            disabled={processing || (distributeOpen && accounts.length > 1 && !splitValid)}
+                        >
                             {schedule ? 'Update schedule' : 'Set schedule'}
                         </Button>
                         {schedule && (
