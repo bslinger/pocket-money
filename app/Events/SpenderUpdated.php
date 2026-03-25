@@ -15,6 +15,11 @@ class SpenderUpdated implements ShouldBroadcastNow
 
     public function __construct(public Spender $spender) {}
 
+    public function broadcastAs(): string
+    {
+        return 'SpenderUpdated';
+    }
+
     /** @return array<int, PrivateChannel> */
     public function broadcastOn(): array
     {

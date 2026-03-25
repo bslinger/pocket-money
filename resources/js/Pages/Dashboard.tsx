@@ -600,6 +600,8 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
 
   function markDone() {
     post(route('chores.complete', chore.id), {
+      preserveScroll: true,
+      preserveState: true,
       onSuccess: () => setLocalStatus('pending'),
     });
   }

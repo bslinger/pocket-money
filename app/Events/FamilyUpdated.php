@@ -15,6 +15,11 @@ class FamilyUpdated implements ShouldBroadcastNow
 
     public function __construct(public Family $family) {}
 
+    public function broadcastAs(): string
+    {
+        return 'FamilyUpdated';
+    }
+
     /** @return array<int, PrivateChannel> */
     public function broadcastOn(): array
     {
