@@ -44,7 +44,7 @@ export default function Hero() {
               type="submit"
               className="bg-eucalyptus-400 text-white py-4 rounded-[10px] text-[15px] font-semibold hover:bg-eucalyptus-500 transition-colors text-center"
             >
-              Get started — from just $1.25/month
+              Start free — 30 days, no card needed
             </button>
             <p className="text-xs text-bark-400 text-center">
               By signing up you agree to our{' '}

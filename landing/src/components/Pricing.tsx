@@ -26,7 +26,7 @@ export default function Pricing() {
               href="https://app.quiddo.com.au/register"
               className="block w-full py-2.5 rounded-full text-sm font-semibold text-center bg-wattle-400 text-bark-700 hover:bg-wattle-300 transition-colors"
             >
-              Get started
+              Start 30-day free trial
             </a>
           </div>
 
@@ -48,13 +48,13 @@ export default function Pricing() {
               href="https://app.quiddo.com.au/register"
               className="block w-full py-2.5 rounded-full text-sm font-semibold text-center border-[1.5px] border-bark-200 text-bark-700 hover:border-bark-300 transition-colors"
             >
-              Get started
+              Start 30-day free trial
             </a>
           </div>
         </div>
 
         <p className="text-[13px] text-bark-400 mt-5">
-          No lock-in contracts · Cancel any time · Prices in AUD
+          All plans include a 30-day free trial · No credit card required · Cancel any time
         </p>
       </div>
     </section>

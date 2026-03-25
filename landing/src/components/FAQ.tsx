@@ -26,6 +26,10 @@ const FAQ_ITEMS = [
     a: "Every plan supports up to 12 children on a single family subscription. No per-child fees \u2014 ever.",
   },
   {
+    q: 'What happens after my 30-day trial?',
+    a: "At the end of your trial you\u2019ll be asked to choose a plan. If you don\u2019t subscribe, your account becomes read-only \u2014 you can still see all your data, but can\u2019t make changes until you subscribe. No credit card is required to start the trial.",
+  },
+  {
     q: 'Is Quiddo available in Australia?',
     a: "Quiddo is built specifically for Australian families. It supports Australian dollars natively, and is designed around how Aussie families actually handle pocket money \u2014 with cash, without debit cards, and with a healthy dose of \u201cyou\u2019ve got to earn it first\u201d.",
   },

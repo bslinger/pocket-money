@@ -28,7 +28,7 @@ export default function HowItWorks() {
           href="https://app.quiddo.com.au/register"
           className="inline-flex items-center gap-2 bg-eucalyptus-400 text-white px-10 py-[18px] rounded-full text-base font-semibold hover:bg-eucalyptus-500 transition-colors"
         >
-          Get started →
+          Start your free 30-day trial →
         </a>
       </div>
     </section>
