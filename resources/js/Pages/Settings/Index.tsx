@@ -2,6 +2,7 @@ import { PasswordInput } from '@/Components/ui/password-input';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import { MessageSquare } from 'lucide-react';
 import { User } from '@/types/models';
 
 const PARENT_TITLE_OPTIONS = ['Mum', 'Mom', 'Dad', 'Papa', 'Pop', 'Nana', 'Grandma', 'Grandpa', 'Carer'];
@@ -208,7 +209,104 @@ export default function SettingsIndex({ user }: Props) {
           </div>
         </section>
 
+        {/* Send Feedback */}
+        <FeedbackSection />
+
       </div>
     </AuthenticatedLayout>
+  );
+}
+
+const FEEDBACK_TYPES = ['Bug Report', 'Feature Request', 'General Feedback'] as const;
+
+function FeedbackSection() {
+  const form = useForm({
+    type: 'General Feedback' as string,
+    title: '',
+    description: '',
+  });
+  const [submitted, setSubmitted] = useState(false);
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    form.post(route('feedback.store'), {
+      preserveScroll: true,
+      onSuccess: () => {
+        setSubmitted(true);
+        form.reset();
+        setTimeout(() => setSubmitted(false), 3000);
+      },
+    });
+  }
+
+  return (
+    <section className="bg-white rounded-card border border-bark-200 overflow-hidden">
+      <div className="px-6 py-4 border-b border-bark-100">
+        <h2 className="text-base font-semibold text-bark-700 flex items-center gap-2">
+          <MessageSquare className="h-4 w-4" />
+          Send Feedback
+        </h2>
+        <p className="text-xs text-bark-400 mt-1">Help us improve Quiddo — report bugs, suggest features, or share your thoughts.</p>
+      </div>
+      <div className="px-6 py-5 space-y-4">
+        {submitted ? (
+          <div className="text-center py-6">
+            <p className="text-gumleaf-400 font-semibold">Thank you for your feedback!</p>
+            <p className="text-sm text-bark-400 mt-1">We read every submission.</p>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Type</label>
+              <div className="flex gap-2">
+                {FEEDBACK_TYPES.map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => form.setData('type', t)}
+                    className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                      form.data.type === t
+                        ? 'bg-eucalyptus-400 text-white border-eucalyptus-400'
+                        : 'border-bark-200 text-bark-600 hover:border-bark-300'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Title</label>
+              <input
+                type="text"
+                value={form.data.title}
+                onChange={e => form.setData('title', e.target.value)}
+                placeholder="Brief summary"
+                className="w-full border border-bark-200 rounded-input px-3 py-2 text-sm"
+              />
+              {form.errors.title && <p className="text-redearth-400 text-xs mt-1">{form.errors.title}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Description</label>
+              <textarea
+                value={form.data.description}
+                onChange={e => form.setData('description', e.target.value)}
+                placeholder="Tell us more..."
+                rows={4}
+                className="w-full border border-bark-200 rounded-input px-3 py-2 text-sm resize-none"
+              />
+              {form.errors.description && <p className="text-redearth-400 text-xs mt-1">{form.errors.description}</p>}
+            </div>
+            <button
+              type="submit"
+              disabled={form.processing || !form.data.title || !form.data.description}
+              className="bg-eucalyptus-400 text-white text-sm font-semibold px-5 py-2 rounded-full hover:bg-eucalyptus-500 disabled:opacity-50 transition-colors"
+            >
+              {form.processing ? 'Sending...' : 'Send Feedback'}
+            </button>
+          </form>
+        )}
+      </div>
+    </section>
   );
 }

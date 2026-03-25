@@ -8,6 +8,7 @@ use App\Http\Controllers\ChoreCompletionController;
 use App\Http\Controllers\ChoreController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\OnboardingController;
@@ -56,6 +57,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/settings/account', [SettingsController::class, 'deleteAccount'])->name('settings.account.destroy');
     Route::get('/settings/export', [SettingsController::class, 'exportData'])->name('settings.export');
     Route::post('/uploads', [ImageUploadController::class, 'store'])->name('uploads.store');
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
     // Family routes available to any authenticated user (creating a family establishes parent status)
     Route::resource('families', FamilyController::class);

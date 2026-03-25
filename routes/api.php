@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\ChoreController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\FamilyController;
+use App\Http\Controllers\Api\V1\FeedbackController;
 use App\Http\Controllers\Api\V1\PocketMoneyController;
 use App\Http\Controllers\Api\V1\RecurringTransactionController;
 use App\Http\Controllers\Api\V1\SavingsGoalController;
@@ -119,6 +120,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/broadcasting/auth', function (Request $request) {
         return Broadcast::auth($request);
     });
+
+    // Feedback
+    Route::post('/feedback', [FeedbackController::class, 'store']);
 });
 
 // ---------------------------------------------------------------------------

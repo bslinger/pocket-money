@@ -1,32 +1,18 @@
 <?php
 
-test('home page renders the new landing page component', function () {
-    $this->get('/')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->component('Marketing/Home')
-            ->has('canLogin')
-            ->has('canRegister')
-        );
+// Landing page now lives at quiddo.com.au (GitHub Pages, /landing directory).
+// The Laravel app root redirects to /login (guest) or /dashboard (authenticated).
+
+test('root redirects guests to login', function () {
+    $this->get('/')->assertRedirect('/login');
 });
 
-test('home page shows login and register options to guests', function () {
-    $this->get('/')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page
-            ->where('canLogin', true)
-            ->where('canRegister', true)
-        );
+test('root redirects authenticated users to dashboard', function () {
+    [$user] = parentWithFamily();
+    $this->actingAs($user)->get('/')->assertRedirect('/dashboard');
 });
 
-test('how it works page still renders', function () {
-    $this->get('/how-it-works')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Marketing/HowItWorks'));
-});
-
-test('pricing page still renders', function () {
-    $this->get('/pricing')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Marketing/Pricing'));
+test('old marketing routes no longer exist', function () {
+    $this->get('/how-it-works')->assertNotFound();
+    $this->get('/pricing')->assertNotFound();
 });

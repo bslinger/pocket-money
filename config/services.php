@@ -52,4 +52,9 @@ return [
         'production' => env('APN_PRODUCTION', false),
     ],
 
+    'notion' => [
+        'token' => env('NOTION_TOKEN'),
+        'feedback_database_id' => env('NOTION_FEEDBACK_DB_ID'),
+    ],
+
 ];

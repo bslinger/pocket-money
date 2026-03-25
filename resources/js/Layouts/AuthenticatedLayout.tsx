@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { Separator } from '@/Components/ui/separator';
-import { AlertTriangle, Check, ChevronDown, CheckSquare, CreditCard, Eye, LayoutDashboard, LogOut, MailWarning, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, CheckSquare, CreditCard, Eye, LayoutDashboard, LogOut, MailWarning, MessageSquare, PlusCircle, Settings2, Target, User, Wallet, Coins, Users, X } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -143,6 +143,12 @@ function FamilyAccountMenu({
                         <Link href={route('billing')} prefetch>
                             <CreditCard className="h-3.5 w-3.5 shrink-0" />
                             <span className="text-sm">Billing</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 cursor-pointer">
+                        <Link href={route('settings') + '#feedback'} prefetch>
+                            <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                            <span className="text-sm">Send feedback</span>
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 cursor-pointer">

@@ -6,6 +6,8 @@ import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
+import FeedbackModal from '@/components/FeedbackModal';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
@@ -16,6 +18,7 @@ export default function SettingsScreen() {
   const [displayName, setDisplayName] = useState(user?.display_name ?? '');
   const [parentTitle, setParentTitle] = useState(user?.parent_title ?? '');
   const [editingProfile, setEditingProfile] = useState(false);
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
 
   const updateProfileMutation = useMutation({
     mutationFn: async () => {
@@ -202,12 +205,21 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Send Feedback */}
+      <View style={styles.section}>
+        <TouchableOpacity style={styles.feedbackButton} onPress={() => setFeedbackVisible(true)}>
+          <Text style={styles.feedbackButtonText}>Send Feedback</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Logout */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>Sign Out</Text>
       </TouchableOpacity>
 
       <Text style={styles.versionText}>Quiddo v1.0.0</Text>
+
+      <FeedbackModal visible={feedbackVisible} onClose={() => setFeedbackVisible(false)} />
     </ScrollView>
   );
 }
@@ -288,6 +300,13 @@ const styles = StyleSheet.create({
   },
   menuItemText: { fontSize: 15, color: colors.bark[700] },
   menuChevron: { fontSize: 20, color: colors.bark[600] },
+  feedbackButton: {
+    backgroundColor: colors.eucalyptus[400],
+    borderRadius: 10,
+    padding: 16,
+    alignItems: 'center',
+  },
+  feedbackButtonText: { fontFamily: fonts.body, color: colors.white, fontWeight: '600', fontSize: 15 },
   logoutButton: {
     borderWidth: 1,
     borderColor: colors.redearth[400],
