@@ -23,9 +23,10 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] **Family settings page** — consolidate currency, pocket money day, and member management into one place — completed 2026-03-20 17:22
 - [x] Add an edit button to kid pages — completed 2026-03-22 11:03
 - [x] When setting up a kid (in either onboarding or on edit page), provide a larger array of colours in various nice palettes. Have 10 visible like now, the rest in a popup that can be opened or expanded — completed 2026-03-22
-- [ ] Add a QR code flow, where another parent can use their device to scan the QR code and it will bring up the app/site and let them register and connect their account, same way an invite would
-- [ ] On kids page, Accounts tab - put 'Goals' header above the goal areas in each card
-
+- [x] Add a QR code flow, where another parent can use their device to scan the QR code and it will bring up the app/site and let them register and connect their account, same way an invite would — completed 2026-03-26
+- [x] On kids page, Accounts tab - put 'Goals' header above the goal areas in each card — completed 2026-03-26
+- [x] On any page (web or mobile) when selecting the emoji for the custom currency, the word used should be as specific as possible. eg. For the olive emoji the word should be 'olive', not 'food'. — completed 2026-03-26
+- [x] Add a Kid (mobile): Needs all the options from the web version. Custom currency, photo, etc. — completed 2026-03-26
 ---
 
 ## 💰 Pocket Money & Transactions
@@ -67,6 +68,16 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] On the Accounts tab of the Kid specific page, change the Spend/Add button to be vertically stacked on the right side of each card, and add the savings goals to each card as well. — completed 2026-03-22
 - [x] On the Goals tab, group the goals by account — completed 2026-03-22
 - [x] On the Chores tab, add an edit button for each chore. If a chore hasn't been completed in the current time period (ie. today, if it's Daily; this week if it's weekly), show it as not done, even if there are completions from previous days. — completed 2026-03-22
+- [x] When adding a new kid, we should add an account automatically with a name of 'Savings' — completed 2026-03-26
+- [x] New Account (mobile): the child selection should be a rich dropdown showing their avatar and name — completed 2026-03-26
+- [x] New Account (mobile): the currency options should be a dropdown, with the Dollars and Custom above a line as the most common, and then all the other options we have listed on the web version under the line — completed 2026-03-26
+- [x] New Account (mobile): When custom is chosen as the currency, that's when we show the selection for an emoji (using the same emoji picker as the chores), and the singular and plural names. The singular and plural names need labels on their fields - small, above each field input. — completed 2026-03-26
+- [x] New Goal (mobile): child selection should be the same rich dropdown as described above — completed 2026-03-26
+- [x] New Goal (mobile): needs the account selection dropdown like the web version — completed 2026-03-26
+- [x] New Goal (mobile): should have a way to set a cover photo, like the web version. Use the camera or pick from gallery. — completed 2026-03-26
+- [x] New Goal (mobile): The currency symbol on Target Amount must use the currency selected for the selected account, including custom emoji currencies — completed 2026-03-26
+- [x] View Savings Goal (mobile): If there's no cover image, remove the section that currently says 'No cover image' — completed 2026-03-26
+- [x] View Savings Goal (mobile): Needs the full avatar next to the child's name — completed 2026-03-26
 
 ---
 
@@ -84,6 +95,8 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Mobile Add Chore page: submitting a new chore throws a 'family_id is required' error
 - [x] Mobile Add Chore page: missing the Up For Grabs option
 - [x] Unless a chore is 'Up For Grabs', throw a verification error when no kids are selected when they try to submit (mobile and web)
+- [x] On both web and mobile, on the Chores -> Manage tab, there should be more detail about the chore schedule. For weekly chores the day of the week, monthly chores the day of the month, and one-off chores the specific date. — completed 2026-03-26
+- [x] Deleting a chore schedule should not delete the chore completions associated with it. We want historical data to stay intact. — completed 2026-03-26
 ---
 
 ## 📱 Kid Experience
@@ -97,7 +110,7 @@ Organised by strategic area, with specific tasks nested under each.
 - [x] Wherever we are currently showing the amount complete for a savings goal, add the contributed and total currency for that goal as well. So "$5 of $10 (50%)" or "(star emoji)5 of (star emoji)20 (25%)" — completed 2026-03-22 00:53
 - [x] On the kids page, make the goals clickable and have them take the user to the page for that goal — completed 2026-03-22 00:53
 - [x] Everywhere we can, have the kid's name link to their page — completed 2026-03-22 00:53
-- [ ] Add a QR code flow, where a kid can use their device to scan the QR code and it will bring up the app/site and let them register and connect their account
+- [x] Add a QR code flow, where a kid can use their device to scan the QR code and it will bring up the app/site and let them register and connect their account — completed 2026-03-26 (child-link.tsx + SpenderLinkCode)
 
 ---
 

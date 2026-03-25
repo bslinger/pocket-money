@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Platform, RefreshControl } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -23,7 +24,9 @@ export default function ChoreDetailScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data: chore, isLoading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: chore, isLoading, refetch } = useQuery({
     queryKey: ['chore', id],
     queryFn: async () => {
       const res = await api.get<ApiResponse<Chore>>(`/chores/${id}`);
@@ -31,6 +34,12 @@ export default function ChoreDetailScreen() {
     },
     enabled: !!id,
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const { data: allSpenders } = useQuery({
     queryKey: ['spenders'],
@@ -49,6 +58,9 @@ export default function ChoreDetailScreen() {
   const [daysOfWeek, setDaysOfWeek] = useState<number[]>([]);
   const [requiresApproval, setRequiresApproval] = useState(true);
   const [isActive, setIsActive] = useState(true);
+  const [dayOfMonth, setDayOfMonth] = useState<number | null>(null);
+  const [oneOffDate, setOneOffDate] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [upForGrabs, setUpForGrabs] = useState(false);
   const [selectedSpenderIds, setSelectedSpenderIds] = useState<string[]>([]);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
@@ -61,6 +73,8 @@ export default function ChoreDetailScreen() {
     setAmount(chore.amount ?? '');
     setFrequency(chore.frequency as ChoreFrequency);
     setDaysOfWeek(chore.days_of_week ?? []);
+    setDayOfMonth(chore.day_of_month ?? null);
+    setOneOffDate(chore.one_off_date ?? null);
     setRequiresApproval(chore.requires_approval);
     setIsActive(chore.is_active);
     setUpForGrabs(chore.up_for_grabs ?? false);
@@ -77,6 +91,8 @@ export default function ChoreDetailScreen() {
         amount: rewardType === 'earns' ? amount : null,
         frequency,
         days_of_week: frequency === 'weekly' ? daysOfWeek : null,
+        day_of_month: frequency === 'monthly' ? dayOfMonth : null,
+        one_off_date: frequency === 'one_off' && oneOffDate ? oneOffDate : null,
         requires_approval: requiresApproval,
         is_active: isActive,
         up_for_grabs: upForGrabs,
@@ -246,6 +262,56 @@ export default function ChoreDetailScreen() {
           </>
         )}
 
+        {frequency === 'monthly' && (
+          <>
+            <Text style={styles.label}>Day of Month</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dayOfMonthScroll}>
+              <View style={styles.dayOfMonthRow}>
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                  <TouchableOpacity
+                    key={d}
+                    style={[styles.dayOfMonthChip, dayOfMonth === d && styles.dayOfMonthChipActive]}
+                    onPress={() => setDayOfMonth(d)}
+                  >
+                    <Text style={[styles.dayOfMonthChipText, dayOfMonth === d && styles.dayOfMonthChipTextActive]}>
+                      {d}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+            <Text style={styles.hint}>For shorter months, the chore will be scheduled on the last day.</Text>
+          </>
+        )}
+
+        {frequency === 'one_off' && (
+          <>
+            <Text style={styles.label}>Date</Text>
+            <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+              <Feather name="calendar" size={16} color={colors.bark[600]} />
+              <Text style={[styles.dateButtonText, !oneOffDate && { color: colors.bark[600] }]}>
+                {oneOffDate ?? 'Select a date'}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={oneOffDate ? new Date(oneOffDate + 'T00:00:00') : new Date()}
+                mode="date"
+                minimumDate={new Date()}
+                onChange={(_, selectedDate) => {
+                  setShowDatePicker(Platform.OS === 'ios');
+                  if (selectedDate) {
+                    const yyyy = selectedDate.getFullYear();
+                    const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                    const dd = String(selectedDate.getDate()).padStart(2, '0');
+                    setOneOffDate(`${yyyy}-${mm}-${dd}`);
+                  }
+                }}
+              />
+            )}
+          </>
+        )}
+
         {/* Requires Approval */}
         <Text style={styles.label}>Requires Approval</Text>
         <View style={styles.optionRow}>
@@ -316,7 +382,7 @@ export default function ChoreDetailScreen() {
 
   // ── Detail view ──
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       <View style={styles.header}>
         <Text style={styles.headerEmoji}>{chore.emoji ?? '🧹'}</Text>
         <Text style={styles.headerName}>{chore.name}</Text>
@@ -348,6 +414,18 @@ export default function ChoreDetailScreen() {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Days</Text>
             <Text style={styles.detailValue}>{chore.days_of_week.map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.label).join(', ')}</Text>
+          </View>
+        )}
+        {chore.day_of_month != null && (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Day of Month</Text>
+            <Text style={styles.detailValue}>{chore.day_of_month}</Text>
+          </View>
+        )}
+        {chore.one_off_date && (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Date</Text>
+            <Text style={styles.detailValue}>{chore.one_off_date}</Text>
           </View>
         )}
         <View style={styles.detailRow}>
@@ -450,6 +528,21 @@ const styles = StyleSheet.create({
   dayChipActive: { backgroundColor: colors.eucalyptus[400], borderColor: colors.eucalyptus[400] },
   dayChipText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[700] },
   dayChipTextActive: { color: colors.white, fontWeight: '600' },
+  dayOfMonthScroll: { marginBottom: 4 },
+  dayOfMonthRow: { flexDirection: 'row', gap: 6 },
+  dayOfMonthChip: {
+    width: 40, height: 40, borderRadius: 20, borderWidth: 1,
+    borderColor: colors.bark[200], justifyContent: 'center', alignItems: 'center', backgroundColor: colors.white,
+  },
+  dayOfMonthChipActive: { backgroundColor: colors.eucalyptus[400], borderColor: colors.eucalyptus[400] },
+  dayOfMonthChipText: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[700] },
+  dayOfMonthChipTextActive: { color: colors.white, fontWeight: '600' },
+  hint: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginTop: 4 },
+  dateButton: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, padding: 14,
+  },
+  dateButtonText: { fontFamily: fonts.body, fontSize: 16, color: colors.bark[700] },
   optionRow: { flexDirection: 'row', gap: 8 },
   optionChip: { borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: colors.white },
   optionChipActive: { borderColor: colors.eucalyptus[400], backgroundColor: colors.eucalyptus[400] },
