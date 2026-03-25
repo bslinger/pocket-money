@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -35,8 +35,9 @@ export default function KidDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('accounts');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data: spender, isLoading } = useQuery({
+  const { data: spender, isLoading, refetch } = useQuery({
     queryKey: ['spender', id],
     queryFn: async () => {
       const res = await api.get<ApiResponse<Spender>>(`/spenders/${id}`);
@@ -44,6 +45,12 @@ export default function KidDetailScreen() {
     },
     enabled: !!id,
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const { data: devices = [] } = useQuery({
     queryKey: ['spender-devices', id],
@@ -90,32 +97,61 @@ export default function KidDetailScreen() {
             <Text style={styles.actionButtonText}>Add Account</Text>
           </TouchableOpacity>
         </View>
-        {accounts.map((account) => (
-          <TouchableOpacity
-            key={account.id}
-            style={styles.itemCard}
-            onPress={() => router.push(`/(app)/accounts/${account.id}`)}
-          >
-            <View style={styles.itemRow}>
-              <Text style={styles.itemName}>{account.name}</Text>
-              <Text style={styles.itemBalance}>${parseFloat(account.balance).toFixed(2)}</Text>
-            </View>
-            <View style={styles.accountActions}>
-              <TouchableOpacity
-                style={styles.accountActionBtn}
-                onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, accountId: account.id, type: 'debit' } })}
-              >
-                <Text style={[styles.accountActionText, { color: colors.redearth[400] }]}>— Spend</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.accountActionBtn}
-                onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, accountId: account.id, type: 'credit' } })}
-              >
-                <Text style={[styles.accountActionText, { color: colors.gumleaf[400] }]}>+ Add</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        ))}
+        {accounts.map((account) => {
+          const accountGoals = (spender.savings_goals ?? []).filter(
+            (g) => g.account_id === account.id && !g.is_completed && !g.abandoned_at,
+          );
+          return (
+            <TouchableOpacity
+              key={account.id}
+              style={styles.itemCard}
+              onPress={() => router.push(`/(app)/accounts/${account.id}`)}
+            >
+              <View style={styles.itemRow}>
+                <Text style={styles.itemName}>{account.name}</Text>
+                <Text style={styles.itemBalance}>${parseFloat(account.balance).toFixed(2)}</Text>
+              </View>
+              {accountGoals.length > 0 && (
+                <View style={styles.accountGoals}>
+                  <Text style={styles.accountGoalsHeader}>Goals</Text>
+                  {accountGoals.map((goal) => {
+                    const progress =
+                      parseFloat(goal.target_amount) > 0
+                        ? (parseFloat(goal.allocated_amount) / parseFloat(goal.target_amount)) * 100
+                        : 0;
+                    return (
+                      <TouchableOpacity
+                        key={goal.id}
+                        style={styles.accountGoalRow}
+                        onPress={() => router.push(`/(app)/goals/${goal.id}`)}
+                      >
+                        <Text style={styles.accountGoalName} numberOfLines={1}>{goal.name}</Text>
+                        <View style={styles.accountGoalProgress}>
+                          <View style={[styles.accountGoalBar, { width: `${Math.min(100, progress)}%` }]} />
+                        </View>
+                        <Text style={styles.accountGoalPct}>{Math.round(progress)}%</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+              <View style={styles.accountActions}>
+                <TouchableOpacity
+                  style={styles.accountActionBtn}
+                  onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, accountId: account.id, type: 'debit' } })}
+                >
+                  <Text style={[styles.accountActionText, { color: colors.redearth[400] }]}>— Spend</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.accountActionBtn}
+                  onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, accountId: account.id, type: 'credit' } })}
+                >
+                  <Text style={[styles.accountActionText, { color: colors.gumleaf[400] }]}>+ Add</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
         {accounts.length === 0 && (
           <Text style={styles.emptyText}>No accounts yet</Text>
         )}
@@ -327,7 +363,7 @@ export default function KidDetailScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       {/* Header */}
       <View style={styles.header}>
         <SpenderAvatar name={spender.name} color={avatarColor} avatarUrl={spender.avatar_url} size={72} />
@@ -422,6 +458,51 @@ const styles = StyleSheet.create({
   itemName: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700] },
   itemBalance: { fontFamily: fonts.display, fontSize: 16, color: colors.bark[700] },
   itemSub: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], marginTop: 4 },
+  accountGoals: {
+    borderTopWidth: 1,
+    borderTopColor: colors.bark[200],
+    marginTop: 10,
+    paddingTop: 8,
+  },
+  accountGoalsHeader: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.bark[600],
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  accountGoalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
+  },
+  accountGoalName: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.bark[700],
+    width: 80,
+  },
+  accountGoalProgress: {
+    flex: 1,
+    height: 6,
+    backgroundColor: colors.bark[200],
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  accountGoalBar: {
+    height: '100%',
+    backgroundColor: colors.wattle[400],
+    borderRadius: 3,
+  },
+  accountGoalPct: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.wattle[400],
+    width: 32,
+    textAlign: 'right',
+  },
   accountActions: {
     flexDirection: 'row',
     borderTopWidth: 1,
