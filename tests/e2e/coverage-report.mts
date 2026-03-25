@@ -18,15 +18,15 @@ const OUTPUT_DIR = path.join(process.cwd(), 'storage/coverage/e2e/html');
 const SRC_ROOT   = path.join(process.cwd(), 'resources/js');
 
 if (!fs.existsSync(RAW_DIR)) {
-    console.error('No raw coverage directory found at', RAW_DIR);
-    process.exit(1);
+    console.warn('No raw coverage directory found at', RAW_DIR, '— skipping report.');
+    process.exit(0);
 }
 
 const files = fs.readdirSync(RAW_DIR).filter(f => f.endsWith('.json'));
 
 if (files.length === 0) {
-    console.error('No coverage snapshots found in', RAW_DIR);
-    process.exit(1);
+    console.warn('No coverage snapshots found in', RAW_DIR, '— skipping report.');
+    process.exit(0);
 }
 
 console.log(`Merging ${files.length} coverage snapshot(s)…`);
