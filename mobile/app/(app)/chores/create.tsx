@@ -7,6 +7,7 @@ import EmojiPicker, { type EmojiType } from 'rn-emoji-keyboard';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { useFamily } from '@/lib/family';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type { Spender, ApiResponse, ChoreRewardType, ChoreFrequency } from '@quiddo/shared';
 import { CHORE_FREQUENCIES, CHORE_REWARD_TYPES, DAYS_OF_WEEK } from '@quiddo/shared';
 
@@ -222,9 +223,7 @@ export default function CreateChoreScreen() {
             style={[styles.spenderChip, selectedSpenderIds.includes(s.id) && styles.spenderChipActive]}
             onPress={() => toggleSpender(s.id)}
           >
-            <View style={[styles.spenderAvatar, { backgroundColor: s.color ?? colors.eucalyptus[400] }]}>
-              <Text style={styles.spenderAvatarText}>{s.name[0]}</Text>
-            </View>
+            <SpenderAvatar name={s.name} color={s.color} avatarUrl={s.avatar_url} size={32} />
             <Text style={[styles.spenderName, selectedSpenderIds.includes(s.id) && styles.spenderNameActive]}>
               {s.name}
             </Text>

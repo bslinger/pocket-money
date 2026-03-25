@@ -202,8 +202,20 @@ export default function ChoresScreen() {
                   style={styles.scheduleChore}
                   onPress={() => router.push(`/(app)/(tabs)/chores/${chore.id}`)}
                 >
-                  <Text style={styles.scheduleEmoji}>{chore.emoji ?? '✅'}</Text>
-                  <Text style={styles.scheduleName}>{chore.name}</Text>
+                  <Text style={styles.scheduleEmoji}>{chore.emoji ?? '📋'}</Text>
+                  <View style={styles.scheduleInfo}>
+                    <Text style={styles.scheduleName}>{chore.name}</Text>
+                    {chore.spenders && chore.spenders.length > 0 && (
+                      <View style={styles.scheduleSpenders}>
+                        {chore.spenders.map((s) => (
+                          <View key={s.id} style={styles.scheduleSpenderRow}>
+                            <SpenderAvatar name={s.name} color={s.color} avatarUrl={s.avatar_url} size={16} />
+                            <Text style={styles.scheduleSpenderName}>{s.name}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
                   {chore.amount && (
                     <Text style={styles.scheduleAmount}>
                       ${parseFloat(chore.amount).toFixed(2)}
@@ -227,7 +239,7 @@ export default function ChoresScreen() {
           onPress={() => router.push(`/(app)/(tabs)/chores/${chore.id}`)}
         >
           <View style={styles.manageRow}>
-            <Text style={styles.manageEmoji}>{chore.emoji ?? '✅'}</Text>
+            <Text style={styles.manageEmoji}>{chore.emoji ?? '📋'}</Text>
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.manageName}>{chore.name}</Text>
               <Text style={styles.manageSub}>
@@ -235,17 +247,21 @@ export default function ChoresScreen() {
                 {chore.amount ? ` · $${parseFloat(chore.amount).toFixed(2)}` : ''}
               </Text>
             </View>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: chore.is_active ? colors.gumleaf[400] : colors.bark[200] },
-              ]}
-            />
+            <View style={[styles.statusPill, { backgroundColor: chore.is_active ? colors.gumleaf[400] + '20' : colors.bark[200] }]}>
+              <Text style={[styles.statusPillText, { color: chore.is_active ? colors.gumleaf[400] : colors.bark[600] }]}>
+                {chore.is_active ? 'Active' : 'Inactive'}
+              </Text>
+            </View>
           </View>
           {chore.spenders && chore.spenders.length > 0 && (
-            <Text style={styles.assignedText}>
-              {chore.spenders.map((s) => s.name).join(', ')}
-            </Text>
+            <View style={styles.assignedRow}>
+              {chore.spenders.map((s) => (
+                <View key={s.id} style={styles.assignedSpender}>
+                  <SpenderAvatar name={s.name} color={s.color} avatarUrl={s.avatar_url} size={20} />
+                  <Text style={styles.assignedSpenderName}>{s.name}</Text>
+                </View>
+              ))}
+            </View>
           )}
         </TouchableOpacity>
       ))}
@@ -368,8 +384,12 @@ const styles = StyleSheet.create({
     borderColor: colors.bark[200],
   },
   scheduleEmoji: { fontSize: 18, marginRight: 8 },
-  scheduleName: { flex: 1, fontSize: 14, color: colors.bark[700] },
-  scheduleAmount: { fontSize: 14, fontWeight: '600', color: colors.gumleaf[400] },
+  scheduleInfo: { flex: 1 },
+  scheduleName: { fontSize: 14, color: colors.bark[700] },
+  scheduleSpenders: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+  scheduleSpenderRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  scheduleSpenderName: { fontFamily: fonts.body, fontSize: 11, color: colors.bark[600] },
+  scheduleAmount: { fontSize: 14, fontWeight: '600', color: colors.gumleaf[400], marginLeft: 8 },
   // Manage
   manageCard: {
     backgroundColor: colors.white,
@@ -383,8 +403,11 @@ const styles = StyleSheet.create({
   manageEmoji: { fontSize: 22 },
   manageName: { fontSize: 15, fontWeight: '600', color: colors.bark[700] },
   manageSub: { fontSize: 13, color: colors.bark[600], marginTop: 2 },
-  statusDot: { width: 10, height: 10, borderRadius: 5 },
-  assignedText: { fontSize: 12, color: colors.bark[600], marginTop: 8, paddingLeft: 36 },
+  statusPill: { borderRadius: 99, paddingHorizontal: 8, paddingVertical: 2 },
+  statusPillText: { fontFamily: fonts.body, fontSize: 10, fontWeight: '600' },
+  assignedRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8, paddingLeft: 36 },
+  assignedSpender: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  assignedSpenderName: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600] },
   // Empty
   emptyContainer: { padding: 32, alignItems: 'center' },
   emptyText: { fontSize: 15, color: colors.bark[600], textAlign: 'center' },
