@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { FlashList } from '@shopify/flash-list';
+import { Feather } from '@expo/vector-icons';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 import type {
   Spender,
   Account,
@@ -14,13 +15,14 @@ import type {
   ApiResponse,
 } from '@quiddo/shared';
 
-type TabKey = 'accounts' | 'goals' | 'chores' | 'transactions';
+type TabKey = 'accounts' | 'goals' | 'chores' | 'transactions' | 'manage';
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'accounts', label: 'Accounts' },
-  { key: 'goals', label: 'Goals' },
-  { key: 'chores', label: 'Chores' },
-  { key: 'transactions', label: 'Txns' },
+const TABS: { key: TabKey; icon: keyof typeof Feather.glyphMap; label: string }[] = [
+  { key: 'accounts', icon: 'credit-card', label: 'Accounts' },
+  { key: 'goals', icon: 'target', label: 'Goals' },
+  { key: 'chores', icon: 'check-square', label: 'Chores' },
+  { key: 'transactions', icon: 'list', label: 'Txns' },
+  { key: 'manage', icon: 'settings', label: 'Manage' },
 ];
 
 export default function KidDetailScreen() {
@@ -63,6 +65,16 @@ export default function KidDetailScreen() {
     const accounts = spender.accounts ?? [];
     return (
       <View style={styles.tabContent}>
+        <View style={styles.tabHeader}>
+          <Text style={styles.sectionTitle}>Accounts</Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push({ pathname: '/(app)/accounts/create', params: { spenderId: spender.id } })}
+          >
+            <Feather name="plus" size={14} color={colors.white} />
+            <Text style={styles.actionButtonText}>Add Account</Text>
+          </TouchableOpacity>
+        </View>
         {accounts.map((account) => (
           <TouchableOpacity
             key={account.id}
@@ -73,17 +85,25 @@ export default function KidDetailScreen() {
               <Text style={styles.itemName}>{account.name}</Text>
               <Text style={styles.itemBalance}>${parseFloat(account.balance).toFixed(2)}</Text>
             </View>
-            <Text style={styles.itemSub}>
-              {(account.transactions ?? []).length} transactions
-            </Text>
+            <View style={styles.accountActions}>
+              <TouchableOpacity
+                style={styles.accountActionBtn}
+                onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, accountId: account.id, type: 'debit' } })}
+              >
+                <Text style={[styles.accountActionText, { color: colors.redearth[400] }]}>— Spend</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.accountActionBtn}
+                onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, accountId: account.id, type: 'credit' } })}
+              >
+                <Text style={[styles.accountActionText, { color: colors.gumleaf[400] }]}>+ Add</Text>
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity
-          style={styles.addCard}
-          onPress={() => router.push({ pathname: '/(app)/accounts/create', params: { spenderId: spender.id } })}
-        >
-          <Text style={styles.addCardText}>+ New Account</Text>
-        </TouchableOpacity>
+        {accounts.length === 0 && (
+          <Text style={styles.emptyText}>No accounts yet</Text>
+        )}
       </View>
     );
   };
@@ -94,6 +114,16 @@ export default function KidDetailScreen() {
     );
     return (
       <View style={styles.tabContent}>
+        <View style={styles.tabHeader}>
+          <Text style={styles.sectionTitle}>Goals</Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push({ pathname: '/(app)/goals/create', params: { spenderId: spender.id } })}
+          >
+            <Feather name="plus" size={14} color={colors.white} />
+            <Text style={styles.actionButtonText}>Add Goal</Text>
+          </TouchableOpacity>
+        </View>
         {goals.map((goal) => {
           const progress =
             parseFloat(goal.target_amount) > 0
@@ -134,6 +164,16 @@ export default function KidDetailScreen() {
     const chores = spender.chores ?? [];
     return (
       <View style={styles.tabContent}>
+        <View style={styles.tabHeader}>
+          <Text style={styles.sectionTitle}>Chores</Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push({ pathname: '/(app)/chores/create', params: { spenderId: spender.id } })}
+          >
+            <Feather name="plus" size={14} color={colors.white} />
+            <Text style={styles.actionButtonText}>Add Chore</Text>
+          </TouchableOpacity>
+        </View>
         {chores.map((chore) => (
           <TouchableOpacity
             key={chore.id}
@@ -173,6 +213,18 @@ export default function KidDetailScreen() {
 
     return (
       <View style={styles.tabContent}>
+        <View style={styles.tabHeader}>
+          <Text style={styles.sectionTitle}>Transactions</Text>
+          {(spender.accounts?.length ?? 0) > 0 && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => router.push({ pathname: '/(app)/transactions/create', params: { spenderId: spender.id, type: 'credit' } })}
+            >
+              <Feather name="plus" size={14} color={colors.white} />
+              <Text style={styles.actionButtonText}>New Transaction</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {recent.map((tx) => (
           <View key={tx.id} style={styles.itemCard}>
             <View style={styles.itemRow}>
@@ -202,31 +254,60 @@ export default function KidDetailScreen() {
     );
   };
 
+  const renderManage = () => {
+    const devices = spender.devices ?? [];
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Manage</Text>
+
+        <TouchableOpacity
+          style={styles.manageItem}
+          onPress={() => router.push(`/(app)/kids/${spender.id}/edit`)}
+        >
+          <Feather name="edit-2" size={18} color={colors.bark[600]} />
+          <Text style={styles.manageItemText}>Edit details</Text>
+          <Feather name="chevron-right" size={18} color={colors.bark[600]} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.manageItem}
+          onPress={() => router.push(`/(app)/kids/${spender.id}/edit`)}
+        >
+          <Feather name="smartphone" size={18} color={colors.bark[600]} />
+          <Text style={styles.manageItemText}>Linked devices</Text>
+          <View style={styles.manageBadge}>
+            <Text style={styles.manageBadgeText}>{devices.length}</Text>
+          </View>
+          <Feather name="chevron-right" size={18} color={colors.bark[600]} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const tabContentMap: Record<TabKey, () => React.ReactNode> = {
     accounts: renderAccounts,
     goals: renderGoals,
     chores: renderChores,
     transactions: renderTransactions,
+    manage: renderManage,
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={[styles.avatarLarge, { backgroundColor: avatarColor }]}>
-          <Text style={styles.avatarLargeText}>{spender.name[0]?.toUpperCase()}</Text>
-        </View>
+        {spender.avatar_url ? (
+          <Image source={{ uri: spender.avatar_url }} style={[styles.avatarLarge, { backgroundColor: avatarColor }]} />
+        ) : (
+          <View style={[styles.avatarLarge, { backgroundColor: avatarColor }]}>
+            <Text style={styles.avatarLargeText}>{spender.name[0]?.toUpperCase()}</Text>
+          </View>
+        )}
         <Text style={styles.name}>{spender.name}</Text>
         <Text style={styles.balance}>${totalBalance.toFixed(2)}</Text>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => router.push(`/(app)/kids/${spender.id}/edit`)}
-        >
-          <Text style={styles.editButtonText}>Edit</Text>
-        </TouchableOpacity>
       </View>
 
-      {/* Segmented Tabs */}
+      {/* Icon Tabs */}
       <View style={styles.tabBar}>
         {TABS.map((tab) => (
           <TouchableOpacity
@@ -234,14 +315,11 @@ export default function KidDetailScreen() {
             style={[styles.tab, activeTab === tab.key && styles.tabActive]}
             onPress={() => setActiveTab(tab.key)}
           >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab.key && styles.tabTextActive,
-              ]}
-            >
-              {tab.label}
-            </Text>
+            <Feather
+              name={tab.icon}
+              size={18}
+              color={activeTab === tab.key ? colors.eucalyptus[400] : colors.bark[600]}
+            />
           </TouchableOpacity>
         ))}
       </View>
@@ -263,18 +341,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarLargeText: { color: colors.white, fontSize: 30, fontWeight: '700' },
-  name: { fontSize: 22, fontWeight: '700', color: colors.bark[700], marginTop: 12 },
-  balance: { fontSize: 32, fontWeight: '700', color: colors.bark[700], marginTop: 4 },
-  editButton: {
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: colors.bark[200],
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 6,
-  },
-  editButtonText: { color: colors.eucalyptus[400], fontWeight: '600', fontSize: 14 },
+  avatarLargeText: { fontFamily: fonts.body, color: colors.white, fontSize: 30 },
+  name: { fontFamily: fonts.display, fontSize: 22, color: colors.bark[700], marginTop: 12 },
+  balance: { fontFamily: fonts.display, fontSize: 32, color: colors.bark[700], marginTop: 4 },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: colors.bark[200],
@@ -284,14 +353,35 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 8,
   },
   tabActive: { backgroundColor: colors.white },
-  tabText: { fontSize: 13, fontWeight: '500', color: colors.bark[600] },
-  tabTextActive: { color: colors.bark[700], fontWeight: '600' },
   tabContent: {},
+  tabHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.bark[600],
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.eucalyptus[400],
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  actionButtonText: { fontFamily: fonts.body, color: colors.white, fontSize: 13 },
   itemCard: {
     backgroundColor: colors.white,
     borderRadius: 12,
@@ -301,9 +391,18 @@ const styles = StyleSheet.create({
     borderColor: colors.bark[200],
   },
   itemRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  itemName: { fontSize: 15, fontWeight: '600', color: colors.bark[700] },
-  itemBalance: { fontSize: 16, fontWeight: '700', color: colors.bark[700] },
-  itemSub: { fontSize: 13, color: colors.bark[600], marginTop: 4 },
+  itemName: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700] },
+  itemBalance: { fontFamily: fonts.display, fontSize: 16, color: colors.bark[700] },
+  itemSub: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], marginTop: 4 },
+  accountActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: colors.bark[200],
+    marginTop: 10,
+    paddingTop: 10,
+  },
+  accountActionBtn: { flex: 1, alignItems: 'center' },
+  accountActionText: { fontFamily: fonts.body, fontSize: 13 },
   progressContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
   progressTrack: {
     flex: 1,
@@ -313,19 +412,29 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progressBar: { height: '100%', backgroundColor: colors.wattle[400], borderRadius: 4 },
-  progressText: { fontSize: 12, fontWeight: '600', color: colors.wattle[400], width: 36 },
+  progressText: { fontFamily: fonts.body, fontSize: 12, color: colors.wattle[400], width: 36 },
   choreEmoji: { fontSize: 22 },
-  txAmount: { fontSize: 16, fontWeight: '700' },
-  addCard: {
+  txAmount: { fontFamily: fonts.display, fontSize: 16 },
+  manageItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: colors.bark[200],
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderStyle: 'dashed',
   },
-  addCardText: { color: colors.eucalyptus[400], fontWeight: '600', fontSize: 14 },
-  emptyText: { color: colors.bark[600], fontSize: 14, textAlign: 'center', padding: 24 },
+  manageItemText: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700], flex: 1 },
+  manageBadge: {
+    backgroundColor: colors.bark[200],
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  manageBadgeText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600] },
+  emptyText: { fontFamily: fonts.body, color: colors.bark[600], fontSize: 14, textAlign: 'center', padding: 24 },
   // Skeleton
   headerSkeleton: { alignItems: 'center', marginBottom: 20, padding: 16 },
   skeletonAvatar: {
