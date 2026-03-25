@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\ChoreController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\FamilyController;
+use App\Http\Controllers\Api\V1\FamilyLinkCodeController;
 use App\Http\Controllers\Api\V1\FeedbackController;
 use App\Http\Controllers\Api\V1\PocketMoneyController;
 use App\Http\Controllers\Api\V1\RecurringTransactionController;
@@ -29,6 +30,7 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/spender-devices/claim', [SpenderLinkCodeController::class, 'claim']);
+Route::post('/family-link-codes/claim', [FamilyLinkCodeController::class, 'claim']);
 
 // ---------------------------------------------------------------------------
 // Authenticated (Sanctum token auth)
@@ -53,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/families/{family}', [FamilyController::class, 'show']);
     Route::put('/families/{family}', [FamilyController::class, 'update']);
     Route::post('/families/{family}/switch', [FamilyController::class, 'switchActive']);
+    Route::post('/families/{family}/link-code', [FamilyLinkCodeController::class, 'store']);
 
     // Spenders
     Route::get('/spenders', [SpenderController::class, 'index']);

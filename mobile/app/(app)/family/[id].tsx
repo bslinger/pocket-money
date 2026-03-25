@@ -1,10 +1,13 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, RefreshControl, Modal } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import QRCode from 'react-native-qrcode-svg';
+import { Feather } from '@expo/vector-icons';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
 import type { Family, ApiResponse } from '@quiddo/shared';
 
 export default function FamilyDetailScreen() {
@@ -13,8 +16,12 @@ export default function FamilyDetailScreen() {
   const queryClient = useQueryClient();
 
   const [inviteEmail, setInviteEmail] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [linkCode, setLinkCode] = useState<{ code: string; expires_at: string } | null>(null);
+  const [qrModalVisible, setQrModalVisible] = useState(false);
+  const [generatingCode, setGeneratingCode] = useState(false);
 
-  const { data: family, isLoading } = useQuery({
+  const { data: family, isLoading, refetch } = useQuery({
     queryKey: ['family', id],
     queryFn: async () => {
       const res = await api.get<ApiResponse<Family>>(`/families/${id}`);
@@ -22,6 +29,12 @@ export default function FamilyDetailScreen() {
     },
     enabled: !!id,
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const inviteMutation = useMutation({
     mutationFn: async () => {
@@ -43,6 +56,36 @@ export default function FamilyDetailScreen() {
     },
   });
 
+  const generateLinkCode = async () => {
+    setGeneratingCode(true);
+    try {
+      const res = await api.post(`/families/${id}/link-code`);
+      setLinkCode(res.data.data);
+      setQrModalVisible(true);
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.message ?? 'Failed to generate code');
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  // Countdown for code expiry
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  useEffect(() => {
+    if (!linkCode) return;
+    const calc = () => Math.max(0, Math.floor((new Date(linkCode.expires_at).getTime() - Date.now()) / 1000));
+    setSecondsLeft(calc());
+    const interval = setInterval(() => {
+      const s = calc();
+      setSecondsLeft(s);
+      if (s <= 0) {
+        setLinkCode(null);
+        setQrModalVisible(false);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [linkCode]);
+
   if (isLoading || !family) {
     return (
       <View style={styles.container}>
@@ -54,7 +97,7 @@ export default function FamilyDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       {/* Family Header */}
       <View style={styles.header}>
         <View style={styles.familyIcon}>
@@ -130,7 +173,58 @@ export default function FamilyDetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        <View style={styles.orRow}>
+          <View style={styles.orLine} />
+          <Text style={styles.orText}>or</Text>
+          <View style={styles.orLine} />
+        </View>
+
+        <TouchableOpacity
+          style={styles.qrButton}
+          onPress={generateLinkCode}
+          disabled={generatingCode}
+        >
+          <Feather name="maximize" size={18} color={colors.eucalyptus[400]} />
+          <Text style={styles.qrButtonText}>
+            {generatingCode ? 'Generating...' : 'Share QR Code'}
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      {/* QR Code Modal */}
+      <Modal visible={qrModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Scan to Join Family</Text>
+            <Text style={styles.modalSubtitle}>{family.name}</Text>
+
+            {linkCode && (
+              <>
+                <View style={styles.qrContainer}>
+                  <QRCode
+                    value={`quiddo://join-family?code=${linkCode.code}`}
+                    size={200}
+                    color={colors.bark[700]}
+                    backgroundColor={colors.white}
+                  />
+                </View>
+                <Text style={styles.codeText}>{linkCode.code}</Text>
+                <Text style={styles.expiryText}>
+                  Expires in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}
+                </Text>
+              </>
+            )}
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setQrModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -221,6 +315,30 @@ const styles = StyleSheet.create({
   inviteButtonDisabled: { opacity: 0.5 },
   inviteButtonText: { color: colors.white, fontWeight: '600', fontSize: 14 },
   mutedText: { fontSize: 14, color: colors.bark[600] },
+  // Or divider
+  orRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 12 },
+  orLine: { flex: 1, height: 1, backgroundColor: colors.bark[200] },
+  orText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600] },
+  // QR button
+  qrButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: colors.white, borderWidth: 1, borderColor: colors.eucalyptus[400],
+    borderRadius: 8, paddingVertical: 12,
+  },
+  qrButtonText: { fontFamily: fonts.body, fontSize: 14, color: colors.eucalyptus[400], fontWeight: '600' },
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: {
+    backgroundColor: colors.white, borderRadius: 16, padding: 24, width: '85%',
+    alignItems: 'center',
+  },
+  modalTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.bark[700], marginBottom: 4 },
+  modalSubtitle: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600], marginBottom: 20 },
+  qrContainer: { padding: 16, backgroundColor: colors.white, borderRadius: 12, marginBottom: 16 },
+  codeText: { fontFamily: fonts.display, fontSize: 28, letterSpacing: 4, color: colors.bark[700], marginBottom: 8 },
+  expiryText: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], marginBottom: 20 },
+  closeButton: { paddingVertical: 10, paddingHorizontal: 24 },
+  closeButtonText: { fontFamily: fonts.body, fontSize: 14, color: colors.eucalyptus[400], fontWeight: '600' },
   // Skeleton
   skeletonText: { backgroundColor: colors.bark[200], borderRadius: 6 },
   skeletonCard: {

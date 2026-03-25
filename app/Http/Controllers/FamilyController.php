@@ -7,12 +7,15 @@ use App\Http\Requests\StoreFamilyRequest;
 use App\Mail\FamilyInvitation;
 use App\Models\Account;
 use App\Models\Family;
+use App\Models\FamilyLinkCode;
 use App\Models\FamilyUser;
 use App\Models\Invitation;
 use App\Models\Spender;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -212,5 +215,33 @@ class FamilyController extends Controller
         $invitation->delete();
 
         return back()->with('success', 'Invitation revoked.');
+    }
+
+    public function generateLinkCode(Family $family): JsonResponse|RedirectResponse
+    {
+        $user = auth()->user();
+        abort_unless($user->families()->where('families.id', $family->id)->exists(), 403);
+
+        $code = FamilyLinkCode::create([
+            'family_id' => $family->id,
+            'code' => FamilyLinkCode::generateCode(),
+            'role' => 'member',
+            'created_by' => $user->id,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        /** @var Carbon $expiresAt */
+        $expiresAt = $code->expires_at;
+
+        $linkCodeData = [
+            'code' => $code->code,
+            'expires_at' => $expiresAt->toIso8601String(),
+        ];
+
+        if (request()->wantsJson()) {
+            return response()->json(['data' => $linkCodeData], 201);
+        }
+
+        return back()->with('familyLinkCode', $linkCodeData);
     }
 }

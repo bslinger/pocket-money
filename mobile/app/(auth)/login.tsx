@@ -63,6 +63,10 @@ export default function LoginScreen() {
           <Text style={styles.linkText}>Don't have an account? Sign up</Text>
         </Link>
 
+        <Link href="/(auth)/join-family" style={styles.link}>
+          <Text style={styles.linkText}>Have an invite code? Join a family</Text>
+        </Link>
+
         <Link href="/(auth)/child-link" style={styles.childLink}>
           <Text style={styles.childLinkText}>I'm a kid — link my device</Text>
         </Link>
