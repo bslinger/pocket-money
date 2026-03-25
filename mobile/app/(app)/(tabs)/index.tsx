@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -9,6 +9,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type { Family, Spender, ChoreCompletion, Transaction } from '@quiddo/shared';
 import { useFamilyChannel, useSpenderChannel } from '@/hooks/useBroadcast';
 import { useFamily } from '@/lib/family';
@@ -123,13 +124,7 @@ function ChildDeviceDashboard({ data, onRefresh }: { data: any; onRefresh: () =>
       >
         {/* Avatar + Name + Balance */}
         <View style={childStyles.profileSection}>
-          {spender?.avatar_url ? (
-            <Image source={{ uri: spender.avatar_url }} style={[childStyles.avatar, { backgroundColor: spenderColor }]} />
-          ) : (
-            <View style={[childStyles.avatar, { backgroundColor: spenderColor }]}>
-              <Text style={childStyles.avatarText}>{spender?.name?.[0]?.toUpperCase()}</Text>
-            </View>
-          )}
+          <SpenderAvatar name={spender?.name ?? '?'} color={spenderColor} avatarUrl={spender?.avatar_url} size={64} />
           <Text style={childStyles.spenderName}>{spender?.name}</Text>
           <Text style={[childStyles.balance, { color: spenderColor }]}>
             ${balance.toFixed(2)}
@@ -311,9 +306,7 @@ export default function DashboardScreen() {
                   style={styles.kidCardTop}
                   onPress={() => router.push(`/(app)/(tabs)/kids/${spender.id}`)}
                 >
-                  <View style={[styles.avatar, { backgroundColor: spender.color ?? colors.eucalyptus[400] }]}>
-                    <Text style={styles.avatarText}>{spender.name[0]}</Text>
-                  </View>
+                  <SpenderAvatar name={spender.name} color={spender.color} avatarUrl={spender.avatar_url} size={40} />
                   <View style={styles.kidInfo}>
                     <Text style={styles.kidName}>{spender.name}</Text>
                     <Text style={styles.kidBalanceAmount}>${balance.toFixed(2)}</Text>
@@ -372,9 +365,7 @@ export default function DashboardScreen() {
             </View>
             {data.pending_completions.map((completion, idx) => (
               <View key={completion.id} style={[styles.approvalRow, idx > 0 && styles.approvalRowBorder]}>
-                <View style={[styles.approvalAvatar, { backgroundColor: completion.spender?.color ?? colors.eucalyptus[400] }]}>
-                  <Text style={styles.approvalAvatarText}>{completion.spender?.name?.[0] ?? '?'}</Text>
-                </View>
+                <SpenderAvatar name={completion.spender?.name ?? '?'} color={completion.spender?.color} avatarUrl={completion.spender?.avatar_url} size={32} />
                 <View style={styles.approvalInfo}>
                   <Text style={styles.approvalChore} numberOfLines={1}>
                     {completion.chore?.emoji ? `${completion.chore.emoji} ` : ''}{completion.chore?.name}

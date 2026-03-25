@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type {
   Spender,
   Account,
@@ -324,13 +325,7 @@ export default function KidDetailScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
-        {spender.avatar_url ? (
-          <Image source={{ uri: spender.avatar_url }} style={[styles.avatarLarge, { backgroundColor: avatarColor }]} />
-        ) : (
-          <View style={[styles.avatarLarge, { backgroundColor: avatarColor }]}>
-            <Text style={styles.avatarLargeText}>{spender.name[0]?.toUpperCase()}</Text>
-          </View>
-        )}
+        <SpenderAvatar name={spender.name} color={avatarColor} avatarUrl={spender.avatar_url} size={72} />
         <Text style={styles.name}>{spender.name}</Text>
         <Text style={styles.balance}>${totalBalance.toFixed(2)}</Text>
       </View>

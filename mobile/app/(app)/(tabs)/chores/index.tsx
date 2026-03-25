@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type { Chore, ChoreCompletion, ApiResponse } from '@quiddo/shared';
 import { DAYS_OF_WEEK } from '@quiddo/shared';
 
@@ -129,9 +130,7 @@ export default function ChoresScreen() {
         <View style={styles.approvalList}>
           {allCompletions.map((completion, idx) => (
             <View key={completion.id} style={[styles.approvalRow, idx > 0 && styles.approvalRowBorder]}>
-              <View style={[styles.approvalAvatar, { backgroundColor: completion.spender?.color ?? colors.eucalyptus[400] }]}>
-                <Text style={styles.approvalAvatarText}>{completion.spender?.name?.[0] ?? '?'}</Text>
-              </View>
+              <SpenderAvatar name={completion.spender?.name ?? '?'} color={completion.spender?.color} avatarUrl={completion.spender?.avatar_url} size={32} />
               <View style={styles.approvalInfo}>
                 <Text style={styles.approvalChore} numberOfLines={1}>
                   {completion.choreEmoji ? `${completion.choreEmoji} ` : ''}{completion.choreName}

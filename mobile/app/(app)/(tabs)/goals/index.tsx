@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type { SavingsGoal, Spender, ApiResponse } from '@quiddo/shared';
 
 interface GoalWithSpender extends SavingsGoal {
@@ -124,9 +125,7 @@ export default function GoalsListScreen() {
       {grouped.map((group) => (
         <View key={group.spender.id} style={styles.groupSection}>
           <View style={styles.groupHeader}>
-            <View style={[styles.miniAvatar, { backgroundColor: group.spender.color ?? colors.eucalyptus[400] }]}>
-              <Text style={styles.miniAvatarText}>{group.spender.name[0]}</Text>
-            </View>
+            <SpenderAvatar name={group.spender.name} color={group.spender.color} avatarUrl={group.spender.avatar_url} size={28} />
             <Text style={styles.groupName}>{group.spender.name}</Text>
           </View>
 

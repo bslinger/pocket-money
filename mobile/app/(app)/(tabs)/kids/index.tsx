@@ -6,6 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type { Spender, ApiResponse } from '@quiddo/shared';
 
 export default function KidsListScreen() {
@@ -70,9 +71,7 @@ export default function KidsListScreen() {
               onPress={() => router.push(`/(app)/(tabs)/kids/${item.id}`)}
               activeOpacity={0.7}
             >
-              <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
-                <Text style={styles.avatarText}>{item.name[0]?.toUpperCase()}</Text>
-              </View>
+              <SpenderAvatar name={item.name} color={item.color} avatarUrl={item.avatar_url} size={48} />
               <View style={styles.cardInfo}>
                 <Text style={styles.cardName}>{item.name}</Text>
                 <Text style={styles.cardBalance}>${balance.toFixed(2)}</Text>
