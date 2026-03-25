@@ -50,6 +50,8 @@ class SpenderController extends Controller
                 now()->endOfWeek(),
             ])->orderByDesc('completed_at'),
             'users',
+            'pocketMoneySchedules' => fn ($q) => $q->where('is_active', true),
+            'pocketMoneySchedules.splits.account',
         ]);
 
         SavingsGoal::applyAccountAllocations($spender->savingsGoals);

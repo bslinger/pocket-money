@@ -1,15 +1,41 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, Switch } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
-import type { Spender, PocketMoneySchedule, ApiResponse } from '@quiddo/shared';
+import type { Spender, PocketMoneySchedule, PocketMoneyScheduleSplit, ApiResponse } from '@quiddo/shared';
 import { SPENDER_COLORS, POCKET_MONEY_FREQUENCIES, DAYS_OF_WEEK } from '@quiddo/shared';
 
 interface SpenderDetail extends Spender {
   pocket_money_schedule?: PocketMoneySchedule | null;
+}
+
+interface SplitRow {
+  account_id: string;
+  account_name: string;
+  percentage: string;
+}
+
+function initSplitRows(schedule: PocketMoneySchedule | null | undefined, accounts: Spender['accounts']): SplitRow[] {
+  if (!accounts || accounts.length < 2) return [];
+  if (schedule?.splits && schedule.splits.length > 0) {
+    return schedule.splits.map((s: PocketMoneyScheduleSplit) => ({
+      account_id: s.account_id,
+      account_name: accounts.find(a => a.id === s.account_id)?.name ?? s.account_id,
+      percentage: String(parseFloat(String(s.percentage)).toFixed(2)),
+    }));
+  }
+  // Default: equal distribution
+  const equal = (100 / accounts.length).toFixed(2);
+  return accounts.map((a, i) => ({
+    account_id: a.id,
+    account_name: a.name,
+    percentage: i === accounts.length - 1
+      ? (100 - parseFloat(equal) * (accounts.length - 1)).toFixed(2)
+      : equal,
+  }));
 }
 
 export default function EditKidScreen() {
@@ -25,6 +51,8 @@ export default function EditKidScreen() {
   const [pmFrequency, setPmFrequency] = useState<'weekly' | 'monthly'>('weekly');
   const [pmDayOfWeek, setPmDayOfWeek] = useState<number>(4); // Friday
   const [pmDayOfMonth, setPmDayOfMonth] = useState<number>(1);
+  const [distributeOpen, setDistributeOpen] = useState(false);
+  const [splits, setSplits] = useState<SplitRow[]>([]);
 
   const { data: spender, isLoading } = useQuery({
     queryKey: ['spender', id],
@@ -45,6 +73,11 @@ export default function EditKidScreen() {
         setPmFrequency(schedule.frequency);
         if (schedule.day_of_week != null) setPmDayOfWeek(schedule.day_of_week);
         if (schedule.day_of_month != null) setPmDayOfMonth(schedule.day_of_month);
+        const hasSplits = schedule.splits && schedule.splits.length > 0;
+        setDistributeOpen(!!hasSplits);
+        setSplits(initSplitRows(schedule, spender.accounts as Spender['accounts']));
+      } else if (spender.accounts && spender.accounts.length > 1) {
+        setSplits(initSplitRows(null, spender.accounts as Spender['accounts']));
       }
     }
   }, [spender]);
@@ -65,11 +98,22 @@ export default function EditKidScreen() {
 
   const saveScheduleMutation = useMutation({
     mutationFn: async () => {
+      const useSplits = distributeOpen && splits.length > 1;
+      if (useSplits) {
+        const total = splits.reduce((sum, s) => sum + (parseFloat(s.percentage) || 0), 0);
+        if (Math.abs(total - 100) > 0.5) {
+          throw new Error('Percentages must add up to 100%.');
+        }
+      }
       await api.post(`/spenders/${id}/pocket-money-schedule`, {
         amount: pmAmount,
         frequency: pmFrequency,
         day_of_week: pmFrequency === 'weekly' ? pmDayOfWeek : null,
         day_of_month: pmFrequency === 'monthly' ? pmDayOfMonth : null,
+        splits: useSplits
+          ? splits.map(s => ({ account_id: s.account_id, percentage: parseFloat(s.percentage) }))
+          : [],
+        account_id: useSplits ? null : null,
       });
     },
     onSuccess: () => {
@@ -78,7 +122,7 @@ export default function EditKidScreen() {
       queryClient.invalidateQueries({ queryKey: ['pocket-money-release'] });
     },
     onError: (err: any) => {
-      Alert.alert('Error', err.response?.data?.message ?? 'Failed to save schedule');
+      Alert.alert('Error', err.message ?? err.response?.data?.message ?? 'Failed to save schedule');
     },
   });
 
@@ -92,8 +136,13 @@ export default function EditKidScreen() {
       queryClient.invalidateQueries({ queryKey: ['spender', id] });
       queryClient.invalidateQueries({ queryKey: ['pocket-money-release'] });
       setPmAmount('');
+      setDistributeOpen(false);
     },
   });
+
+  function updateSplitPercentage(index: number, value: string) {
+    setSplits(prev => prev.map((s, i) => i === index ? { ...s, percentage: value } : s));
+  }
 
   if (isLoading || !spender) {
     return (
@@ -107,6 +156,9 @@ export default function EditKidScreen() {
   }
 
   const hasSchedule = !!spender.pocket_money_schedule;
+  const hasMultipleAccounts = (spender.accounts?.length ?? 0) > 1;
+  const splitTotal = splits.reduce((sum, s) => sum + (parseFloat(s.percentage) || 0), 0);
+  const splitTotalOk = Math.abs(splitTotal - 100) <= 0.5;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -221,10 +273,53 @@ export default function EditKidScreen() {
           </>
         )}
 
+        {/* Distribute between accounts (only when >1 account) */}
+        {hasMultipleAccounts && (
+          <View style={styles.distributeSection}>
+            <View style={styles.distributeHeader}>
+              <Text style={styles.distributeLabel}>Distribute between accounts</Text>
+              <Switch
+                value={distributeOpen}
+                onValueChange={(val) => {
+                  setDistributeOpen(val);
+                  if (val && splits.length === 0) {
+                    setSplits(initSplitRows(null, spender.accounts as Spender['accounts']));
+                  }
+                }}
+                trackColor={{ false: colors.bark[200], true: colors.eucalyptus[400] }}
+                thumbColor={colors.white}
+              />
+            </View>
+
+            {distributeOpen && splits.length > 0 && (
+              <View style={styles.splitsList}>
+                {splits.map((split, index) => (
+                  <View key={split.account_id} style={styles.splitRow}>
+                    <Text style={styles.splitAccountName} numberOfLines={1}>{split.account_name}</Text>
+                    <View style={styles.splitInputRow}>
+                      <TextInput
+                        style={styles.splitInput}
+                        value={split.percentage}
+                        onChangeText={(v) => updateSplitPercentage(index, v)}
+                        keyboardType="decimal-pad"
+                        placeholderTextColor={colors.bark[600]}
+                      />
+                      <Text style={styles.splitPercent}>%</Text>
+                    </View>
+                  </View>
+                ))}
+                <Text style={[styles.splitTotalText, !splitTotalOk && styles.splitTotalError]}>
+                  Total: {splitTotal.toFixed(2)}% {splitTotalOk ? '✓' : '(must equal 100%)'}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
         <TouchableOpacity
-          style={styles.scheduleButton}
+          style={[styles.scheduleButton, (!pmAmount || (distributeOpen && !splitTotalOk)) && styles.scheduleButtonDisabled]}
           onPress={() => saveScheduleMutation.mutate()}
-          disabled={saveScheduleMutation.isPending || !pmAmount}
+          disabled={saveScheduleMutation.isPending || !pmAmount || (distributeOpen && !splitTotalOk)}
         >
           <Text style={styles.scheduleButtonText}>
             {saveScheduleMutation.isPending
@@ -247,27 +342,6 @@ export default function EditKidScreen() {
           >
             <Text style={styles.removeScheduleText}>Remove Schedule</Text>
           </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Chore Rewards Summary */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Chore Rewards</Text>
-        {(spender.chores ?? []).filter((c) => c.reward_type === 'earns').length > 0 ? (
-          (spender.chores ?? [])
-            .filter((c) => c.reward_type === 'earns')
-            .map((chore) => (
-              <View key={chore.id} style={styles.choreRewardRow}>
-                <Text style={styles.choreRewardName}>
-                  {chore.emoji ?? '✅'} {chore.name}
-                </Text>
-                <Text style={styles.choreRewardAmount}>
-                  ${chore.amount ? parseFloat(chore.amount).toFixed(2) : '0.00'}
-                </Text>
-              </View>
-            ))
-        ) : (
-          <Text style={styles.mutedText}>No earning chores assigned</Text>
         )}
       </View>
     </ScrollView>
@@ -362,6 +436,42 @@ const styles = StyleSheet.create({
   dayChipActive: { backgroundColor: colors.eucalyptus[400], borderColor: colors.eucalyptus[400] },
   dayChipText: { fontSize: 11, color: colors.bark[700] },
   dayChipTextActive: { color: colors.white, fontWeight: '600' },
+  distributeSection: {
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.bark[100],
+    paddingTop: 14,
+  },
+  distributeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  distributeLabel: { fontSize: 14, fontWeight: '600', color: colors.bark[700] },
+  splitsList: { marginTop: 12, gap: 10 },
+  splitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  splitAccountName: { flex: 1, fontSize: 14, color: colors.bark[700] },
+  splitInputRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  splitInput: {
+    width: 72,
+    backgroundColor: colors.bark[100],
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    borderRadius: 8,
+    padding: 8,
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.bark[700],
+    textAlign: 'right',
+  },
+  splitPercent: { fontSize: 14, color: colors.bark[600], fontWeight: '600' },
+  splitTotalText: { fontSize: 12, color: colors.bark[600], marginTop: 6, textAlign: 'right' },
+  splitTotalError: { color: colors.redearth[400] },
   scheduleButton: {
     backgroundColor: colors.eucalyptus[400],
     borderRadius: 8,
@@ -369,20 +479,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
   },
+  scheduleButtonDisabled: { backgroundColor: colors.bark[200] },
   scheduleButtonText: { color: colors.white, fontWeight: '600', fontSize: 14 },
   removeScheduleButton: { alignItems: 'center', marginTop: 10 },
   removeScheduleText: { color: colors.redearth[400], fontSize: 14, fontWeight: '500' },
-  choreRewardRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.bark[100],
-  },
-  choreRewardName: { fontSize: 14, color: colors.bark[700] },
-  choreRewardAmount: { fontSize: 14, fontWeight: '600', color: colors.gumleaf[400] },
-  mutedText: { fontSize: 14, color: colors.bark[600], paddingVertical: 8 },
   // Skeleton
   skeletonAvatar: {
     width: 72,

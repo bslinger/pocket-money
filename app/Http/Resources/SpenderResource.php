@@ -23,6 +23,7 @@ class SpenderResource extends JsonResource
             'currency_symbol' => $this->currency_symbol,
             'use_integer_amounts' => $this->use_integer_amounts,
             'deleted_at' => $this->deleted_at?->toISOString(),
+            'pocket_money_schedule' => new PocketMoneyScheduleResource($this->whenLoaded('pocketMoneySchedules', fn () => $this->pocketMoneySchedules->first())),
             'accounts' => AccountResource::collection($this->whenLoaded('accounts')),
             'savings_goals' => SavingsGoalResource::collection($this->whenLoaded('savingsGoals')),
             'chores' => ChoreResource::collection($this->whenLoaded('chores')),

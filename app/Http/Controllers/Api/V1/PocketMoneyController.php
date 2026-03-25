@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PocketMoneyScheduleResource;
 use App\Models\Chore;
 use App\Models\PocketMoneySchedule;
+use App\Models\PocketMoneyScheduleSplit;
 use App\Models\Spender;
 use App\Models\Transaction;
 use App\Services\NotificationService;
@@ -14,6 +15,7 @@ use App\Services\SpenderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PocketMoneyController extends Controller
 {
@@ -127,33 +129,63 @@ class PocketMoneyController extends Controller
         $user = $request->user();
         abort_unless($user->families()->where('families.id', $spender->family_id)->exists(), 403);
 
-        $request->validate([
+        $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:0.01'],
             'frequency' => ['required', 'in:weekly,monthly'],
             'day_of_week' => ['nullable', 'integer', 'min:0', 'max:6'],
             'day_of_month' => ['nullable', 'integer', 'min:1', 'max:31'],
             'account_id' => ['nullable', 'uuid', 'exists:accounts,id'],
+            'splits' => ['nullable', 'array'],
+            'splits.*.account_id' => ['required', 'uuid', 'exists:accounts,id'],
+            'splits.*.percentage' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
-        PocketMoneySchedule::where('spender_id', $spender->id)
-            ->where('is_active', true)
-            ->update(['is_active' => false]);
+        $splits = $data['splits'] ?? [];
 
-        $schedule = PocketMoneySchedule::create([
-            'spender_id' => $spender->id,
-            'account_id' => $request->input('account_id'),
-            'amount' => $request->input('amount'),
-            'frequency' => $request->input('frequency'),
-            'day_of_week' => $request->input('day_of_week'),
-            'day_of_month' => $request->input('day_of_month'),
-            'is_active' => true,
-            'next_run_at' => PocketMoneySchedule::computeNextRunAt(
-                $request->input('frequency'),
-                $request->input('day_of_week'),
-                $request->input('day_of_month'),
-            ),
-            'created_by' => $user->id,
-        ]);
+        if (! empty($splits)) {
+            $total = array_sum(array_column($splits, 'percentage'));
+            if (abs($total - 100) > 0.5) {
+                return response()->json([
+                    'message' => 'Percentages must add up to 100%.',
+                    'errors' => ['splits' => ['Percentages must add up to 100%.']],
+                ], 422);
+            }
+        }
+
+        $schedule = DB::transaction(function () use ($data, $splits, $spender, $user): PocketMoneySchedule {
+            PocketMoneySchedule::where('spender_id', $spender->id)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+
+            $schedule = PocketMoneySchedule::create([
+                'spender_id' => $spender->id,
+                'account_id' => empty($splits) ? ($data['account_id'] ?? null) : null,
+                'amount' => $data['amount'],
+                'frequency' => $data['frequency'],
+                'day_of_week' => $data['day_of_week'] ?? null,
+                'day_of_month' => $data['day_of_month'] ?? null,
+                'is_active' => true,
+                'next_run_at' => PocketMoneySchedule::computeNextRunAt(
+                    $data['frequency'],
+                    $data['day_of_week'] ?? null,
+                    $data['day_of_month'] ?? null,
+                ),
+                'created_by' => $user->id,
+            ]);
+
+            foreach ($splits as $index => $split) {
+                PocketMoneyScheduleSplit::create([
+                    'pocket_money_schedule_id' => $schedule->id,
+                    'account_id' => $split['account_id'],
+                    'percentage' => $split['percentage'],
+                    'sort_order' => $index,
+                ]);
+            }
+
+            return $schedule;
+        });
+
+        $schedule->load('splits.account');
 
         return response()->json([
             'data' => new PocketMoneyScheduleResource($schedule),

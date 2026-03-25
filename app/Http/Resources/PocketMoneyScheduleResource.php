@@ -23,6 +23,7 @@ class PocketMoneyScheduleResource extends JsonResource
             'is_active' => $this->is_active,
             'next_run_at' => $this->next_run_at?->toISOString(),
             'account' => new AccountResource($this->whenLoaded('account')),
+            'splits' => PocketMoneyScheduleSplitResource::collection($this->whenLoaded('splits')),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
         ];
