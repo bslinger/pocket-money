@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreChoreRequest;
 use App\Models\Chore;
 use App\Models\ChoreCompletion;
+use App\Services\AnalyticsService;
 use Bentonow\BentoLaravel\DataTransferObjects\EventData;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Carbon\Carbon;
@@ -73,6 +74,8 @@ class ChoreController extends Controller
             ]));
         });
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'chore', 'created'));
+
         return redirect()->route('chores.index');
     }
 
@@ -100,6 +103,8 @@ class ChoreController extends Controller
         $chore->update($data);
         $chore->spenders()->sync($spenderIds);
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'chore', 'updated'));
+
         return redirect()->route('chores.index');
     }
 
@@ -121,6 +126,8 @@ class ChoreController extends Controller
     public function destroy(Chore $chore)
     {
         $chore->delete();
+
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'chore', 'deleted'));
 
         return redirect()->route('chores.index');
     }

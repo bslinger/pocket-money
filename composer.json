@@ -20,6 +20,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.0",
+        "posthog/posthog-php": "^3.7",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {

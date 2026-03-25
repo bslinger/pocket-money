@@ -7,6 +7,7 @@ use App\Http\Controllers\ChildInvitationController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\InvitationController;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\AnalyticsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +41,8 @@ class AuthenticatedSessionController extends Controller
         ChildInvitationController::claimPending($request);
         BillingTransferController::claimPending($request);
 
+        rescue(fn () => app(AnalyticsService::class)->userLoggedIn($request->user()));
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -48,6 +51,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        rescue(fn () => app(AnalyticsService::class)->userLoggedOut($request->user()));
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

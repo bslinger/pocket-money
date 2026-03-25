@@ -13,6 +13,7 @@ use App\Models\SpenderLinkCode;
 use App\Models\SpenderUser;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\AnalyticsService;
 use Bentonow\BentoLaravel\DataTransferObjects\EventData;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Http\Request;
@@ -182,6 +183,8 @@ class SpenderController extends Controller
             ]));
         });
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'spender', 'created'));
+
         return redirect()->route('spenders.show', $spender);
     }
 
@@ -213,6 +216,8 @@ class SpenderController extends Controller
     {
         $spender->update($request->validated());
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'spender', 'updated'));
+
         return redirect()->route('spenders.show', $spender);
     }
 
@@ -221,6 +226,8 @@ class SpenderController extends Controller
         $familyId = $spender->family_id;
         $spender->delete(); // soft-delete (archive)
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'spender', 'archived'));
+
         return redirect()->route('families.show', $familyId);
     }
 
@@ -228,6 +235,8 @@ class SpenderController extends Controller
     {
         $spender = Spender::withTrashed()->findOrFail($id);
         $spender->restore();
+
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'spender', 'restored'));
 
         return redirect()->route('families.show', $spender->family_id);
     }

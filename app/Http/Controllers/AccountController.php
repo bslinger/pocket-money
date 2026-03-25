@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAccountRequest;
 use App\Models\Account;
 use App\Models\Spender;
+use App\Services\AnalyticsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -50,6 +51,8 @@ class AccountController extends Controller
 
         Inertia::clearHistory();
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'account', 'created'));
+
         return redirect()->route('accounts.show', $account);
     }
 
@@ -64,6 +67,8 @@ class AccountController extends Controller
     {
         $account->update($request->validated());
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'account', 'updated'));
+
         return redirect()->route('accounts.show', $account);
     }
 
@@ -71,6 +76,8 @@ class AccountController extends Controller
     {
         $spenderId = $account->spender_id;
         $account->delete();
+
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'account', 'deleted'));
 
         return redirect()->route('spenders.show', $spenderId);
     }

@@ -3,11 +3,15 @@
 namespace App\Providers;
 
 use App\Listeners\SyncUserToBento;
+use App\Listeners\TrackSubscriptionEvent;
+use App\Listeners\TrackUserRegistered;
+use App\Services\AnalyticsService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Cashier\Events\WebhookReceived;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(AnalyticsService::class);
     }
 
     /**
@@ -27,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
 
         Event::listen(Registered::class, SyncUserToBento::class);
+        Event::listen(Registered::class, TrackUserRegistered::class);
+        Event::listen(WebhookReceived::class, TrackSubscriptionEvent::class);
 
         $this->decodePushCredentials();
     }

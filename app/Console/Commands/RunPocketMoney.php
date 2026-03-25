@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\CompletionStatus;
 use App\Models\PocketMoneySchedule;
 use App\Models\Transaction;
+use App\Services\AnalyticsService;
 use App\Services\NotificationService;
 use App\Services\SpenderService;
 use Carbon\Carbon;
@@ -87,6 +88,10 @@ class RunPocketMoney extends Command
         });
 
         rescue(fn () => NotificationService::pocketMoneyPaid($spender));
+        rescue(fn () => app(AnalyticsService::class)->pocketMoneyReleased(
+            (string) $schedule->created_by,
+            1,
+        ));
 
         return true;
     }

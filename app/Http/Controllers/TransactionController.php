@@ -7,6 +7,7 @@ use App\Http\Requests\StoreSplitTransactionRequest;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Services\AnalyticsService;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -66,6 +67,9 @@ class TransactionController extends Controller
         });
 
         rescue(fn () => NotificationService::transactionRecorded($account));
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(
+            $request->user(), 'transaction', 'created', ['type' => $request->type]
+        ));
 
         return redirect()->route('accounts.show', $account);
     }
@@ -99,6 +103,7 @@ class TransactionController extends Controller
         });
 
         rescue(fn () => NotificationService::transactionRecorded($account));
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'transaction', 'updated'));
 
         return redirect()->route('accounts.show', $account);
     }
@@ -117,6 +122,7 @@ class TransactionController extends Controller
         });
 
         rescue(fn () => NotificationService::transactionRecorded($account));
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'transaction', 'deleted'));
 
         return redirect()->route('accounts.show', $account);
     }

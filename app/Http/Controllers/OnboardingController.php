@@ -11,6 +11,7 @@ use App\Models\FamilyUser;
 use App\Models\PocketMoneySchedule;
 use App\Models\Spender;
 use App\Models\User;
+use App\Services\AnalyticsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -63,6 +64,11 @@ class OnboardingController extends Controller
                 'balance' => (float) ($spenderInput['balance'] ?? 0),
             ]);
         }
+
+        rescue(fn () => app(AnalyticsService::class)->onboardingCompleted(
+            auth()->user(),
+            count($spendersData),
+        ));
 
         return redirect()->route('onboarding.continue', $family);
     }

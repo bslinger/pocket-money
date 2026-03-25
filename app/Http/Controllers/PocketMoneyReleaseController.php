@@ -6,6 +6,7 @@ use App\Enums\CompletionStatus;
 use App\Models\Chore;
 use App\Models\Spender;
 use App\Models\Transaction;
+use App\Services\AnalyticsService;
 use App\Services\NotificationService;
 use App\Services\SpenderService;
 use Illuminate\Http\RedirectResponse;
@@ -115,6 +116,10 @@ class PocketMoneyReleaseController extends Controller
         });
 
         rescue(fn () => NotificationService::pocketMoneyPaid($spender));
+        rescue(fn () => app(AnalyticsService::class)->pocketMoneyReleased(
+            auth()->id(),
+            1,
+        ));
 
         return back()->with('success', 'Pocket money paid!');
     }

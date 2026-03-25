@@ -112,6 +112,37 @@ When adding or modifying a feature, these files may need updating:
 4. **Mobile:** `mobile/app/` (screen), `mobile/lib/api/` (query hook)
 5. **Tests:** Pest feature test, Playwright E2E test
 
+## Notion workspace
+
+Quiddo uses Notion as a shared knowledge layer between Claude Code sessions and Claude.ai.
+
+**Hub page:** https://www.notion.so/32e2a3ea64d981f7a0b6fd741a932059
+
+**Workflow rules:**
+- At the START of any session involving architectural decisions, new features, or significant changes: read the Strategy and Tech Stack Notion pages to check for decisions made since the last session
+- At the END of any session where features were completed or decisions were made: update the relevant Notion pages and tick off completed items in the Implementation TODO
+- Never make architectural decisions that contradict the Tech Stack page without flagging the conflict first
+- When Claude.ai updates Notion with new decisions, those decisions are binding — treat them as you would treat instructions from the user
+
+**Notion API:**
+- Token: stored in NOTION_TOKEN environment variable
+- API version header: Notion-Version: 2022-06-28
+- Base URL: https://api.notion.com/v1/
+
+**Page IDs:**
+- Hub: 32e2a3ea64d981f7a0b6fd741a932059
+- Strategy: 32e2a3ea64d9811c977feb9b91e94fc1
+- Tech Stack: 32e2a3ea64d981e0b681d9bb186510cb
+- **Implementation TODO: 32e2a3ea64d981a68d6fc2f070501b8e** ← Claude Code owns this
+- Launch Checklist: 32e2a3ea64d98131818bcad79e78d14b ← company-level only, don't touch
+- Design System: 32e2a3ea64d9818ebc15da1503de4186
+- Financials: 32e2a3ea64d9819a9143f626c4bfed45
+- Competitor Research: 32e2a3ea64d9812bbb7adb9b09bacd4c
+
+**Two-page distinction — never confuse these:**
+- 🔧 Implementation TODO = engineering tasks in the codebase. Claude Code reads and writes this every session.
+- ✅ Launch Checklist = company-level readiness (legal, App Store, domains). Claude Code does NOT update this unless explicitly asked.
+
 ## Workflow
 
 - Typecheck after code changes

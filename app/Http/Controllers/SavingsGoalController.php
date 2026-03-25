@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSavingsGoalRequest;
+use App\Models\Account;
 use App\Models\SavingsGoal;
+use App\Models\Spender;
+use App\Services\AnalyticsService;
 use Bentonow\BentoLaravel\DataTransferObjects\EventData;
 use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Http\Request;
@@ -13,14 +16,14 @@ class SavingsGoalController extends Controller
 {
     public function index()
     {
-        $user     = auth()->user();
-        $spenders = \App\Models\Spender::whereIn('family_id',
-                $user->families()
-                    ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
-                    ->pluck('families.id')
-            )
+        $user = auth()->user();
+        $spenders = Spender::whereIn('family_id',
+            $user->families()
+                ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
+                ->pluck('families.id')
+        )
             ->with([
-                'savingsGoals' => fn($q) => $q
+                'savingsGoals' => fn ($q) => $q
                     ->whereNull('abandoned_at')
                     ->orderBy('sort_order'),
                 'savingsGoals.account',
@@ -43,20 +46,20 @@ class SavingsGoalController extends Controller
 
     public function abandoned()
     {
-        $user     = auth()->user();
-        $spenders = \App\Models\Spender::whereIn('family_id',
-                $user->families()
-                    ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
-                    ->pluck('families.id')
-            )
+        $user = auth()->user();
+        $spenders = Spender::whereIn('family_id',
+            $user->families()
+                ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
+                ->pluck('families.id')
+        )
             ->with([
-                'savingsGoals' => fn($q) => $q
+                'savingsGoals' => fn ($q) => $q
                     ->whereNotNull('abandoned_at')
                     ->orderByDesc('abandoned_at'),
                 'family',
             ])
             ->get()
-            ->filter(fn($s) => $s->savingsGoals->isNotEmpty())
+            ->filter(fn ($s) => $s->savingsGoals->isNotEmpty())
             ->values();
 
         if ($spenders->isEmpty()) {
@@ -89,14 +92,17 @@ class SavingsGoalController extends Controller
         // Goals created in the past 24 hours: hard delete
         if ($goal->created_at !== null && $goal->created_at->gt(now()->subDay())) {
             $goal->delete();
+
             return redirect()->route('goals.index');
         }
 
         // Otherwise: mark as abandoned
         $goal->update([
-            'abandoned_at'               => now(),
+            'abandoned_at' => now(),
             'abandoned_allocated_amount' => $allocatedAmount,
         ]);
+
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'goal', 'abandoned'));
 
         return redirect()->route('goals.index');
     }
@@ -105,20 +111,21 @@ class SavingsGoalController extends Controller
     {
         abort_unless($goal->abandoned_at !== null, 403);
         $goal->delete();
+
         return redirect()->route('goals.abandoned');
     }
 
     public function create()
     {
-        $user     = auth()->user();
+        $user = auth()->user();
         $spenders = $user->isParent()
-            ? \App\Models\Spender::whereIn('family_id',
+            ? Spender::whereIn('family_id',
                 $user->families()
-                    ->when($this->activeFamilyId(), fn($q, $id) => $q->where('families.id', $id))
+                    ->when($this->activeFamilyId(), fn ($q, $id) => $q->where('families.id', $id))
                     ->pluck('families.id')
-              )->get()
+            )->get()
             : $user->spenders()->get();
-        $accounts = \App\Models\Account::whereIn('spender_id', $spenders->pluck('id'))->get();
+        $accounts = Account::whereIn('spender_id', $spenders->pluck('id'))->get();
 
         return Inertia::render('Goals/Create', [
             'spenders' => $spenders,
@@ -144,12 +151,14 @@ class SavingsGoalController extends Controller
                     type: '$created_goal',
                     email: $request->user()->email,
                     fields: [
-                        'goal_name'     => $goal->name,
+                        'goal_name' => $goal->name,
                         'target_amount' => $goal->target_amount,
                     ],
                 ),
             ]));
         });
+
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'goal', 'created'));
 
         return redirect()->route('goals.index');
     }
@@ -175,10 +184,10 @@ class SavingsGoalController extends Controller
     public function edit(SavingsGoal $goal)
     {
         $goal->load('spender');
-        $accounts = \App\Models\Account::where('spender_id', $goal->spender_id)->get();
+        $accounts = Account::where('spender_id', $goal->spender_id)->get();
 
         return Inertia::render('Goals/Edit', [
-            'goal'     => $goal,
+            'goal' => $goal,
             'accounts' => $accounts,
         ]);
     }
@@ -187,6 +196,8 @@ class SavingsGoalController extends Controller
     {
         $goal->update($request->validated());
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'goal', 'updated'));
+
         return redirect()->route('goals.show', $goal);
     }
 
@@ -194,13 +205,15 @@ class SavingsGoalController extends Controller
     {
         $goal->delete();
 
+        rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'goal', 'deleted'));
+
         return redirect()->route('goals.index');
     }
 
     public function reorder(Request $request)
     {
         $validated = $request->validate([
-            'goal_ids'   => 'required|array|min:1',
+            'goal_ids' => 'required|array|min:1',
             'goal_ids.*' => 'uuid|exists:savings_goals,id',
         ]);
 

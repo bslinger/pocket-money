@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\AnalyticsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -31,6 +32,8 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken($request->device_name)->plainTextToken;
+
+        rescue(fn () => app(AnalyticsService::class)->userLoggedIn($user, 'mobile'));
 
         return response()->json([
             'data' => [
@@ -116,6 +119,8 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
+        rescue(fn () => app(AnalyticsService::class)->userLoggedOut($request->user(), 'mobile'));
+
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out']);

@@ -8,6 +8,7 @@ use App\Models\Chore;
 use App\Models\ChoreCompletion;
 use App\Models\ChoreReward;
 use App\Models\Transaction;
+use App\Services\AnalyticsService;
 use App\Services\NotificationService;
 use App\Services\SpenderService;
 use Illuminate\Http\Request;
@@ -95,6 +96,10 @@ class ChoreCompletionController extends Controller
         $this->maybePayChoreRewards($completion);
 
         rescue(fn () => NotificationService::choreApproved($completion));
+        rescue(fn () => app(AnalyticsService::class)->choreApproved(
+            auth()->user(),
+            $completion->chore->reward_type->value,
+        ));
 
         return back()->with('success', 'Chore approved.');
     }
@@ -216,6 +221,7 @@ class ChoreCompletionController extends Controller
         ]);
 
         rescue(fn () => NotificationService::choreDeclined($completion));
+        rescue(fn () => app(AnalyticsService::class)->choreDeclined(auth()->user()));
 
         return back()->with('success', 'Chore declined.');
     }
