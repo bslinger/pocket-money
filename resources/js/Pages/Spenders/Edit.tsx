@@ -123,6 +123,8 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
     const hasExistingSplits = (schedule?.splits?.length ?? 0) >= 2;
     const [distributeOpen, setDistributeOpen] = useState(hasExistingSplits);
     const [splits, setSplits] = useState<SplitRow[]>(() => initSplits(schedule, accounts));
+    // Tracks the raw string the user is typing in the dollar input before committing on blur
+    const [dollarDraft, setDollarDraft] = useState<{ index: number; value: string } | null>(null);
 
     const { data, setData, post, processing, errors } = useForm({
         amount:       schedule?.amount ?? '',
@@ -134,7 +136,9 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
 
     const totalAmount = parseFloat(data.amount) || 0;
 
-    function updateSplit(index: number, field: 'percentage' | 'dollar', rawValue: string) {
+    // Used by the slider (fires on release) and on blur for text inputs.
+    // Clamps, normalises to 2 dp, then redistributes the other splits.
+    function commitSplit(index: number, field: 'percentage' | 'dollar', rawValue: string) {
         setSplits(prev => {
             let newPct: number;
             if (field === 'dollar') {
@@ -142,17 +146,16 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                 newPct = totalAmount > 0 ? Math.min((dollars / totalAmount) * 100, 100) : 0;
                 if (isNaN(newPct)) { newPct = 0; }
             } else {
-                newPct = parseFloat(rawValue) || 0;
+                newPct = Math.min(Math.max(parseFloat(rawValue) || 0, 0), 100);
             }
             return computeSplitUpdate(prev, index, newPct);
         });
     }
 
-    function handlePercentageBlur(index: number) {
-        setSplits(prev => {
-            const pct = Math.min(Math.max(parseFloat(prev[index].percentage) || 0, 0), 100);
-            return computeSplitUpdate(prev, index, pct);
-        });
+    // Text inputs: store the raw typed string immediately (no redistribution).
+    // Redistribution happens in commitSplit on blur.
+    function setRawPercentage(index: number, raw: string) {
+        setSplits(prev => prev.map((s, i) => i === index ? { ...s, percentage: raw } : s));
     }
 
     function submit(e: React.FormEvent) {
@@ -319,9 +322,9 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                                                     max="100"
                                                     step="0.01"
                                                     value={pct}
-                                                    onChange={e => updateSplit(i, 'percentage', e.target.value)}
-                                                    onMouseUp={() => handlePercentageBlur(i)}
-                                                    onTouchEnd={() => handlePercentageBlur(i)}
+                                                    onChange={e => setRawPercentage(i, e.target.value)}
+                                                    onMouseUp={() => commitSplit(i, 'percentage', splits[i].percentage)}
+                                                    onTouchEnd={() => commitSplit(i, 'percentage', splits[i].percentage)}
                                                     className="w-full accent-primary"
                                                 />
                                                 <div className="grid grid-cols-2 gap-2">
@@ -331,8 +334,15 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                                                             type="number"
                                                             min="0"
                                                             step="0.01"
-                                                            value={dollars}
-                                                            onChange={e => updateSplit(i, 'dollar', e.target.value)}
+                                                            value={dollarDraft?.index === i ? dollarDraft.value : dollars}
+                                                            onFocus={() => setDollarDraft({ index: i, value: dollars })}
+                                                            onChange={e => setDollarDraft({ index: i, value: e.target.value })}
+                                                            onBlur={() => {
+                                                                if (dollarDraft?.index === i) {
+                                                                    commitSplit(i, 'dollar', dollarDraft.value);
+                                                                    setDollarDraft(null);
+                                                                }
+                                                            }}
                                                             className="pl-5 text-sm"
                                                         />
                                                     </div>
@@ -343,8 +353,8 @@ function PocketMoneyScheduleCard({ spender, schedule, accounts }: { spender: Spe
                                                             max="100"
                                                             step="0.01"
                                                             value={split.percentage}
-                                                            onChange={e => updateSplit(i, 'percentage', e.target.value)}
-                                                            onBlur={() => handlePercentageBlur(i)}
+                                                            onChange={e => setRawPercentage(i, e.target.value)}
+                                                            onBlur={() => commitSplit(i, 'percentage', splits[i].percentage)}
                                                             className="pr-6 text-sm"
                                                         />
                                                         <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">%</span>

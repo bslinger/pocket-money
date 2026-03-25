@@ -53,6 +53,7 @@ export default function EditKidScreen() {
   const [pmDayOfMonth, setPmDayOfMonth] = useState<number>(1);
   const [distributeOpen, setDistributeOpen] = useState(false);
   const [splits, setSplits] = useState<SplitRow[]>([]);
+  const [focusedSplitIndex, setFocusedSplitIndex] = useState<number | null>(null);
 
   const { data: spender, isLoading } = useQuery({
     queryKey: ['spender', id],
@@ -158,7 +159,8 @@ export default function EditKidScreen() {
   const hasSchedule = !!spender.pocket_money_schedule;
   const hasMultipleAccounts = (spender.accounts?.length ?? 0) > 1;
   const splitTotal = splits.reduce((sum, s) => sum + (parseFloat(s.percentage) || 0), 0);
-  const splitTotalOk = Math.abs(splitTotal - 100) <= 0.5;
+  // Don't flag an error while the user is actively editing a field
+  const splitTotalOk = focusedSplitIndex !== null || Math.abs(splitTotal - 100) <= 0.5;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -301,6 +303,8 @@ export default function EditKidScreen() {
                         style={styles.splitInput}
                         value={split.percentage}
                         onChangeText={(v) => updateSplitPercentage(index, v)}
+                        onFocus={() => setFocusedSplitIndex(index)}
+                        onBlur={() => setFocusedSplitIndex(null)}
                         keyboardType="decimal-pad"
                         placeholderTextColor={colors.bark[600]}
                       />
