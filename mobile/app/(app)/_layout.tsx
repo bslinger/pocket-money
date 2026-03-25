@@ -21,6 +21,7 @@ export default function AppLayout() {
       <Stack.Screen name="chores/create" options={{ title: 'New Chore', presentation: 'modal' }} />
       <Stack.Screen name="kids/create" options={{ title: 'Add Kid', presentation: 'modal' }} />
       <Stack.Screen name="kids/[id]/edit" options={{ title: 'Edit Kid' }} />
+      <Stack.Screen name="kids/[id]/devices" options={{ title: 'Linked Devices' }} />
       <Stack.Screen name="family/index" options={{ title: 'Family' }} />
       <Stack.Screen name="family/[id]" options={{ title: 'Family Details' }} />
       <Stack.Screen name="settings/index" options={{ title: 'Settings' }} />

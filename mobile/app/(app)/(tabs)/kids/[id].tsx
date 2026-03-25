@@ -39,6 +39,15 @@ export default function KidDetailScreen() {
     enabled: !!id,
   });
 
+  const { data: devices = [] } = useQuery({
+    queryKey: ['spender-devices', id],
+    queryFn: async () => {
+      const res = await api.get(`/spenders/${id}/devices`);
+      return res.data.data as { id: string; device_name: string; last_active_at: string | null; created_at: string }[];
+    },
+    enabled: !!id && activeTab === 'manage',
+  });
+
   if (isLoading || !spender) {
     return (
       <View style={styles.container}>
@@ -255,11 +264,11 @@ export default function KidDetailScreen() {
   };
 
   const renderManage = () => {
-    const devices = spender.devices ?? [];
+    const linkedUsers = spender.users ?? [];
+
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.sectionTitle}>Manage</Text>
-
+        {/* Edit Details */}
         <TouchableOpacity
           style={styles.manageItem}
           onPress={() => router.push(`/(app)/kids/${spender.id}/edit`)}
@@ -269,9 +278,28 @@ export default function KidDetailScreen() {
           <Feather name="chevron-right" size={18} color={colors.bark[600]} />
         </TouchableOpacity>
 
+        {/* Child Login Accounts */}
+        <View style={styles.manageSection}>
+          <View style={styles.manageSectionHeader}>
+            <Feather name="user" size={16} color={colors.bark[600]} />
+            <Text style={styles.manageSectionTitle}>Child Login Accounts</Text>
+          </View>
+          {linkedUsers.length > 0 ? (
+            linkedUsers.map((user: any) => (
+              <View key={user.id} style={styles.manageSubItem}>
+                <Feather name="link-2" size={14} color={colors.bark[600]} />
+                <Text style={styles.manageSubItemText}>{user.email}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.manageEmptyText}>No login accounts linked</Text>
+          )}
+        </View>
+
+        {/* Linked Devices */}
         <TouchableOpacity
           style={styles.manageItem}
-          onPress={() => router.push(`/(app)/kids/${spender.id}/edit`)}
+          onPress={() => router.push(`/(app)/kids/${spender.id}/devices`)}
         >
           <Feather name="smartphone" size={18} color={colors.bark[600]} />
           <Text style={styles.manageItemText}>Linked devices</Text>
@@ -434,6 +462,19 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   manageBadgeText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600] },
+  manageSection: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+  },
+  manageSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  manageSectionTitle: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  manageSubItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
+  manageSubItemText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
+  manageEmptyText: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], paddingVertical: 4 },
   emptyText: { fontFamily: fonts.body, color: colors.bark[600], fontSize: 14, textAlign: 'center', padding: 24 },
   // Skeleton
   headerSkeleton: { alignItems: 'center', marginBottom: 20, padding: 16 },
