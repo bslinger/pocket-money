@@ -25,8 +25,17 @@ export function useFamilyChannel(familyId: string | undefined) {
     useEffect(() => {
         if (!familyId || typeof window === 'undefined' || !window.Echo) return;
 
+        console.log('[Echo] Subscribing to private-family.' + familyId);
         const channel = window.Echo.private(`family.${familyId}`);
-        channel.listen('.FamilyUpdated', reload);
+
+        channel.listen('.FamilyUpdated', () => {
+            console.log('[Echo] FamilyUpdated received!');
+            reload();
+        });
+
+        channel.error((error: any) => {
+            console.error('[Echo] Channel error:', error);
+        });
 
         return () => {
             window.Echo?.leave(`private-family.${familyId}`);
@@ -43,8 +52,21 @@ export function useSpenderChannel(spenderId: string | undefined) {
     useEffect(() => {
         if (!spenderId || typeof window === 'undefined' || !window.Echo) return;
 
+        console.log('[Echo] Subscribing to private-spender.' + spenderId);
         const channel = window.Echo.private(`spender.${spenderId}`);
-        channel.listen('.SpenderUpdated', reload);
+
+        channel.listen('.SpenderUpdated', () => {
+            console.log('[Echo] SpenderUpdated received, reloading...');
+            router.reload({
+                preserveScroll: true,
+                onSuccess: () => console.log('[Echo] Reload completed'),
+                onError: (errors) => console.error('[Echo] Reload error:', errors),
+            });
+        });
+
+        channel.error((error: any) => {
+            console.error('[Echo] Channel error:', error);
+        });
 
         return () => {
             window.Echo?.leave(`private-spender.${spenderId}`);

@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { PlusCircle, Check, CheckCheck, X, LogOut, TrendingUp, Plus, Minus, Undo2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatAmount, spenderCurrencySymbol } from '@/lib/utils';
 import { QuickTransactionModal } from '@/Components/QuickTransactionModal';
@@ -595,8 +595,16 @@ function ChoreItem({ chore, spenderId, weekCompletions, currencySymbol = '$' }: 
 }) {
   // weekCompletions is ordered most-recent-first; take the latest for this chore
   const thisCompletion = weekCompletions.find(c => c.chore_id === chore.id);
-  const [localStatus, setLocalStatus] = useState<string | null>(thisCompletion?.status ?? null);
+  const serverStatus = thisCompletion?.status ?? null;
+  const [localStatus, setLocalStatus] = useState<string | null>(serverStatus);
   const { post, processing } = useForm({ spender_id: spenderId });
+
+  // Sync local state when server data updates (e.g., via broadcast reload)
+  useEffect(() => {
+    if (serverStatus !== null) {
+      setLocalStatus(serverStatus);
+    }
+  }, [serverStatus]);
 
   function markDone() {
     post(route('chores.complete', chore.id), {
