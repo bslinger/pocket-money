@@ -64,6 +64,40 @@ jobs:
           path: storage/coverage/pest/
           retention-days: 14
 
+  jest:
+    name: Mobile unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: mobile
+
+      - name: Run Jest tests
+        run: npx jest --ci --reporters=default --reporters=jest-junit
+        working-directory: mobile
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ../test-results
+          JEST_JUNIT_OUTPUT_NAME: jest-junit.xml
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          files: test-results/jest-junit.xml
+          flags: jest
+          token: ${{ secrets.CODECOV_TOKEN }}
+          disable_search: true
+          report_type: test_results
+
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
@@ -178,7 +212,7 @@ jobs:
 
   deploy:
     name: Deploy to Laravel Cloud
-    needs: [pest, e2e]
+    needs: [pest, jest, e2e]
     if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
     runs-on: ubuntu-latest
 
