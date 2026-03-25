@@ -39,6 +39,18 @@ test.describe('Spenders', () => {
         await expect(page.getByText('Lily')).toBeVisible();
     });
 
+    test('creating a spender auto-creates a Savings account with $0.00', async ({ page }) => {
+        await page.goto('/spenders/create');
+        await page.fill('#name', 'AutoSavingsKid');
+        await page.click('button:has-text("Add Spender")');
+        await expect(page).toHaveURL(/\/spenders\//);
+        await expect(page.getByText('AutoSavingsKid')).toBeVisible();
+
+        // Should be on the spender show page — Accounts tab is default
+        await expect(page.getByText('Savings')).toBeVisible();
+        await expect(page.getByText('$0.00')).toBeVisible();
+    });
+
     test('shows validation error for empty spender name', async ({ page }) => {
         await page.goto('/spenders/create');
         await page.click('button:has-text("Add Spender")');

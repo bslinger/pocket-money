@@ -1,0 +1,68 @@
+appId: host.exp.exponent
+---
+# Create goal full flow — verify child selection, account selection, photo buttons
+# Assumes user is logged in and has at least one kid with an account
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Goals tab
+- tapOn: "Goals"
+- extendedWaitUntil:
+    visible: "Goals"
+    timeout: 5000
+
+# Tap New Goal button
+- tapOn:
+    text: ".*New Goal"
+- extendedWaitUntil:
+    visible: "Create Goal"
+    timeout: 5000
+
+- takeScreenshot: screenshots/34-create-goal-full-empty
+
+# Verify child selection is shown
+- assertVisible: "Kid"
+
+# Select the first kid
+- tapOn:
+    text: ".*"
+    index: 0
+    childOf:
+      className: ".*"
+      traits:
+        - "button"
+
+# Wait for account selection to appear after kid is selected
+- extendedWaitUntil:
+    visible: "Account"
+    timeout: 5000
+
+- takeScreenshot: screenshots/35-create-goal-account-selection
+
+# Enter goal name
+- tapOn: "e.g. New Bike, Holiday Fund"
+- inputText: "Test Goal Full"
+- hideKeyboard
+
+# Enter target amount
+- tapOn: "0.00"
+- inputText: "100"
+- hideKeyboard
+
+- takeScreenshot: screenshots/36-create-goal-filled
+
+# Verify Camera and Gallery photo buttons
+- assertVisible: "Camera"
+- assertVisible: "Gallery"
+
+- takeScreenshot: screenshots/37-create-goal-photo-buttons
+
+# Tap Create Goal button
+- tapOn: "Create Goal"
+
+# Navigate back
+- pressKey: back

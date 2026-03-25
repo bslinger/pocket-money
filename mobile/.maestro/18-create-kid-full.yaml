@@ -1,0 +1,70 @@
+appId: host.exp.exponent
+---
+# Create kid full flow — verify color picker, photo buttons, custom currency toggle
+# Assumes user is logged in
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Navigate to Kids tab
+- tapOn: "Kids"
+- extendedWaitUntil:
+    visible: "Kids"
+    timeout: 5000
+
+# Tap Add Kid button
+- tapOn:
+    text: ".*Add Kid"
+- extendedWaitUntil:
+    visible: "Create Kid"
+    timeout: 5000
+
+- takeScreenshot: screenshots/38-create-kid-full-empty
+
+# Enter kid name
+- tapOn: "Enter kid's name"
+- inputText: "Test Kid Full"
+- hideKeyboard
+
+- takeScreenshot: screenshots/39-create-kid-name-filled
+
+# Verify color picker is visible
+- assertVisible: "Colour"
+
+- takeScreenshot: screenshots/40-create-kid-colour-picker
+
+# Scroll down to see photo and currency sections
+- swipe:
+    direction: UP
+    duration: 500
+
+# Verify Camera and Gallery photo buttons
+- assertVisible: "Camera"
+- assertVisible: "Gallery"
+
+- takeScreenshot: screenshots/41-create-kid-photo-buttons
+
+# Verify Custom Currency toggle exists
+- assertVisible: "Custom Currency"
+
+# Tap the custom currency toggle (shows "No — uses family default")
+- tapOn:
+    text: "No.*uses family default"
+
+# Verify emoji and name fields appear after toggling
+- extendedWaitUntil:
+    visible: "Emoji"
+    timeout: 3000
+- assertVisible: "Singular"
+- assertVisible: "Plural"
+
+- takeScreenshot: screenshots/42-create-kid-custom-currency
+
+# Tap Add Kid button
+- tapOn: "Add Kid"
+
+# Navigate back
+- pressKey: back

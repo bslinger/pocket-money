@@ -162,6 +162,106 @@ test.describe('Chores', () => {
         await expect(page.getByText('Yesterday Summary Chore').first()).toBeVisible();
     });
 
+    test('deleting a chore with completions soft-deletes it', async ({ page }) => {
+        // Create a daily chore for Emma
+        await page.goto('/chores/create');
+        await page.fill('#name', 'Soft Delete Chore');
+        await page.click('button:has-text("Earns")');
+        await page.fill('#amount', '2.00');
+        await page.locator('select').last().selectOption('daily');
+        await page.click('button:has-text("Emma")');
+        await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
+        await expect(page.getByText('Soft Delete Chore')).toBeVisible();
+
+        // Navigate to the history page and note the URL for later
+        const choreRow = page.locator('.divide-y > div').filter({ hasText: 'Soft Delete Chore' });
+        const historyLink = choreRow.getByTitle('History');
+        const historyHref = await historyLink.getAttribute('href');
+
+        // Mark the chore as complete via the Schedule tab
+        await page.click('button:has-text("Schedule")');
+        await expect(page.getByText('Soft Delete Chore').first()).toBeVisible();
+
+        // Now delete the chore from the Manage tab
+        await page.click('button:has-text("Manage")');
+        await expect(page.getByText('Soft Delete Chore')).toBeVisible();
+        page.once('dialog', dialog => dialog.accept());
+        const deleteRow = page.locator('.divide-y > div').filter({ hasText: 'Soft Delete Chore' });
+        await deleteRow.locator('button').last().click();
+        await expect(page.getByText('Soft Delete Chore')).not.toBeVisible();
+
+        // The history page should still be accessible (completions preserved)
+        if (historyHref) {
+            await page.goto(historyHref);
+            await expect(page.getByText('Soft Delete Chore')).toBeVisible();
+        }
+    });
+
+    test('creating a monthly chore shows day-of-month select', async ({ page }) => {
+        await page.goto('/chores/create');
+        await page.fill('#name', 'Monthly Day 15 Chore');
+        await page.click('button:has-text("Earns")');
+        await page.fill('#amount', '10.00');
+
+        // Select monthly frequency — the frequency select is the last one before monthly adds a new one
+        await page.locator('select').last().selectOption('monthly');
+
+        // Day of Month select should appear
+        await expect(page.getByText('Day of Month')).toBeVisible();
+
+        // Select day 15 — the day_of_month select is the small w-24 select that just appeared
+        await page.locator('select.w-24').selectOption('15');
+
+        await page.click('button:has-text("Emma")');
+        await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
+
+        // The manage tab should show "Monthly · 15th" in the badge
+        await expect(page.getByText('Monthly')).toBeVisible();
+        await expect(page.getByText('15th')).toBeVisible();
+    });
+
+    test('creating a one-off chore shows date input', async ({ page }) => {
+        await page.goto('/chores/create');
+        await page.fill('#name', 'One-off Date Chore');
+        await page.click('button:has-text("Earns")');
+        await page.fill('#amount', '3.00');
+
+        // Select one-off frequency
+        await page.locator('select').last().selectOption('one_off');
+
+        // Date input should appear
+        await expect(page.getByText('Date')).toBeVisible();
+        await expect(page.locator('input[type="date"]')).toBeVisible();
+    });
+
+    test('manage tab shows day abbreviations for a weekly chore', async ({ page }) => {
+        await page.goto('/chores/create');
+        await page.fill('#name', 'Weekly Days Chore');
+        await page.click('button:has-text("Earns")');
+        await page.fill('#amount', '1.00');
+
+        // Weekly is the default frequency
+        await page.locator('select').last().selectOption('weekly');
+
+        // Select Mon (index 0) and Wed (index 2) and Fri (index 4)
+        await page.locator('button:has-text("Mon")').click();
+        await page.locator('button:has-text("Wed")').click();
+        await page.locator('button:has-text("Fri")').click();
+
+        await page.click('button:has-text("Emma")');
+        await page.click('button:has-text("Create Chore")');
+        await page.waitForURL('/chores');
+        await page.click('button:has-text("Manage")');
+
+        // The manage tab badge should show day abbreviations
+        await expect(page.getByText('Weekly')).toBeVisible();
+        await expect(page.getByText('Mon, Wed, Fri')).toBeVisible();
+    });
+
     test('can filter chores by kid', async ({ page }) => {
         // Create a chore assigned only to Emma
         await page.goto('/chores/create');

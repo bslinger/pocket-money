@@ -1,0 +1,71 @@
+appId: host.exp.exponent
+---
+# Chore schedule fields flow — verify frequency-specific inputs
+# Assumes user is logged in
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Go to chores tab
+- tapOn: "Chores"
+- extendedWaitUntil:
+    visible: "Chores"
+    timeout: 5000
+
+# Tap new chore button
+- tapOn:
+    text: ".*New Chore"
+- extendedWaitUntil:
+    visible: "Chore Name"
+    timeout: 5000
+
+- takeScreenshot: screenshots/47-chore-schedule-empty
+
+# Fill in chore name
+- tapOn: "e.g. Make bed, Feed the dog"
+- inputText: "Schedule Test Chore"
+- hideKeyboard
+
+# Scroll down to see frequency options
+- swipe:
+    direction: UP
+    duration: 500
+
+# Verify frequency buttons are visible
+- assertVisible: "Frequency"
+- assertVisible: "Weekly"
+- assertVisible: "Monthly"
+
+- takeScreenshot: screenshots/48-chore-frequency-options
+
+# Select Monthly frequency
+- tapOn: "Monthly"
+
+# Verify day-of-month picker appears
+- extendedWaitUntil:
+    visible: "Day of Month"
+    timeout: 3000
+
+- takeScreenshot: screenshots/49-chore-monthly-day-picker
+
+# Select day 15
+- tapOn: "15"
+
+- takeScreenshot: screenshots/50-chore-monthly-day-selected
+
+# Select One-off frequency
+- tapOn: "One-off"
+
+# Verify date input appears
+- extendedWaitUntil:
+    visible: "Date"
+    timeout: 3000
+- assertVisible: "Select a date"
+
+- takeScreenshot: screenshots/51-chore-one-off-date
+
+# Navigate back to tab bar for next flow
+- pressKey: back

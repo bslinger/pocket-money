@@ -1,0 +1,72 @@
+appId: host.exp.exponent
+---
+# Family QR code flow — navigate to family detail, verify QR sharing
+# Assumes user is logged in and has at least one family
+
+- openLink: ${EXPO_URL}
+
+- extendedWaitUntil:
+    visible: "Quiddo"
+    timeout: 10000
+
+# Open profile panel to access Settings
+- tapOn: "Profile menu"
+- extendedWaitUntil:
+    visible: "Profile settings"
+    timeout: 5000
+
+# Tap Profile settings
+- tapOn: "Profile settings"
+- extendedWaitUntil:
+    visible: "Settings"
+    timeout: 5000
+
+# Tap Families menu item
+- tapOn: "Families"
+- extendedWaitUntil:
+    visible: "Families"
+    timeout: 5000
+
+- takeScreenshot: screenshots/43-family-list
+
+# Tap the first family card
+- tapOn:
+    text: ".*"
+    index: 0
+
+- extendedWaitUntil:
+    visible: "Members"
+    timeout: 5000
+
+- takeScreenshot: screenshots/44-family-detail
+
+# Scroll down to see Share QR Code button
+- swipe:
+    direction: UP
+    duration: 500
+
+# Verify Share QR Code button exists
+- assertVisible: "Share QR Code"
+
+- takeScreenshot: screenshots/45-family-share-qr-button
+
+# Tap Share QR Code
+- tapOn: "Share QR Code"
+
+# Verify QR modal appears
+- extendedWaitUntil:
+    visible: "Scan to Join Family"
+    timeout: 10000
+
+# Verify countdown is shown
+- assertVisible:
+    text: "Expires in.*"
+
+- takeScreenshot: screenshots/46-family-qr-modal
+
+# Close the modal
+- tapOn: "Close"
+
+# Navigate back
+- pressKey: back
+- pressKey: back
