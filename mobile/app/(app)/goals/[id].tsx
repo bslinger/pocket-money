@@ -1,9 +1,12 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
+import { fonts } from '@/lib/fonts';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type { SavingsGoal, ApiResponse } from '@quiddo/shared';
 
 export default function GoalDetailScreen() {
@@ -11,7 +14,9 @@ export default function GoalDetailScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data: goal, isLoading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: goal, isLoading, refetch } = useQuery({
     queryKey: ['goal', id],
     queryFn: async () => {
       const res = await api.get<ApiResponse<SavingsGoal>>(`/goals/${id}`);
@@ -19,6 +24,12 @@ export default function GoalDetailScreen() {
     },
     enabled: !!id,
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const abandonMutation = useMutation({
     mutationFn: async () => {
@@ -52,21 +63,20 @@ export default function GoalDetailScreen() {
       : 0;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Cover Image */}
-      {goal.image_url ? (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
+      {/* Cover Image — only shown if present */}
+      {goal.image_url && (
         <Image source={{ uri: goal.image_url }} style={styles.coverImage} resizeMode="cover" />
-      ) : (
-        <View style={styles.coverPlaceholder}>
-          <Text style={styles.coverPlaceholderText}>No cover image</Text>
-        </View>
       )}
 
       {/* Goal Info */}
       <View style={styles.infoSection}>
         <Text style={styles.goalName}>{goal.name}</Text>
         {goal.spender && (
-          <Text style={styles.spenderLabel}>{goal.spender.name}</Text>
+          <View style={styles.spenderRow}>
+            <SpenderAvatar name={goal.spender.name} color={goal.spender.color} avatarUrl={goal.spender.avatar_url} size={28} />
+            <Text style={styles.spenderLabel}>{goal.spender.name}</Text>
+          </View>
         )}
 
         {/* Progress */}
@@ -165,17 +175,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   content: {},
   coverImage: { width: '100%', height: 200 },
-  coverPlaceholder: {
-    width: '100%',
-    height: 140,
-    backgroundColor: colors.bark[200],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  coverPlaceholderText: { color: colors.bark[600], fontSize: 14 },
   infoSection: { padding: 16 },
-  goalName: { fontSize: 24, fontWeight: '700', color: colors.bark[700] },
-  spenderLabel: { fontSize: 14, color: colors.bark[600], marginTop: 4 },
+  goalName: { fontFamily: fonts.display, fontSize: 24, fontWeight: '700', color: colors.bark[700] },
+  spenderRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  spenderLabel: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
   progressSection: { flexDirection: 'row', alignItems: 'center', marginTop: 20, gap: 10 },
   progressTrack: {
     flex: 1,
