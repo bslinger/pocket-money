@@ -76,6 +76,9 @@ test.describe('Spenders', () => {
         await page.goto('/dashboard');
         await page.getByText('Emma').first().click();
         await expect(page).toHaveURL(/\/spenders\//);
+
+        // Child login is on the Manage tab
+        await page.getByRole('button', { name: 'Manage' }).click();
         await expect(page.getByText('Child Login Accounts')).toBeVisible();
         await expect(page.getByPlaceholder("Child's email address")).toBeVisible();
     });
@@ -85,6 +88,8 @@ test.describe('Spenders', () => {
         await page.getByText('Emma').first().click();
         await expect(page).toHaveURL(/\/spenders\//);
 
+        // Switch to Manage tab
+        await page.getByRole('button', { name: 'Manage' }).click();
         await page.fill('input[type="email"]', 'newchild@example.com');
         await page.getByRole('button', { name: 'Invite' }).click();
 
