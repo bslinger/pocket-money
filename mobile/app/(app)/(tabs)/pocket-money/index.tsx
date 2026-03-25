@@ -4,6 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import SpenderAvatar from '@/components/SpenderAvatar';
 import type { ApiResponse, Spender, PocketMoneySchedule, Chore } from '@quiddo/shared';
 
 interface ReleaseSpender {
@@ -106,9 +107,7 @@ export default function PocketMoneyScreen() {
       {spenders.map((item) => (
         <View key={item.spender.id} style={styles.card}>
           <View style={styles.cardHeader}>
-            <View style={[styles.avatar, { backgroundColor: item.spender.color ?? colors.eucalyptus[400] }]}>
-              <Text style={styles.avatarText}>{item.spender.name[0]}</Text>
-            </View>
+            <SpenderAvatar name={item.spender.name} color={item.spender.color} avatarUrl={item.spender.avatar_url} size={44} />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.spenderName}>{item.spender.name}</Text>
               {item.schedule && (
@@ -129,8 +128,11 @@ export default function PocketMoneyScreen() {
                   <View style={[styles.checkCircle, rc.completed && styles.checkCircleCompleted]}>
                     {rc.completed && <Text style={styles.checkMark}>✓</Text>}
                   </View>
+                  {rc.chore.emoji ? (
+                    <Text style={styles.choreEmoji}>{rc.chore.emoji}</Text>
+                  ) : null}
                   <Text style={[styles.choreName, rc.completed && styles.choreNameCompleted]}>
-                    {rc.chore.emoji ?? '✅'} {rc.chore.name}
+                    {rc.chore.name}
                   </Text>
                 </View>
               ))}
@@ -222,7 +224,8 @@ const styles = StyleSheet.create({
   },
   checkCircleCompleted: { borderColor: colors.gumleaf[400], backgroundColor: colors.gumleaf[400] },
   checkMark: { color: colors.white, fontSize: 12, fontWeight: '700' },
-  choreName: { fontSize: 14, color: colors.bark[700] },
+  choreEmoji: { fontSize: 16, marginRight: 6 },
+  choreName: { fontSize: 14, color: colors.bark[700], flex: 1 },
   choreNameCompleted: { color: colors.bark[600] },
   cardFooter: { marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: colors.bark[100], alignItems: 'flex-end' },
   notDueText: { fontSize: 13, color: colors.bark[600] },
