@@ -11,7 +11,7 @@ function useDebouncedReload() {
     return () => {
         clearTimeout(timer.current);
         timer.current = setTimeout(() => {
-            router.reload();
+            router.reload({ preserveState: true, preserveScroll: true });
         }, 500);
     };
 }
