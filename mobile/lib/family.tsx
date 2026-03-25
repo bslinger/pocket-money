@@ -8,6 +8,9 @@ const ACTIVE_FAMILY_KEY = 'active_family_id';
 interface Family {
   id: string;
   name: string;
+  currency_symbol: string;
+  currency_name: string;
+  currency_name_plural: string | null;
 }
 
 interface FamilyContextValue {
