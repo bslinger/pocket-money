@@ -23,11 +23,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Is there a limit to how many children I can add?',
-    a: "The free plan supports 1 child. Paid plans (monthly and annual) support up to 12 children on a single family subscription. No per-child fees \u2014 ever.",
-  },
-  {
-    q: 'What happens after my 30-day trial?',
-    a: "At the end of your trial you\u2019ll be asked to choose a plan. If you don\u2019t subscribe, your account moves to the free tier (1 child, core features). Your data is never deleted. No credit card is required to start the trial.",
+    a: "Every plan supports up to 12 children on a single family subscription. No per-child fees \u2014 ever.",
   },
   {
     q: 'Is Quiddo available in Australia?',
