@@ -12,11 +12,21 @@
 ├── routes/                 ← web.php (Inertia), api.php (mobile JSON API), auth.php
 ├── resources/js/           ← Web frontend: Inertia + React pages
 ├── mobile/                 ← Expo React Native app (Expo Router, TanStack Query)
+├── landing/                ← Astro static marketing site (GitHub Pages → quiddo.com.au)
 ├── packages/
 │   └── shared/             ← @quiddo/shared: TypeScript types, Zod schemas, constants
 ├── database/migrations/    ← All database migrations
 └── tests/                  ← Pest PHP tests + Playwright E2E tests
 ```
+
+## Domains
+
+| Domain | Source | Deployment |
+|--------|--------|------------|
+| `quiddo.com.au` | `/landing` (Astro static site) | GitHub Pages — auto-deploys on push to `landing/**` |
+| `app.quiddo.com.au` | `/` (Laravel root) | Laravel Cloud — manual deploy via CI workflow |
+
+The landing page is an Astro project that renders React components to static HTML. Build: `cd landing && npm run build`. The app subdomain has `robots.txt` disallowing all crawlers.
 
 ## Tech Stack
 

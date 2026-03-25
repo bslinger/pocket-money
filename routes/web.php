@@ -10,7 +10,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\InvitationController;
-use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PocketMoneyReleaseController;
 use App\Http\Controllers\PocketMoneyScheduleController;
@@ -24,9 +23,8 @@ use App\Http\Controllers\TransferController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 
-Route::get('/', [MarketingController::class, 'home'])->name('home');
-Route::get('/how-it-works', [MarketingController::class, 'howItWorks'])->name('marketing.how');
-Route::get('/pricing', [MarketingController::class, 'pricing'])->name('marketing.pricing');
+// Landing page now lives at quiddo.com.au (GitHub Pages, /landing directory)
+Route::get('/', fn () => auth()->check() ? redirect('/dashboard') : redirect('/login'))->name('home');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
