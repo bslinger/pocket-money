@@ -13,6 +13,7 @@ class ChoreCompletion extends Model
     use HasFactory, HasUuids;
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -27,15 +28,15 @@ class ChoreCompletion extends Model
     ];
 
     protected $casts = [
-        'status'       => CompletionStatus::class,
+        'status' => CompletionStatus::class,
         'completed_at' => 'datetime',
-        'reviewed_at'  => 'datetime',
+        'reviewed_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Chore, $this> */
     public function chore(): BelongsTo
     {
-        return $this->belongsTo(Chore::class);
+        return $this->belongsTo(Chore::class)->withTrashed();
     }
 
     /** @return BelongsTo<Spender, $this> */

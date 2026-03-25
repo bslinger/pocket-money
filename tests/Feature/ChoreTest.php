@@ -1,11 +1,12 @@
 <?php
 
+use App\Enums\ChoreRewardType;
+use App\Enums\CompletionStatus;
 use App\Models\Account;
 use App\Models\Chore;
 use App\Models\ChoreCompletion;
 use App\Models\Transaction;
-use App\Enums\ChoreRewardType;
-use App\Enums\CompletionStatus;
+use App\Models\User;
 
 describe('chores', function () {
 
@@ -15,16 +16,16 @@ describe('chores', function () {
 
             $this->actingAs($user)
                 ->post(route('chores.store'), [
-                    'family_id'        => $family->id,
-                    'name'             => 'Wash dishes',
-                    'reward_type'      => 'earns',
-                    'amount'           => '1.50',
-                    'frequency'        => 'weekly',
-                    'days_of_week'     => [0],
+                    'family_id' => $family->id,
+                    'name' => 'Wash dishes',
+                    'reward_type' => 'earns',
+                    'amount' => '1.50',
+                    'frequency' => 'weekly',
+                    'days_of_week' => [0],
                     'requires_approval' => true,
-                    'up_for_grabs'     => false,
-                    'is_active'        => true,
-                    'spender_ids'      => [$spenders->first()->id],
+                    'up_for_grabs' => false,
+                    'is_active' => true,
+                    'spender_ids' => [$spenders->first()->id],
                 ])
                 ->assertRedirect(route('chores.index'));
 
@@ -38,15 +39,15 @@ describe('chores', function () {
 
             $this->actingAs($user)
                 ->post(route('chores.store'), [
-                    'family_id'        => $family->id,
-                    'name'             => 'Make bed',
-                    'reward_type'      => 'responsibility',
-                    'frequency'        => 'daily',
-                    'days_of_week'     => [],
+                    'family_id' => $family->id,
+                    'name' => 'Make bed',
+                    'reward_type' => 'responsibility',
+                    'frequency' => 'daily',
+                    'days_of_week' => [],
                     'requires_approval' => false,
-                    'up_for_grabs'     => false,
-                    'is_active'        => true,
-                    'spender_ids'      => [$spenders->first()->id],
+                    'up_for_grabs' => false,
+                    'is_active' => true,
+                    'spender_ids' => [$spenders->first()->id],
                 ])
                 ->assertRedirect(route('chores.index'));
 
@@ -79,16 +80,16 @@ describe('chores', function () {
 
             $this->actingAs($user)
                 ->put(route('chores.update', $chore), [
-                    'family_id'        => $family->id,
-                    'name'             => 'Updated Chore',
-                    'reward_type'      => 'earns',
-                    'amount'           => '2.00',
-                    'frequency'        => 'weekly',
-                    'days_of_week'     => [1],
+                    'family_id' => $family->id,
+                    'name' => 'Updated Chore',
+                    'reward_type' => 'earns',
+                    'amount' => '2.00',
+                    'frequency' => 'weekly',
+                    'days_of_week' => [1],
                     'requires_approval' => true,
-                    'up_for_grabs'     => false,
-                    'is_active'        => true,
-                    'spender_ids'      => [$spenders->last()->id],
+                    'up_for_grabs' => false,
+                    'is_active' => true,
+                    'spender_ids' => [$spenders->last()->id],
                 ])
                 ->assertRedirect(route('chores.index'));
 
@@ -108,6 +109,38 @@ describe('chores', function () {
 
             expect(Chore::find($chore->id))->toBeNull();
         });
+
+        it('soft-deletes a chore that has completions', function () {
+            [$user, $family, $spenders] = parentWithFamily(['Emma']);
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
+
+            ChoreCompletion::create([
+                'chore_id' => $chore->id,
+                'spender_id' => $spenders->first()->id,
+                'status' => 'approved',
+                'completed_at' => now(),
+            ]);
+
+            $this->actingAs($user)
+                ->delete(route('chores.destroy', $chore));
+
+            // Chore is soft-deleted, not gone
+            expect(Chore::find($chore->id))->toBeNull();
+            expect(Chore::withTrashed()->find($chore->id))->not->toBeNull();
+
+            // Completions still reference the chore
+            expect(ChoreCompletion::where('chore_id', $chore->id)->exists())->toBeTrue();
+        });
+
+        it('hard-deletes a chore with no completions', function () {
+            [$user, $family] = parentWithFamily();
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
+
+            $this->actingAs($user)
+                ->delete(route('chores.destroy', $chore));
+
+            expect(Chore::withTrashed()->find($chore->id))->toBeNull();
+        });
     });
 });
 
@@ -117,8 +150,8 @@ describe('chore completions', function () {
         it('creates a pending completion when a linked child marks a chore done', function () {
             [$_user, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
-            $child   = childLinkedTo($spender);
-            $chore   = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $child->id]);
+            $child = childLinkedTo($spender);
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $child->id]);
             $chore->spenders()->sync([$spender->id]);
 
             $this->actingAs($child)
@@ -135,14 +168,14 @@ describe('chore completions', function () {
         it('prevents duplicate pending completions', function () {
             [$_user, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
-            $child   = childLinkedTo($spender);
-            $chore   = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $child->id]);
+            $child = childLinkedTo($spender);
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $child->id]);
             $chore->spenders()->sync([$spender->id]);
 
             ChoreCompletion::factory()->create([
-                'chore_id'   => $chore->id,
+                'chore_id' => $chore->id,
                 'spender_id' => $spender->id,
-                'status'     => CompletionStatus::Pending,
+                'status' => CompletionStatus::Pending,
             ]);
 
             $this->actingAs($child)
@@ -153,9 +186,9 @@ describe('chore completions', function () {
 
         it('forbids an unlinked user from completing a chore', function () {
             [$_user, $family, $spenders] = parentWithFamily(['Emma']);
-            $spender   = $spenders->first();
-            $otherUser = \App\Models\User::factory()->create();
-            $chore     = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $otherUser->id]);
+            $spender = $spenders->first();
+            $otherUser = User::factory()->create();
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $otherUser->id]);
             $chore->spenders()->sync([$spender->id]);
 
             $this->actingAs($otherUser)
@@ -166,7 +199,7 @@ describe('chore completions', function () {
         it('allows a parent in view-as mode to mark a chore done', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
-            $chore   = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             $chore->spenders()->sync([$spender->id]);
 
             $this->actingAs($parent)
@@ -187,11 +220,11 @@ describe('chore completions', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
             $account = Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
-            $chore   = Chore::factory()->earns(2.50)->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $chore = Chore::factory()->earns(2.50)->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             $completion = ChoreCompletion::factory()->create([
-                'chore_id'   => $chore->id,
+                'chore_id' => $chore->id,
                 'spender_id' => $spender->id,
-                'status'     => CompletionStatus::Pending,
+                'status' => CompletionStatus::Pending,
             ]);
 
             $this->actingAs($parent)
@@ -209,9 +242,9 @@ describe('chore completions', function () {
             Account::factory()->create(['spender_id' => $spender->id, 'balance' => 0]);
             $chore = Chore::factory()->responsibility()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             $completion = ChoreCompletion::factory()->create([
-                'chore_id'   => $chore->id,
+                'chore_id' => $chore->id,
                 'spender_id' => $spender->id,
-                'status'     => CompletionStatus::Pending,
+                'status' => CompletionStatus::Pending,
             ]);
 
             $this->actingAs($parent)
@@ -230,10 +263,10 @@ describe('chore completions', function () {
             $jackAccount = Account::factory()->create(['spender_id' => $jack->id, 'balance' => 0]);
 
             $chore = Chore::factory()->create([
-                'family_id'   => $family->id,
-                'created_by'  => $parent->id,
+                'family_id' => $family->id,
+                'created_by' => $parent->id,
                 'reward_type' => ChoreRewardType::Earns,
-                'amount'      => '2.00',
+                'amount' => '2.00',
             ]);
             $c1 = ChoreCompletion::factory()->create(['chore_id' => $chore->id, 'spender_id' => $emma->id, 'status' => CompletionStatus::Pending]);
             $c2 = ChoreCompletion::factory()->create(['chore_id' => $chore->id, 'spender_id' => $jack->id, 'status' => CompletionStatus::Pending]);
@@ -271,12 +304,12 @@ describe('chore completions', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);
             $spender = $spenders->first();
             $account = Account::factory()->withBalance(5)->create(['spender_id' => $spender->id]);
-            $chore   = Chore::factory()->earns(2.50)->create(['family_id' => $family->id, 'created_by' => $parent->id]);
-            $tx      = Transaction::factory()->create(['account_id' => $account->id, 'type' => 'credit', 'amount' => '2.50']);
+            $chore = Chore::factory()->earns(2.50)->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $tx = Transaction::factory()->create(['account_id' => $account->id, 'type' => 'credit', 'amount' => '2.50']);
             $completion = ChoreCompletion::factory()->create([
-                'chore_id'       => $chore->id,
-                'spender_id'     => $spender->id,
-                'status'         => CompletionStatus::Approved,
+                'chore_id' => $chore->id,
+                'spender_id' => $spender->id,
+                'status' => CompletionStatus::Approved,
                 'transaction_id' => $tx->id,
             ]);
 
@@ -292,13 +325,13 @@ describe('chore completions', function () {
 
         it('sets responsibility completion back to pending without transaction reversal', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);
-            $spender    = $spenders->first();
+            $spender = $spenders->first();
             Account::factory()->create(['spender_id' => $spender->id]);
-            $chore      = Chore::factory()->responsibility()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $chore = Chore::factory()->responsibility()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             $completion = ChoreCompletion::factory()->create([
-                'chore_id'   => $chore->id,
+                'chore_id' => $chore->id,
                 'spender_id' => $spender->id,
-                'status'     => CompletionStatus::Approved,
+                'status' => CompletionStatus::Approved,
             ]);
 
             $this->actingAs($parent)
@@ -311,12 +344,12 @@ describe('chore completions', function () {
 
         it('returns 422 when trying to unapprove a non-approved completion', function () {
             [$parent, $family, $spenders] = parentWithFamily(['Emma']);
-            $spender    = $spenders->first();
-            $chore      = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
+            $spender = $spenders->first();
+            $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             $completion = ChoreCompletion::factory()->create([
-                'chore_id'   => $chore->id,
+                'chore_id' => $chore->id,
                 'spender_id' => $spender->id,
-                'status'     => CompletionStatus::Pending,
+                'status' => CompletionStatus::Pending,
             ]);
 
             $this->actingAs($parent)
@@ -331,9 +364,9 @@ describe('chore completions', function () {
             $spender = $spenders->first();
             $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             ChoreCompletion::factory()->create([
-                'chore_id'   => $chore->id,
+                'chore_id' => $chore->id,
                 'spender_id' => $spender->id,
-                'status'     => CompletionStatus::Approved,
+                'status' => CompletionStatus::Approved,
             ]);
 
             $this->actingAs($parent)
@@ -353,9 +386,9 @@ describe('chore completions', function () {
             $spender = $spenders->first();
             $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $parent->id]);
             $completion = ChoreCompletion::factory()->create([
-                'chore_id'   => $chore->id,
+                'chore_id' => $chore->id,
                 'spender_id' => $spender->id,
-                'status'     => CompletionStatus::Pending,
+                'status' => CompletionStatus::Pending,
             ]);
 
             $this->actingAs($parent)
@@ -376,7 +409,7 @@ describe('chore completions', function () {
             $this->actingAs($user)
                 ->get(route('chores.index'))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Chores/Index'));
+                ->assertInertia(fn ($page) => $page->component('Chores/Index'));
         });
     });
 
@@ -387,7 +420,7 @@ describe('chore completions', function () {
             $this->actingAs($user)
                 ->get(route('chores.create'))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Chores/Create'));
+                ->assertInertia(fn ($page) => $page->component('Chores/Create'));
         });
     });
 
@@ -399,7 +432,7 @@ describe('chore completions', function () {
             $this->actingAs($user)
                 ->get(route('chores.edit', $chore))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page->component('Chores/Edit'));
+                ->assertInertia(fn ($page) => $page->component('Chores/Edit'));
         });
     });
 
@@ -408,16 +441,16 @@ describe('chore completions', function () {
             [$user, $family, $spenders] = parentWithFamily(['Emma']);
             $chore = Chore::factory()->create(['family_id' => $family->id, 'created_by' => $user->id]);
             ChoreCompletion::factory()->create([
-                'chore_id'     => $chore->id,
-                'spender_id'   => $spenders->first()->id,
+                'chore_id' => $chore->id,
+                'spender_id' => $spenders->first()->id,
                 'completed_at' => now(),
-                'status'       => CompletionStatus::Approved,
+                'status' => CompletionStatus::Approved,
             ]);
 
             $this->actingAs($user)
                 ->get(route('chores.history', $chore))
                 ->assertOk()
-                ->assertInertia(fn($page) => $page
+                ->assertInertia(fn ($page) => $page
                     ->component('Chores/History')
                     ->has('completions')
                 );

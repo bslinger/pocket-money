@@ -92,7 +92,7 @@ class ChoreController extends Controller
     {
         abort_unless($request->user()->families()->where('families.id', $chore->family_id)->exists(), 403);
 
-        $chore->delete();
+        $chore->deleteOrForceDelete();
 
         return response()->json(['message' => 'Chore deleted']);
     }

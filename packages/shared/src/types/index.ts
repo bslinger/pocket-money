@@ -168,6 +168,8 @@ export interface Chore {
   amount: string | null; // decimal:2, only set when reward_type is 'earns'
   frequency: ChoreFrequency;
   days_of_week: number[] | null; // 0=Mon…6=Sun
+  day_of_month: number | null; // 1-31, for monthly frequency
+  one_off_date: string | null; // YYYY-MM-DD, for one_off frequency
   requires_approval: boolean;
   up_for_grabs: boolean;
   is_active: boolean;

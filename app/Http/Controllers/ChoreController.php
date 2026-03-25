@@ -125,7 +125,7 @@ class ChoreController extends Controller
 
     public function destroy(Chore $chore)
     {
-        $chore->delete();
+        $chore->deleteOrForceDelete();
 
         rescue(fn () => app(AnalyticsService::class)->crudEvent(auth()->user(), 'chore', 'deleted'));
 
