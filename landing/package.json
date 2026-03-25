@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node -e \"const fs=require('fs'),p='dist/index.html';fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(/\\\"\\/_astro\\//g,'\\\"_astro/'))\"",
     "preview": "astro preview"
   },
   "dependencies": {
