@@ -10,6 +10,15 @@
 
 export type TxType = 'credit' | 'debit';
 
+export type SocialProvider = 'google' | 'apple' | 'facebook';
+
+export interface SocialLoginRequest {
+  token: string;
+  device_name: string;
+  first_name?: string;
+  last_name?: string;
+}
+
 export type Frequency = 'daily' | 'weekly' | 'fortnightly' | 'monthly' | 'yearly';
 
 export type ChoreFrequency = 'daily' | 'weekly' | 'monthly' | 'one_off';
