@@ -1,15 +1,38 @@
 import { useState, type FormEvent } from 'react';
 import PhoneMockup from './PhoneMockup';
 
+const BENTO_PUBLISHABLE_KEY = 'p10b5d5502ce9037c8b15ad674cf8fb75';
+const BENTO_SITE_UUID = '3defb957e7a5d26f071cfc409b010b0f';
+
 export default function Hero() {
   const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
-  function handleEmailSubmit(e: FormEvent) {
+  async function handleEmailSubmit(e: FormEvent) {
     e.preventDefault();
-    const dest = email
-      ? `https://app.quiddo.com.au/register?email=${encodeURIComponent(email)}`
-      : 'https://app.quiddo.com.au/register';
-    window.location.href = dest;
+    if (!email || status === 'submitting' || status === 'success') return;
+    setStatus('submitting');
+    try {
+      const response = await fetch('https://app.bentonow.com/api/v1/batch/subscribers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + btoa(BENTO_PUBLISHABLE_KEY + ':'),
+        },
+        body: JSON.stringify({
+          site_uuid: BENTO_SITE_UUID,
+          subscribers: [{ email, tags: ['waitlist'] }],
+        }),
+      });
+      if (response.ok) {
+        setStatus('success');
+        setEmail('');
+      } else {
+        setStatus('error');
+      }
+    } catch {
+      setStatus('error');
+    }
   }
 
   return (
@@ -32,32 +55,37 @@ export default function Hero() {
             Track what your kids earn, spend, and save — without the forgotten IOUs, the Sunday cash scramble, or the spreadsheet you abandoned after a week.
           </p>
 
-          <form className="flex flex-col gap-3 max-w-[400px]" onSubmit={handleEmailSubmit}>
+          <form id="waitlist-form" className="flex flex-col gap-3 max-w-[400px]" onSubmit={handleEmailSubmit}>
             <input
+              id="waitlist-email"
               type="email"
               placeholder="Enter your email address"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="px-4 py-3.5 border-[1.5px] border-bark-200 rounded-[10px] text-[15px] text-bark-700 bg-white placeholder-bark-400 focus:outline-none focus:border-eucalyptus-400 transition-colors font-body"
+              required
+              disabled={status === 'success'}
+              className="px-4 py-3.5 border-[1.5px] border-bark-200 rounded-[10px] text-[15px] text-bark-700 bg-white placeholder-bark-400 focus:outline-none focus:border-eucalyptus-400 transition-colors font-body disabled:opacity-50"
             />
             <button
               type="submit"
-              className="bg-eucalyptus-400 text-white py-4 rounded-[10px] text-[15px] font-semibold hover:bg-eucalyptus-500 transition-colors text-center"
+              disabled={status === 'submitting' || status === 'success'}
+              className="bg-eucalyptus-400 text-white py-4 rounded-[10px] text-[15px] font-semibold hover:bg-eucalyptus-500 transition-colors text-center disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              Start free — 30 days, no card needed
+              {status === 'submitting' ? 'Joining…' : status === 'success' ? "You're in ✓" : 'Join the waitlist'}
             </button>
-            <p className="text-xs text-bark-400 text-center">
-              By signing up you agree to our{' '}
-              <a href="#" className="text-eucalyptus-400 hover:underline">Terms</a>
-              {' '}and{' '}
-              <a href="#" className="text-eucalyptus-400 hover:underline">Privacy Policy</a>
-            </p>
+            {status === 'success' && (
+              <p className="text-sm text-eucalyptus-600 text-center font-medium">
+                You're on the list! We'll let you know when Quiddo launches.
+              </p>
+            )}
+            {status === 'error' && (
+              <p className="text-sm text-redearth-500 text-center">
+                Something went wrong — please try again.{' '}
+                <button type="button" className="underline" onClick={() => setStatus('idle')}>Retry</button>
+              </p>
+            )}
           </form>
 
-          <p className="text-sm text-bark-500 mt-2 text-center max-w-[400px]">
-            Already have an account?{' '}
-            <a href="https://app.quiddo.com.au/login" className="text-eucalyptus-400 font-semibold hover:underline">Log in</a>
-          </p>
         </div>
       </div>
     </section>

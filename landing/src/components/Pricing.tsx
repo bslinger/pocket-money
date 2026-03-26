@@ -23,10 +23,10 @@ export default function Pricing() {
               ))}
             </div>
             <a
-              href="https://app.quiddo.com.au/register"
+              href="#waitlist-form"
               className="block w-full py-2.5 rounded-full text-sm font-semibold text-center bg-wattle-400 text-bark-700 hover:bg-wattle-300 transition-colors"
             >
-              Start 30-day free trial
+              Join the waitlist
             </a>
           </div>
 
@@ -45,10 +45,10 @@ export default function Pricing() {
               ))}
             </div>
             <a
-              href="https://app.quiddo.com.au/register"
+              href="#waitlist-form"
               className="block w-full py-2.5 rounded-full text-sm font-semibold text-center border-[1.5px] border-bark-200 text-bark-700 hover:border-bark-300 transition-colors"
             >
-              Start 30-day free trial
+              Join the waitlist
             </a>
           </div>
         </div>

@@ -25,10 +25,10 @@ export default function HowItWorks() {
         </div>
 
         <a
-          href="https://app.quiddo.com.au/register"
+          href="#waitlist-form"
           className="inline-flex items-center gap-2 bg-eucalyptus-400 text-white px-10 py-[18px] rounded-full text-base font-semibold hover:bg-eucalyptus-500 transition-colors"
         >
-          Start your free 30-day trial →
+          Join the waitlist →
         </a>
       </div>
     </section>
