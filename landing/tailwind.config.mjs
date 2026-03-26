@@ -6,10 +6,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans:    ['"DM Sans"', 'Figtree', ...defaultTheme.fontFamily.sans],
-        serif:   ['"Fraunces"', ...defaultTheme.fontFamily.serif],
-        display: ['"Fraunces"', 'Georgia', 'serif'],
-        body:    ['"DM Sans"', 'system-ui', 'sans-serif'],
+        sans:    ['"DM Sans Variable"', 'system-ui', ...defaultTheme.fontFamily.sans],
+        serif:   ['"Fraunces Variable"', ...defaultTheme.fontFamily.serif],
+        display: ['"Fraunces Variable"', 'Georgia', 'serif'],
+        body:    ['"DM Sans Variable"', 'system-ui', 'sans-serif'],
       },
       colors: {
         eucalyptus: {
