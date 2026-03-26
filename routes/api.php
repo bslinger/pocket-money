@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ChildDashboardController;
 use App\Http\Controllers\Api\V1\ChildDeviceTokenController;
 use App\Http\Controllers\Api\V1\ChoreCompletionController;
 use App\Http\Controllers\Api\V1\ChoreController;
+use App\Http\Controllers\Api\V1\CodeLookupController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\FamilyController;
@@ -31,6 +32,7 @@ Route::post('/auth/login', [AuthController::class, 'login'])->middleware('thrott
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/auth/social/{provider}', [SocialAuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+Route::post('/codes/lookup', [CodeLookupController::class, 'show'])->middleware('throttle:20,1');
 Route::post('/spender-devices/claim', [SpenderLinkCodeController::class, 'claim']);
 Route::post('/family-link-codes/claim', [FamilyLinkCodeController::class, 'claim']);
 
