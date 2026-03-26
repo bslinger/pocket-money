@@ -127,4 +127,3 @@ export const TRIAL_DAYS = 30;
 export const TRANSACTIONS_PER_PAGE = 50;
 export const COMPLETIONS_PER_PAGE = 30;
 export const MAX_RECENT_ACTIVITY = 15;
-export const MAX_SPENDERS_PER_FAMILY = 20;

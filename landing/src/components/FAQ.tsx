@@ -27,7 +27,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Is there a limit to how many children I can add?',
-    a: "Up to 12 per family. One subscription, flat price, doesn't matter how many kids you have (well, unless it's more than 12).",
+    a: "No limit. One subscription, flat price, add as many kids as you need.",
   },
   {
     q: 'What happens after my 30-day trial?',

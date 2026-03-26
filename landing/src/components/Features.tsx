@@ -21,8 +21,8 @@ const WHY_FEATURES = [
     },
     {
         emoji: '👨‍👩‍👧‍👦',
-        title: 'Up to 12 kids',
-        desc: 'Whether you\'ve got one kid or six, it\'s the same price. Up to 12 children on every plan.'
+        title: 'Unlimited kids',
+        desc: 'Whether you\'ve got one kid or ten, it\'s the same price. Add as many children as you need.'
     },
     {
         emoji: '⚡',
@@ -53,8 +53,8 @@ export default function Features() {
                         actually what makes it click for them. No bank account, no debit card, no minimum age.
                     </p>
                     <p className="text-base text-bark-500 leading-[1.8]">
-                        Works in dollars or whatever currency your family uses. One plan covers up to <strong
-                        className="text-bark-600">12 kids.</strong>
+                        Works in dollars or whatever currency your family uses. One plan covers <strong
+                        className="text-bark-600">unlimited kids.</strong>
                     </p>
                 </div>
             </section>
@@ -111,7 +111,7 @@ export default function Features() {
                                 in every plan</h3>
                             <ul className="flex flex-col gap-2.5">
                                 {[
-                                    'Up to 12 child profiles per family',
+                                    'Unlimited child profiles per family',
                                     'Virtual balance tracking for each child',
                                     'Recurring and one-off chores',
                                     'Chore approval workflow',
