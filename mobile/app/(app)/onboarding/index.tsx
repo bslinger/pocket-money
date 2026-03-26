@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { findNodeHandle } from 'react-native';
 import {
   View,
   Text,
@@ -6,10 +7,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import EmojiPicker, { type EmojiType } from 'rn-emoji-keyboard';
+import pluralize from 'pluralize';
 import { useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
@@ -43,6 +45,8 @@ interface KidRow {
 export default function OnboardingIndex() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const scrollRef = useRef<KeyboardAwareScrollView>(null);
+  const lastKidInputRef = useRef<TextInput>(null);
   const [step, setStep] = useState(0);
 
   // Step 0: family name
@@ -51,13 +55,27 @@ export default function OnboardingIndex() {
   // Step 1: currency
   const [currencyType, setCurrencyType] = useState<'real' | 'custom'>('real');
   const [selectedSymbolIdx, setSelectedSymbolIdx] = useState(0);
-  const [customSymbol, setCustomSymbol] = useState('');
+  const [customSymbol, setCustomSymbol] = useState('⭐');
   const [customName, setCustomName] = useState('');
   const [customNamePlural, setCustomNamePlural] = useState('');
   const [useIntegerAmounts, setUseIntegerAmounts] = useState(false);
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   // Step 2: kids
   const [kids, setKids] = useState<KidRow[]>([]);
+  const [kidErrors, setKidErrors] = useState<string[]>([]);
+
+  function isValidKidName(name: string): boolean {
+    return /[a-zA-Z0-9]/.test(name);
+  }
+
+  function currencyInputFontSize(text: string): number {
+    const len = text.length;
+    if (len <= 8) return 14;
+    if (len <= 12) return 12;
+    if (len <= 16) return 10;
+    return 9;
+  }
 
   const currencySymbol = currencyType === 'real' ? CURRENCY_SYMBOLS[selectedSymbolIdx].symbol : customSymbol;
   const currencyName = currencyType === 'real' ? CURRENCY_SYMBOLS[selectedSymbolIdx].name : customName;
@@ -90,10 +108,17 @@ export default function OnboardingIndex() {
   function addKid() {
     const nextColor = SPENDER_COLORS[kids.length % SPENDER_COLORS.length];
     setKids(prev => [...prev, { name: '', color: nextColor, balance: '' }]);
+    setTimeout(() => {
+      const node = findNodeHandle(lastKidInputRef.current);
+      if (node) scrollRef.current?.scrollToFocusedInput(node, 16);
+    }, 100);
   }
 
   function updateKid(idx: number, field: keyof KidRow, value: string) {
     setKids(prev => prev.map((k, i) => (i === idx ? { ...k, [field]: value } : k)));
+    if (field === 'name' && kidErrors[idx]) {
+      setKidErrors(prev => prev.map((e, i) => (i === idx ? '' : e)));
+    }
   }
 
   function removeKid(idx: number) {
@@ -104,6 +129,9 @@ export default function OnboardingIndex() {
     if (step < 2) {
       setStep(s => s + 1);
     } else {
+      const errors = kids.map(k => (!isValidKidName(k.name) ? 'Enter a valid name' : ''));
+      setKidErrors(errors);
+      if (errors.some(e => e)) return;
       createFamily.mutate();
     }
   }
@@ -118,11 +146,13 @@ export default function OnboardingIndex() {
   const STEP_LABELS = ['Your family', 'Currency', 'Add kids'];
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView
+    <KeyboardAwareScrollView
+        ref={scrollRef}
         style={styles.container}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        extraScrollHeight={24}
       >
         {/* Header */}
         <Text style={styles.logo}>Quiddo</Text>
@@ -158,7 +188,7 @@ export default function OnboardingIndex() {
               <TextInput
                 style={styles.input}
                 placeholder="e.g. The Smiths"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
                 value={familyName}
                 onChangeText={setFamilyName}
                 autoFocus
@@ -216,46 +246,65 @@ export default function OnboardingIndex() {
               {currencyType === 'custom' && (
                 <View style={{ gap: 12 }}>
                   <View style={styles.row}>
-                    <View style={{ flex: 0.4 }}>
-                      <Text style={styles.label}>Symbol</Text>
-                      <TextInput
-                        style={styles.input}
-                        value={customSymbol}
-                        onChangeText={setCustomSymbol}
-                        placeholder="⭐"
-                        placeholderTextColor={colors.bark[600]}
-                        maxLength={4}
-                      />
+                    <View>
+                      <Text style={styles.labelSmall}>Symbol</Text>
+                      <TouchableOpacity style={styles.emojiButton} onPress={() => setEmojiPickerOpen(true)}>
+                        <Text style={styles.emojiButtonText}>{customSymbol}</Text>
+                      </TouchableOpacity>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.label}>Name (singular)</Text>
+                      <Text style={styles.labelSmall}>Singular</Text>
                       <TextInput
-                        style={styles.input}
+                        style={[styles.input, { fontSize: currencyInputFontSize(customName), height: 44 }]}
                         value={customName}
                         onChangeText={(v) => {
                           setCustomName(v);
-                          if (!customNamePlural || customNamePlural === customName + 's') {
-                            setCustomNamePlural(v + 's');
+                          if (!customNamePlural || customNamePlural === pluralize(customName)) {
+                            setCustomNamePlural(pluralize(v));
                           }
                         }}
                         placeholder="Star"
-                        placeholderTextColor={colors.bark[600]}
+                        placeholderTextColor={colors.bark[400]}
                       />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.label}>Plural</Text>
+                      <Text style={styles.labelSmall}>Plural</Text>
                       <TextInput
-                        style={styles.input}
+                        style={[styles.input, { fontSize: currencyInputFontSize(customNamePlural), height: 44 }]}
                         value={customNamePlural}
                         onChangeText={setCustomNamePlural}
                         placeholder="Stars"
-                        placeholderTextColor={colors.bark[600]}
+                        placeholderTextColor={colors.bark[400]}
                       />
                     </View>
                   </View>
+                  <EmojiPicker
+                    open={emojiPickerOpen}
+                    onClose={() => setEmojiPickerOpen(false)}
+                    onEmojiSelected={(emojiObject: EmojiType) => {
+                      const name = emojiObject.name
+                        .split(' ')
+                        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(' ');
+                      setCustomSymbol(emojiObject.emoji);
+                      setCustomName(name);
+                      setCustomNamePlural(pluralize(name));
+                      setEmojiPickerOpen(false);
+                    }}
+                    enableSearchBar
+                    enableRecentlyUsed
+                    categoryPosition="top"
+                    theme={{
+                      container: colors.white,
+                      header: colors.bark[700],
+                      category: { container: colors.bark[100], icon: colors.bark[600], iconActive: colors.eucalyptus[400], containerActive: colors.eucalyptus[400] + '20' },
+                      search: { background: colors.bark[100], text: colors.bark[700], placeholder: colors.bark[600] },
+                    }}
+                  />
                   <TouchableOpacity
                     style={styles.checkRow}
                     onPress={() => setUseIntegerAmounts(v => !v)}
+                    activeOpacity={1}
                   >
                     <View style={[styles.checkbox, useIntegerAmounts && styles.checkboxChecked]}>
                       {useIntegerAmounts && <Feather name="check" size={10} color={colors.white} />}
@@ -277,6 +326,14 @@ export default function OnboardingIndex() {
                 Each kid gets their own account. You can add more kids later.
               </Text>
 
+              {kids.length > 0 && (
+                <View style={styles.kidHeaderRow}>
+                  <Text style={[styles.kidHeaderLabel, { flex: 1 }]}>Name</Text>
+                  <Text style={[styles.kidHeaderLabel, { width: 80 }]}>Starting balance</Text>
+                  <View style={{ width: 24 }} />
+                </View>
+              )}
+
               {kids.map((kid, idx) => (
                 <View key={idx} style={styles.kidRow}>
                   {/* Color picker */}
@@ -290,20 +347,26 @@ export default function OnboardingIndex() {
                     ))}
                   </ScrollView>
                   <View style={styles.kidInputRow}>
-                    <TextInput
-                      style={[styles.input, { flex: 1 }]}
-                      placeholder={`Kid ${idx + 1} name`}
-                      placeholderTextColor={colors.bark[600]}
-                      value={kid.name}
-                      onChangeText={v => updateKid(idx, 'name', v)}
-                      autoFocus={idx === kids.length - 1}
-                    />
+                    <View style={{ flex: 1 }}>
+                      <TextInput
+                        ref={idx === kids.length - 1 ? lastKidInputRef : null}
+                        style={[styles.input, kidErrors[idx] ? styles.inputError : null]}
+                        placeholder={`Kid ${idx + 1} name`}
+                        placeholderTextColor={colors.bark[400]}
+                        value={kid.name}
+                        onChangeText={v => updateKid(idx, 'name', v)}
+                        autoFocus={idx === kids.length - 1}
+                      />
+                      {!!kidErrors[idx] && (
+                        <Text style={styles.fieldError}>{kidErrors[idx]}</Text>
+                      )}
+                    </View>
                     <View style={styles.balanceInput}>
                       <Text style={styles.currencyPrefix}>{currencySymbol || '$'}</Text>
                       <TextInput
                         style={styles.balanceTextInput}
                         placeholder="0"
-                        placeholderTextColor={colors.bark[600]}
+                        placeholderTextColor={colors.bark[400]}
                         value={kid.balance}
                         onChangeText={v => updateKid(idx, 'balance', v)}
                         keyboardType="decimal-pad"
@@ -338,30 +401,26 @@ export default function OnboardingIndex() {
               <View />
             )}
             <View style={styles.navRight}>
-              {step === 2 && (
-                <TouchableOpacity
-                  style={styles.skipBtn}
-                  onPress={() => createFamily.mutate()}
-                  disabled={createFamily.isPending}
-                >
-                  <Text style={styles.skipBtnText}>Do this later</Text>
-                </TouchableOpacity>
-              )}
               <TouchableOpacity
                 style={[styles.nextBtn, (!canProceed || createFamily.isPending) && styles.nextBtnDisabled]}
                 onPress={next}
                 disabled={!canProceed || createFamily.isPending}
               >
                 <Text style={styles.nextBtnText}>
-                  {createFamily.isPending ? 'Creating...' : step < 2 ? 'Continue' : 'Create family'}
+                  {createFamily.isPending
+                    ? 'Creating...'
+                    : step === 2 && kids.length === 0
+                      ? 'Do this later'
+                      : step < 2
+                        ? 'Continue'
+                        : 'Create family'}
                 </Text>
                 {!createFamily.isPending && <Feather name="chevron-right" size={16} color={colors.white} />}
               </TouchableOpacity>
             </View>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
   );
 }
 
@@ -426,6 +485,13 @@ const styles = StyleSheet.create({
   symbolTextActive: { color: colors.eucalyptus[400], fontWeight: '700' },
 
   row: { flexDirection: 'row', gap: 8 },
+  emojiButton: {
+    width: 52, height: 44, borderRadius: 8, borderWidth: 1,
+    borderColor: colors.bark[200], backgroundColor: colors.white,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  emojiButtonText: { fontSize: 24 },
+  labelSmall: { fontFamily: fonts.body, fontSize: 11, fontWeight: '600', color: colors.bark[700], marginBottom: 4 },
   checkRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   checkbox: {
     width: 18, height: 18, borderRadius: 4, borderWidth: 1.5,
@@ -434,11 +500,15 @@ const styles = StyleSheet.create({
   checkboxChecked: { backgroundColor: colors.eucalyptus[400], borderColor: colors.eucalyptus[400] },
   checkLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[700], flex: 1 },
 
+  kidHeaderRow: { flexDirection: 'row', gap: 8, alignItems: 'center', paddingHorizontal: 2 },
+  kidHeaderLabel: { fontFamily: fonts.body, fontSize: 11, fontWeight: '600', color: colors.bark[600] },
   kidRow: { gap: 6 },
   colorScroll: { marginBottom: 2 },
   colorDot: { width: 22, height: 22, borderRadius: 11, marginRight: 6 },
   colorDotSelected: { borderWidth: 2.5, borderColor: colors.bark[700] },
-  kidInputRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  kidInputRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
+  inputError: { borderColor: colors.redearth[400] },
+  fieldError: { fontFamily: fonts.body, fontSize: 11, color: colors.redearth[400], marginTop: 3 },
   balanceInput: {
     flexDirection: 'row', alignItems: 'center', width: 80,
     borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8,
@@ -455,9 +525,7 @@ const styles = StyleSheet.create({
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, padding: 4 },
   backBtnText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
   navRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  skipBtn: { padding: 4 },
-  skipBtnText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
-  nextBtn: {
+nextBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: colors.eucalyptus[400], borderRadius: 99,
     paddingHorizontal: 18, paddingVertical: 10,

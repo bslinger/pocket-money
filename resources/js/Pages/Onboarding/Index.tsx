@@ -33,6 +33,7 @@ const CURRENCY_SYMBOLS = [
 export default function OnboardingIndex() {
     const [step, setStep] = useState(0);
     const [currencyType, setCurrencyType] = useState<'real' | 'custom'>('real');
+    const [kidErrors, setKidErrors] = useState<string[]>([]);
     const [selectedSymbolIdx, setSelectedSymbolIdx] = useState(0);
 
     const { data, setData, post, processing, errors } = useForm<{
@@ -71,8 +72,15 @@ export default function OnboardingIndex() {
         setData('spenders', [...data.spenders, { name: '', color: nextColor, balance: '' }]);
     }
 
+    function isValidKidName(name: string): boolean {
+        return /[a-zA-Z0-9]/.test(name);
+    }
+
     function updateKid(idx: number, field: keyof KidRow, value: string) {
         setData('spenders', data.spenders.map((k, i) => i === idx ? { ...k, [field]: value } : k));
+        if (field === 'name' && kidErrors[idx]) {
+            setKidErrors(prev => prev.map((e, i) => i === idx ? '' : e));
+        }
     }
 
     function removeKid(idx: number) {
@@ -80,8 +88,18 @@ export default function OnboardingIndex() {
     }
 
     function next() {
-        if (step < 2) setStep(s => s + 1);
-        else submit();
+        if (step < 2) {
+            setStep(s => s + 1);
+        } else {
+            if (data.spenders.length > 0) {
+                const errors = data.spenders.map(k => isValidKidName(k.name) ? '' : 'Enter a valid name');
+                if (errors.some(e => e)) {
+                    setKidErrors(errors);
+                    return;
+                }
+            }
+            submit();
+        }
     }
 
     function back() { setStep(s => s - 1); }
@@ -310,19 +328,30 @@ export default function OnboardingIndex() {
                                     </div>
 
                                     <div className="space-y-2">
+                                        {data.spenders.length > 0 && (
+                                            <div className="flex items-center gap-2 px-0.5">
+                                                <div className="w-6 shrink-0" />
+                                                <p className="flex-1 text-xs font-medium text-muted-foreground">Name</p>
+                                                <p className="w-28 shrink-0 text-xs font-medium text-muted-foreground">Starting balance</p>
+                                                <div className="h-8 w-8 shrink-0" />
+                                            </div>
+                                        )}
                                         {data.spenders.map((kid, idx) => (
-                                            <div key={idx} className="flex items-center gap-2">
+                                            <div key={idx} className="flex items-start gap-2">
                                                 <ColorPicker
                                                     value={kid.color}
                                                     onChange={c => updateKid(idx, 'color', c)}
                                                 />
-                                                <Input
-                                                    placeholder={`Kid ${idx + 1} name`}
-                                                    value={kid.name}
-                                                    onChange={e => updateKid(idx, 'name', e.target.value)}
-                                                    className="flex-1"
-                                                    autoFocus={idx === data.spenders.length - 1}
-                                                />
+                                                <div className="flex-1 space-y-1">
+                                                    <Input
+                                                        placeholder={`Kid ${idx + 1} name`}
+                                                        value={kid.name}
+                                                        onChange={e => updateKid(idx, 'name', e.target.value)}
+                                                        className={kidErrors[idx] ? 'border-destructive' : ''}
+                                                        autoFocus={idx === data.spenders.length - 1}
+                                                    />
+                                                    {kidErrors[idx] && <p className="text-xs text-destructive">{kidErrors[idx]}</p>}
+                                                </div>
                                                 <div className="relative w-28 shrink-0">
                                                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
                                                         {data.currency_symbol || '$'}
@@ -360,7 +389,6 @@ export default function OnboardingIndex() {
                                             You can skip this and add kids later from the dashboard.
                                         </p>
                                     )}
-                                    {errors['spenders.0.name'] && <p className="text-xs text-destructive">All kids need a name.</p>}
                                 </div>
                             )}
 
@@ -374,18 +402,6 @@ export default function OnboardingIndex() {
                                     )}
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    {step === 2 && (
-                                        <Button
-                                            type="button"
-                                            variant="link"
-                                            size="sm"
-                                            className="text-muted-foreground"
-                                            onClick={submit}
-                                            disabled={processing}
-                                        >
-                                            Do this later
-                                        </Button>
-                                    )}
                                     <Button
                                         type="button"
                                         onClick={next}
@@ -394,6 +410,8 @@ export default function OnboardingIndex() {
                                     >
                                         {step < 2 ? (
                                             <>Continue <ChevronRight className="h-3.5 w-3.5" /></>
+                                        ) : data.spenders.length === 0 ? (
+                                            <>Do this later <ChevronRight className="h-3.5 w-3.5" /></>
                                         ) : (
                                             'Create family'
                                         )}

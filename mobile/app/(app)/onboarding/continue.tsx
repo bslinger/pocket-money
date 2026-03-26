@@ -1,16 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Share,
   Alert,
+  findNodeHandle,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Feather } from '@expo/vector-icons';
@@ -46,6 +45,8 @@ export default function OnboardingContinue() {
   const { familyId } = useLocalSearchParams<{ familyId: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const scrollRef = useRef<KeyboardAwareScrollView>(null);
+  const lastChoreInputRef = useRef<TextInput>(null);
   const [step, setStep] = useState(0);
   const [processing, setProcessing] = useState(false);
 
@@ -62,6 +63,7 @@ export default function OnboardingContinue() {
 
   const [pocketMoney, setPocketMoney] = useState<Record<string, PocketMoneyRow>>({});
   const [chores, setChores] = useState<ChoreRow[]>([]);
+  const [choreErrors, setChoreErrors] = useState<{ name: string; amount: string }[]>([]);
   const [sharedCodes, setSharedCodes] = useState<Record<string, string>>({});
 
   // Initialise pocket money state once spenders load
@@ -85,10 +87,23 @@ export default function OnboardingContinue() {
       frequency: 'weekly', spender_ids: spenders.map(s => s.id),
       emojiPickerOpen: false,
     }]);
+    setTimeout(() => {
+      const node = findNodeHandle(lastChoreInputRef.current);
+      if (node) scrollRef.current?.scrollToFocusedInput(node, 16);
+    }, 100);
   }
 
   function updateChore(idx: number, updates: Partial<ChoreRow>) {
     setChores(prev => prev.map((c, i) => (i === idx ? { ...c, ...updates } : c)));
+    if (choreErrors[idx] && ('name' in updates || 'amount' in updates || 'reward_type' in updates)) {
+      setChoreErrors(prev => prev.map((e, i) => {
+        if (i !== idx) return e;
+        return {
+          name: 'name' in updates ? '' : e.name,
+          amount: ('amount' in updates || 'reward_type' in updates) ? '' : e.amount,
+        };
+      }));
+    }
   }
 
   function removeChore(idx: number) {
@@ -141,7 +156,18 @@ export default function OnboardingContinue() {
   }
 
   async function submitChores() {
-    const valid = chores.filter(c => c.name.trim() && c.spender_ids.length > 0);
+    if (chores.length > 0) {
+      const errors = chores.map(c => ({
+        name: c.name.trim() ? '' : 'Enter a chore name',
+        amount: c.reward_type === 'earns' && !c.amount.trim() ? 'Enter an amount' : '',
+      }));
+      if (errors.some(e => e.name || e.amount)) {
+        setChoreErrors(errors);
+        return;
+      }
+    }
+
+    const valid = chores.filter(c => c.name.trim());
 
     if (valid.length === 0) { setStep(2); return; }
 
@@ -209,12 +235,14 @@ export default function OnboardingContinue() {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollView
+      ref={scrollRef}
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+      enableOnAndroid
+      extraScrollHeight={24}
+    >
         <Text style={styles.logo}>Quiddo</Text>
         <Text style={styles.heading}>{family.name} is ready!</Text>
         <Text style={styles.subheading}>A few optional steps to get the most out of Quiddo.</Text>
@@ -274,7 +302,7 @@ export default function OnboardingContinue() {
                               style={styles.input}
                               keyboardType="decimal-pad"
                               placeholder="5.00"
-                              placeholderTextColor={colors.bark[600]}
+                              placeholderTextColor={colors.bark[400]}
                               value={pm.amount}
                               onChangeText={v => updatePm(spender.id, { amount: v })}
                             />
@@ -350,59 +378,66 @@ export default function OnboardingContinue() {
                     >
                       <Text style={styles.emojiText}>{chore.emoji}</Text>
                     </TouchableOpacity>
-                    <TextInput
-                      style={[styles.input, { flex: 1 }]}
-                      placeholder="Tidy bedroom"
-                      placeholderTextColor={colors.bark[600]}
-                      value={chore.name}
-                      onChangeText={v => updateChore(idx, { name: v })}
-                      autoFocus={idx === chores.length - 1}
-                    />
+                    <View style={{ flex: 1 }}>
+                      <TextInput
+                        ref={idx === chores.length - 1 ? lastChoreInputRef : null}
+                        style={[styles.input, choreErrors[idx]?.name ? styles.inputError : undefined]}
+                        placeholder="Tidy bedroom"
+                        placeholderTextColor={colors.bark[400]}
+                        value={chore.name}
+                        onChangeText={v => updateChore(idx, { name: v })}
+                        autoFocus={idx === chores.length - 1}
+                      />
+                      {choreErrors[idx]?.name ? <Text style={styles.fieldError}>{choreErrors[idx].name}</Text> : null}
+                    </View>
                     <TouchableOpacity style={styles.removeBtn} onPress={() => removeChore(idx)}>
                       <Feather name="x" size={16} color={colors.bark[600]} />
                     </TouchableOpacity>
                   </View>
 
                   {/* Reward type */}
-                  <View style={styles.segmentRow3}>
+                  <View style={styles.rewardTypeList}>
                     {([
-                      { value: 'earns', label: 'Earns money' },
-                      { value: 'responsibility', label: 'Responsibility' },
-                      { value: 'no_reward', label: 'No reward' },
-                    ] as const).map(({ value, label }) => (
-                      <TouchableOpacity
-                        key={value}
-                        style={[styles.segmentBtn3, chore.reward_type === value && styles.segmentBtnActive]}
-                        onPress={() => updateChore(idx, { reward_type: value })}
-                      >
-                        <Text style={[styles.segmentText3, chore.reward_type === value && styles.segmentTextActive]}>
-                          {label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                      { value: 'earns', label: 'Earns', description: 'A cash reward is paid each time this chore is completed and approved.' },
+                      { value: 'responsibility', label: 'Responsibility', description: 'Counts toward the weekly allowance. Pocket money is only released when all responsibility chores are done.' },
+                      { value: 'no_reward', label: 'No reward', description: 'A reminder chore with no payment or tracking attached.' },
+                    ] as const).map(({ value, label, description }) => {
+                      const selected = chore.reward_type === value;
+                      return (
+                        <TouchableOpacity
+                          key={value}
+                          style={[styles.rewardTypeBtn, selected && styles.rewardTypeBtnActive]}
+                          onPress={() => updateChore(idx, { reward_type: value })}
+                        >
+                          <Text style={[styles.rewardTypeLabel, selected && styles.rewardTypeLabelActive]}>{label}</Text>
+                          <Text style={styles.rewardTypeDesc}>{description}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
 
                   {chore.reward_type === 'earns' && (
                     <View>
                       <Text style={styles.label}>Amount ({family.currency_symbol || '$'})</Text>
                       <TextInput
-                        style={[styles.input, { width: 100 }]}
+                        style={[styles.input, { width: 100 }, choreErrors[idx]?.amount ? styles.inputError : undefined]}
                         keyboardType="decimal-pad"
                         placeholder="2.00"
-                        placeholderTextColor={colors.bark[600]}
+                        placeholderTextColor={colors.bark[400]}
                         value={chore.amount}
                         onChangeText={v => updateChore(idx, { amount: v })}
                       />
+                      {choreErrors[idx]?.amount ? <Text style={styles.fieldError}>{choreErrors[idx].amount}</Text> : null}
                     </View>
                   )}
 
-                  <View style={styles.row}>
-                    <Text style={[styles.label, { alignSelf: 'center', marginBottom: 0 }]}>Frequency</Text>
-                    <View style={styles.segmentRow}>
+                  <View>
+                    <Text style={styles.label}>Frequency</Text>
+                    <View style={styles.freqGrid}>
                       {(['daily', 'weekly', 'monthly', 'one_off'] as const).map(f => (
                         <TouchableOpacity
                           key={f}
-                          style={[styles.segmentBtn, chore.frequency === f && styles.segmentBtnActive]}
+                          style={[styles.freqBtn, chore.frequency === f && styles.segmentBtnActive]}
                           onPress={() => updateChore(idx, { frequency: f })}
                         >
                           <Text style={[styles.segmentText, chore.frequency === f && styles.segmentTextActive]}>
@@ -509,22 +544,15 @@ export default function OnboardingContinue() {
               <View />
             )}
             <View style={styles.navRight}>
-              {step < 2 && (
-                <TouchableOpacity
-                  style={styles.skipBtn}
-                  onPress={() => setStep(s => s + 1)}
-                  disabled={processing}
-                >
-                  <Text style={styles.skipBtnText}>Do this later</Text>
-                </TouchableOpacity>
-              )}
               {step === 0 && (
                 <TouchableOpacity
                   style={[styles.nextBtn, processing && styles.nextBtnDisabled]}
                   onPress={submitPocketMoney}
                   disabled={processing}
                 >
-                  <Text style={styles.nextBtnText}>{processing ? 'Saving...' : 'Continue'}</Text>
+                  <Text style={styles.nextBtnText}>
+                    {processing ? 'Saving...' : Object.values(pocketMoney).some(p => p.enabled) ? 'Continue' : 'Do this later'}
+                  </Text>
                   {!processing && <Feather name="chevron-right" size={16} color={colors.white} />}
                 </TouchableOpacity>
               )}
@@ -534,7 +562,9 @@ export default function OnboardingContinue() {
                   onPress={submitChores}
                   disabled={processing}
                 >
-                  <Text style={styles.nextBtnText}>{processing ? 'Saving...' : 'Continue'}</Text>
+                  <Text style={styles.nextBtnText}>
+                    {processing ? 'Saving...' : chores.length > 0 ? 'Continue' : 'Do this later'}
+                  </Text>
                   {!processing && <Feather name="chevron-right" size={16} color={colors.white} />}
                 </TouchableOpacity>
               )}
@@ -548,13 +578,7 @@ export default function OnboardingContinue() {
           </View>
         </View>
 
-        {step < 2 && (
-          <TouchableOpacity style={styles.skipAll} onPress={finish}>
-            <Text style={styles.skipAllText}>Skip setup and go to dashboard</Text>
-          </TouchableOpacity>
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -620,8 +644,11 @@ const styles = StyleSheet.create({
   dayText: { fontFamily: fonts.body, fontSize: 11, color: colors.bark[600] },
   dayTextActive: { color: colors.white, fontWeight: '600' },
 
+  inputError: { borderColor: colors.redearth[400] },
+  fieldError: { fontFamily: fonts.body, fontSize: 11, color: colors.redearth[400], marginTop: 3 },
+
   choreCard: { borderWidth: 1, borderColor: colors.bark[200], borderRadius: 10, padding: 12, gap: 10 },
-  choreHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  choreHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   emojiBtn: {
     width: 40, height: 40, borderRadius: 8, borderWidth: 1,
     borderColor: colors.bark[200], alignItems: 'center', justifyContent: 'center',
@@ -629,9 +656,14 @@ const styles = StyleSheet.create({
   },
   emojiText: { fontSize: 20 },
   removeBtn: { padding: 4 },
-  segmentRow3: { flexDirection: 'row', gap: 4 },
-  segmentBtn3: { flex: 1, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: colors.bark[200], alignItems: 'center' },
-  segmentText3: { fontFamily: fonts.body, fontSize: 11, color: colors.bark[600] },
+  rewardTypeList: { gap: 6 },
+  rewardTypeBtn: { borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
+  rewardTypeBtnActive: { borderColor: colors.eucalyptus[400], backgroundColor: '#F0F7F3' },
+  rewardTypeLabel: { fontFamily: fonts.body, fontSize: 13, fontWeight: '600', color: colors.bark[700], marginBottom: 2 },
+  rewardTypeLabelActive: { color: colors.eucalyptus[400] },
+  rewardTypeDesc: { fontFamily: fonts.body, fontSize: 11, color: colors.bark[600], lineHeight: 15 },
+  freqGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  freqBtn: { width: '48%', paddingVertical: 8, borderRadius: 6, borderWidth: 1, borderColor: colors.bark[200], alignItems: 'center' },
   spenderChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4,
@@ -673,9 +705,7 @@ const styles = StyleSheet.create({
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, padding: 4 },
   backBtnText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
   navRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  skipBtn: { padding: 4 },
-  skipBtnText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
-  nextBtn: {
+nextBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: colors.eucalyptus[400], borderRadius: 99,
     paddingHorizontal: 18, paddingVertical: 10,
@@ -683,6 +713,4 @@ const styles = StyleSheet.create({
   nextBtnDisabled: { opacity: 0.5 },
   nextBtnText: { fontFamily: fonts.body, fontSize: 14, fontWeight: '600', color: colors.white },
 
-  skipAll: { alignItems: 'center', marginTop: 16 },
-  skipAllText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], textDecorationLine: 'underline' },
 });

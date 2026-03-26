@@ -50,6 +50,7 @@ export default function OnboardingContinue({ family }: Props) {
 
     // Chores state
     const [chores, setChores] = useState<ChoreRow[]>([]);
+    const [choreErrors, setChoreErrors] = useState<{ name: string; amount: string }[]>([]);
 
     // Invite state
     const [parentEmail, setParentEmail] = useState('');
@@ -68,6 +69,15 @@ export default function OnboardingContinue({ family }: Props) {
 
     function updateChore(idx: number, updates: Partial<ChoreRow>) {
         setChores(prev => prev.map((c, i) => i === idx ? { ...c, ...updates } : c));
+        if (choreErrors[idx] && ('name' in updates || 'amount' in updates || 'reward_type' in updates)) {
+            setChoreErrors(prev => prev.map((e, i) => {
+                if (i !== idx) return e;
+                return {
+                    name: 'name' in updates ? '' : e.name,
+                    amount: ('amount' in updates || 'reward_type' in updates) ? '' : e.amount,
+                };
+            }));
+        }
     }
 
     function removeChore(idx: number) {
@@ -110,7 +120,18 @@ export default function OnboardingContinue({ family }: Props) {
 
     // Submit chores and advance
     function submitChores() {
-        const validChores = chores.filter(c => c.name.trim() && c.spender_ids.length > 0);
+        if (chores.length > 0) {
+            const errors = chores.map(c => ({
+                name: c.name.trim() ? '' : 'Enter a chore name',
+                amount: c.reward_type === 'earns' && !c.amount.trim() ? 'Enter an amount' : '',
+            }));
+            if (errors.some(e => e.name || e.amount)) {
+                setChoreErrors(errors);
+                return;
+            }
+        }
+
+        const validChores = chores.filter(c => c.name.trim());
 
         if (validChores.length === 0) { setStep(2); return; }
 
@@ -315,7 +336,9 @@ export default function OnboardingContinue({ family }: Props) {
                                                                 onChange={e => updateChore(idx, { name: e.target.value })}
                                                                 placeholder="Tidy bedroom"
                                                                 autoFocus={idx === chores.length - 1}
+                                                                className={choreErrors[idx]?.name ? 'border-destructive' : ''}
                                                             />
+                                                            {choreErrors[idx]?.name && <p className="text-xs text-destructive">{choreErrors[idx].name}</p>}
                                                         </div>
                                                         <div className="space-y-1">
                                                             <Label className="text-xs">Emoji</Label>
@@ -364,8 +387,9 @@ export default function OnboardingContinue({ family }: Props) {
                                                             value={chore.amount}
                                                             onChange={e => updateChore(idx, { amount: e.target.value })}
                                                             placeholder="2.00"
-                                                            className="max-w-[120px]"
+                                                            className={cn('max-w-[120px]', choreErrors[idx]?.amount ? 'border-destructive' : '')}
                                                         />
+                                                        {choreErrors[idx]?.amount && <p className="text-xs text-destructive">{choreErrors[idx].amount}</p>}
                                                     </div>
                                                 )}
 
@@ -517,24 +541,14 @@ export default function OnboardingContinue({ family }: Props) {
                                     )}
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    {step < 2 && (
-                                        <Button
-                                            type="button" variant="link" size="sm"
-                                            className="text-muted-foreground"
-                                            onClick={() => setStep(s => s + 1)}
-                                            disabled={processing}
-                                        >
-                                            Do this later
-                                        </Button>
-                                    )}
                                     {step === 0 && (
                                         <Button type="button" onClick={submitPocketMoney} disabled={processing} className="gap-1.5">
-                                            Continue <ChevronRight className="h-3.5 w-3.5" />
+                                            {Object.values(pocketMoney).some(p => p.enabled) ? 'Continue' : 'Do this later'} <ChevronRight className="h-3.5 w-3.5" />
                                         </Button>
                                     )}
                                     {step === 1 && (
                                         <Button type="button" onClick={submitChores} disabled={processing} className="gap-1.5">
-                                            Continue <ChevronRight className="h-3.5 w-3.5" />
+                                            {chores.length > 0 ? 'Continue' : 'Do this later'} <ChevronRight className="h-3.5 w-3.5" />
                                         </Button>
                                     )}
                                     {step === 2 && (
@@ -549,14 +563,6 @@ export default function OnboardingContinue({ family }: Props) {
                         </CardContent>
                     </Card>
 
-                    {/* Skip all remaining */}
-                    {step < 2 && (
-                        <div className="text-center mt-4">
-                            <Link href={route('dashboard')} className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
-                                Skip setup and go to dashboard
-                            </Link>
-                        </div>
-                    )}
                 </div>
             </div>
         </>

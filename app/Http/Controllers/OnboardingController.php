@@ -143,13 +143,13 @@ class OnboardingController extends Controller
             'chores.*.reward_type' => ['required', 'in:earns,responsibility,no_reward'],
             'chores.*.amount' => ['required_if:chores.*.reward_type,earns', 'nullable', 'numeric', 'min:0.01'],
             'chores.*.frequency' => ['required', 'in:daily,weekly,monthly,one_off'],
-            'chores.*.spender_ids' => ['required', 'array', 'min:1'],
+            'chores.*.spender_ids' => ['nullable', 'array'],
             'chores.*.spender_ids.*' => ['uuid', 'exists:spenders,id'],
         ]);
 
         foreach ($validated['chores'] ?? [] as $choreData) {
-            /** @var array{name: string, emoji?: string|null, reward_type: string, amount?: string|float|null, frequency: string, spender_ids: string[]} $choreData */
-            $spenderIds = $choreData['spender_ids'];
+            /** @var array{name: string, emoji?: string|null, reward_type: string, amount?: string|float|null, frequency: string, spender_ids?: string[]} $choreData */
+            $spenderIds = $choreData['spender_ids'] ?? [];
             unset($choreData['spender_ids']);
 
             $chore = Chore::create(array_merge($choreData, [
@@ -157,7 +157,7 @@ class OnboardingController extends Controller
                 'family_id' => $family->id,
                 'is_active' => true,
                 'requires_approval' => false,
-                'up_for_grabs' => false,
+                'up_for_grabs' => count($spenderIds) === 0,
                 'created_by' => $user->id,
             ]));
             $chore->spenders()->sync($spenderIds);
