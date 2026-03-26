@@ -1,4 +1,4 @@
-export default function SocialLoginButtons() {
+export default function SocialLoginButtons({ verb = 'Continue' }: { verb?: string }) {
     return (
         <div className="space-y-3">
             <a
@@ -6,7 +6,7 @@ export default function SocialLoginButtons() {
                 className="flex w-full items-center justify-center gap-3 rounded-input border border-input bg-white px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
             >
                 <GoogleIcon />
-                Continue with Google
+                {verb} with Google
             </a>
 
             <a
@@ -14,7 +14,7 @@ export default function SocialLoginButtons() {
                 className="flex w-full items-center justify-center gap-3 rounded-input border border-input bg-black px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
             >
                 <AppleIcon />
-                Continue with Apple
+                {verb} with Apple
             </a>
 
             <a
@@ -22,7 +22,7 @@ export default function SocialLoginButtons() {
                 className="flex w-full items-center justify-center gap-3 rounded-input border border-input bg-[#1877F2] px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#166FE5]"
             >
                 <FacebookIcon />
-                Continue with Facebook
+                {verb} with Facebook
             </a>
         </div>
     );

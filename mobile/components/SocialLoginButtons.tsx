@@ -12,7 +12,7 @@ GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 });
 
-export default function SocialLoginButtons() {
+export default function SocialLoginButtons({ verb = 'Continue' }: { verb?: string }) {
   const { socialLogin } = useAuth();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -77,17 +77,17 @@ export default function SocialLoginButtons() {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={[styles.button, styles.google]} onPress={handleGoogle} disabled={!!loading}>
-        <Text style={styles.googleText}>{loading === 'google' ? 'Signing in...' : 'Continue with Google'}</Text>
+        <Text style={styles.googleText}>{loading === 'google' ? 'Signing in...' : `${verb} with Google`}</Text>
       </TouchableOpacity>
 
       {Platform.OS === 'ios' && (
         <TouchableOpacity style={[styles.button, styles.apple]} onPress={handleApple} disabled={!!loading}>
-          <Text style={styles.appleText}>{loading === 'apple' ? 'Signing in...' : 'Continue with Apple'}</Text>
+          <Text style={styles.appleText}>{loading === 'apple' ? 'Signing in...' : `${verb} with Apple`}</Text>
         </TouchableOpacity>
       )}
 
       <TouchableOpacity style={[styles.button, styles.facebook]} onPress={handleFacebook} disabled={!!loading}>
-        <Text style={styles.facebookText}>{loading === 'facebook' ? 'Signing in...' : 'Continue with Facebook'}</Text>
+        <Text style={styles.facebookText}>{loading === 'facebook' ? 'Signing in...' : `${verb} with Facebook`}</Text>
       </TouchableOpacity>
 
       <View style={styles.divider}>

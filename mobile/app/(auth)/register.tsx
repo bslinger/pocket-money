@@ -41,7 +41,7 @@ export default function RegisterScreen() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <SocialLoginButtons />
+        <SocialLoginButtons verb="Register" />
 
         <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} placeholderTextColor={colors.bark[600]} />
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.bark[600]} />

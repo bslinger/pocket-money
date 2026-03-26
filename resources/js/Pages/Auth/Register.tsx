@@ -24,7 +24,7 @@ export default function Register() {
         <GuestLayout>
             <Head title="Register" />
 
-            <SocialLoginButtons />
+            <SocialLoginButtons verb="Register" />
 
             <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
