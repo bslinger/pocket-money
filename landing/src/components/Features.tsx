@@ -1,10 +1,10 @@
 const WHY_FEATURES = [
-  { emoji: '💳', title: 'Cashless by design', desc: 'No cash changes hands. Kids earn digitally. When they spend, you pay with your card and it comes off their balance.' },
-  { emoji: '🧹', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Their balance updates instantly. No envelope stuffing required.' },
+  { emoji: '💳', title: 'No cash involved', desc: 'No cash changes hands, ever. Kids build up a digital balance and you settle purchases on your own card when they\'re ready to spend.' },
+  { emoji: '🧹', title: 'Chore approvals', desc: 'Kids pick up a chore and it lands in your queue. Approve it and their balance goes up straight away.' },
   { emoji: '🎯', title: 'Savings goals', desc: 'Pick a goal, track what\'s missing. Kids can see at a glance how many more chores get them there.' },
-  { emoji: '📋', title: 'Responsibilities vs chores', desc: 'Separate "must do" responsibilities from paid chores. Pocket money only releases when responsibilities are done.' },
-  { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'One family plan covers everyone with no per-child fees. Big families finally get a fair deal.' },
-  { emoji: '⚡', title: 'Auto pocket money', desc: 'Set it once. Quiddo credits each child\'s balance on the same day every week, on schedule, without any reminders.' },
+  { emoji: '📋', title: 'Responsibilities vs chores', desc: 'Some things kids just have to do. Other things they get paid for. Quiddo tracks both, and holds the weekly allowance until the basics are ticked off.' },
+  { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'Whether you\'ve got one kid or six, it\'s the same price. Up to 12 children on every plan.' },
+  { emoji: '⚡', title: 'Auto pocket money', desc: 'Set a day and an amount once. Every week Quiddo drops it into each kid\'s balance without you doing anything.' },
 ];
 
 export default function Features() {
@@ -15,13 +15,13 @@ export default function Features() {
         <div className="max-w-[680px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-5">What is Quiddo?</h2>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            Quiddo is a pocket money tracker for Australian families who don't want to deal with cash. It's not a bank or a debit card. It's a digital ledger. Every chore completed and every pocket money day builds up their running balance. When they want to buy something, you pay on your card and log it as a spend. Their balance goes down.
+            We built Quiddo because every family we knew was either handing over random cash and forgetting to write it down, or running it in a spreadsheet that lasted about a fortnight. It's a simple tracker. Kids earn a balance through chores and weekly pocket money. When they want to buy something, you pay on your card and log it as a spend. Their balance adjusts.
           </p>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            As a parent, <strong className="text-bark-600">you stay in control.</strong> You own the money and decide when a spend goes through. Your kids see their balance and goals update in real time. No bank account required. No debit card for a 7-year-old.
+            You own the money the whole time. Your kids see their balance and goals in real time, which is actually what makes it click for them. No bank account, no debit card, no minimum age.
           </p>
           <p className="text-base text-bark-500 leading-[1.8]">
-            Works for real dollars or your own family currency. Up to <strong className="text-bark-600">12 kids on one family plan.</strong>
+            Works in dollars or whatever currency your family uses. One plan covers up to <strong className="text-bark-600">12 kids.</strong>
           </p>
         </div>
       </section>
@@ -30,7 +30,7 @@ export default function Features() {
       <section className="bg-bark-50 py-[72px] px-[5%] text-center">
         <div className="max-w-[560px] mx-auto mb-14">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-4">Why use Quiddo?</h2>
-          <p className="text-base text-bark-500">Six things that make Quiddo work for real families.</p>
+          <p className="text-base text-bark-500">Here's what it actually does.</p>
         </div>
         <div
           className="max-w-[660px] mx-auto bg-white rounded-[14px] overflow-hidden"
