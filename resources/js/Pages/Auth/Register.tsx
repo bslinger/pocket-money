@@ -5,6 +5,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { PasswordInput } from '@/Components/ui/password-input';
 import { Label } from '@/Components/ui/label';
+import SocialLoginButtons from '@/Components/Auth/SocialLoginButtons';
 
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -22,6 +23,17 @@ export default function Register() {
     return (
         <GuestLayout>
             <Head title="Register" />
+
+            <SocialLoginButtons />
+
+            <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                    <span className="bg-background px-2 text-muted-foreground">or continue with email</span>
+                </div>
+            </div>
 
             <form onSubmit={submit} className="space-y-4">
                 <div className="space-y-1.5">
