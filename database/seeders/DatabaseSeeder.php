@@ -64,47 +64,47 @@ class DatabaseSeeder extends Seeder
             ['role' => FamilyRole::Member]
         );
 
-        $emma = Spender::firstOrCreate(
-            ['family_id' => $family->id, 'name' => 'Emma'],
+        $aisha = Spender::firstOrCreate(
+            ['family_id' => $family->id, 'name' => 'Aisha'],
             ['color' => '#8b5cf6']
         );
 
-        $jack = Spender::firstOrCreate(
-            ['family_id' => $family->id, 'name' => 'Jack'],
+        $tom = Spender::firstOrCreate(
+            ['family_id' => $family->id, 'name' => 'Tom'],
             ['color' => '#0ea5e9']
         );
 
-        $theodore = Spender::firstOrCreate(
-            ['family_id' => $family->id, 'name' => 'Theodore'],
+        $priya = Spender::firstOrCreate(
+            ['family_id' => $family->id, 'name' => 'Priya'],
             ['color' => '#10b981']
         );
 
         Account::firstOrCreate(
-            ['spender_id' => $emma->id, 'name' => 'Savings'],
+            ['spender_id' => $aisha->id, 'name' => 'Savings'],
             ['balance' => '12.50']
         );
 
         Account::firstOrCreate(
-            ['spender_id' => $jack->id, 'name' => 'Savings'],
+            ['spender_id' => $tom->id, 'name' => 'Savings'],
             ['balance' => '5.00']
         );
 
         Account::firstOrCreate(
-            ['spender_id' => $theodore->id, 'name' => 'Savings'],
+            ['spender_id' => $priya->id, 'name' => 'Savings'],
             ['balance' => '27.80']
         );
 
         // ── Savings Goals ────────────────────────────────────────────────────
 
-        $emmaAccount = Account::where('spender_id', $emma->id)->first();
-        $jackAccount = Account::where('spender_id', $jack->id)->first();
-        $theoAccount = Account::where('spender_id', $theodore->id)->first();
+        $aishaAccount = Account::where('spender_id', $aisha->id)->first();
+        $tomAccount = Account::where('spender_id', $tom->id)->first();
+        $priyaAccount = Account::where('spender_id', $priya->id)->first();
 
-        // Emma: two goals on her account — one reached, one not yet (priority order: headphones first)
+        // Aisha: two goals on her account — one reached, one not yet (priority order: headphones first)
         SavingsGoal::firstOrCreate(
-            ['spender_id' => $emma->id, 'name' => 'New headphones'],
+            ['spender_id' => $aisha->id, 'name' => 'New headphones'],
             [
-                'account_id' => $emmaAccount?->id,
+                'account_id' => $aishaAccount?->id,
                 'target_amount' => '10.00',
                 'target_date' => null,
                 'is_completed' => true,
@@ -113,9 +113,9 @@ class DatabaseSeeder extends Seeder
         );
 
         SavingsGoal::firstOrCreate(
-            ['spender_id' => $emma->id, 'name' => 'Roller skates'],
+            ['spender_id' => $aisha->id, 'name' => 'Roller skates'],
             [
-                'account_id' => $emmaAccount?->id,
+                'account_id' => $aishaAccount?->id,
                 'target_amount' => '45.00',
                 'target_date' => now()->addMonths(3)->toDateString(),
                 'is_completed' => false,
@@ -123,11 +123,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Jack: one in-progress goal
+        // Tom: one in-progress goal
         SavingsGoal::firstOrCreate(
-            ['spender_id' => $jack->id, 'name' => 'LEGO set'],
+            ['spender_id' => $tom->id, 'name' => 'LEGO set'],
             [
-                'account_id' => $jackAccount?->id,
+                'account_id' => $tomAccount?->id,
                 'target_amount' => '30.00',
                 'target_date' => now()->addMonths(2)->toDateString(),
                 'is_completed' => false,
@@ -135,11 +135,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Theodore: one goal with no target date
+        // Priya: one goal with no target date
         SavingsGoal::firstOrCreate(
-            ['spender_id' => $theodore->id, 'name' => 'Nintendo game'],
+            ['spender_id' => $priya->id, 'name' => 'Nintendo game'],
             [
-                'account_id' => $theoAccount?->id,
+                'account_id' => $priyaAccount?->id,
                 'target_amount' => '60.00',
                 'target_date' => null,
                 'is_completed' => false,
@@ -155,75 +155,75 @@ class DatabaseSeeder extends Seeder
             ['family_id' => $family->id, 'name' => 'Make bed'],
             ['emoji' => '🛏️', 'reward_type' => ChoreRewardType::Responsibility, 'frequency' => ChoreFrequency::Daily, 'requires_approval' => false, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
-        $makebed->spenders()->syncWithoutDetaching([$emma->id, $jack->id]);
+        $makebed->spenders()->syncWithoutDetaching([$aisha->id, $tom->id]);
 
         $dishes = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Wash the dishes'],
             ['emoji' => '🍽️', 'reward_type' => ChoreRewardType::Earns, 'amount' => '1.50', 'frequency' => ChoreFrequency::Daily, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
-        $dishes->spenders()->syncWithoutDetaching([$emma->id, $jack->id, $theodore->id]);
+        $dishes->spenders()->syncWithoutDetaching([$aisha->id, $tom->id, $priya->id]);
 
         $vacuum = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Vacuum the living room'],
             ['emoji' => '🧹', 'reward_type' => ChoreRewardType::Earns, 'amount' => '2.00', 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
-        $vacuum->spenders()->syncWithoutDetaching([$emma->id]);
+        $vacuum->spenders()->syncWithoutDetaching([$aisha->id]);
 
         $bins = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Take out the bins'],
             ['emoji' => '🗑️', 'reward_type' => ChoreRewardType::Earns, 'amount' => '1.00', 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => true, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
-        $bins->spenders()->syncWithoutDetaching([$jack->id, $theodore->id]);
+        $bins->spenders()->syncWithoutDetaching([$tom->id, $priya->id]);
 
         $laundry = Chore::firstOrCreate(
             ['family_id' => $family->id, 'name' => 'Put away laundry'],
             ['emoji' => '👕', 'reward_type' => ChoreRewardType::Responsibility, 'frequency' => ChoreFrequency::Weekly, 'requires_approval' => false, 'is_active' => true, 'created_by' => $user->id, 'created_at' => $choreCreatedAt]
         );
-        $laundry->spenders()->syncWithoutDetaching([$emma->id, $theodore->id]);
+        $laundry->spenders()->syncWithoutDetaching([$aisha->id, $priya->id]);
 
         // ── Completions (approved) ───────────────────────────────────────────
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $dishes->id, 'spender_id' => $emma->id, 'completed_at' => now()->subDays(2)->startOfDay()],
+            ['chore_id' => $dishes->id, 'spender_id' => $aisha->id, 'completed_at' => now()->subDays(2)->startOfDay()],
             ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(2), 'reviewed_by' => $user->id]
         );
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $dishes->id, 'spender_id' => $jack->id, 'completed_at' => now()->subDays(1)->startOfDay()],
+            ['chore_id' => $dishes->id, 'spender_id' => $tom->id, 'completed_at' => now()->subDays(1)->startOfDay()],
             ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(1), 'reviewed_by' => $user->id]
         );
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $bins->id, 'spender_id' => $theodore->id, 'completed_at' => now()->subDays(3)->startOfDay()],
+            ['chore_id' => $bins->id, 'spender_id' => $priya->id, 'completed_at' => now()->subDays(3)->startOfDay()],
             ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(3), 'reviewed_by' => $user->id]
         );
 
         // ── Completions (pending approval) ───────────────────────────────────
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $dishes->id, 'spender_id' => $theodore->id, 'completed_at' => now()->subHours(2)],
+            ['chore_id' => $dishes->id, 'spender_id' => $priya->id, 'completed_at' => now()->subHours(2)],
             ['status' => CompletionStatus::Pending]
         );
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $vacuum->id, 'spender_id' => $emma->id, 'completed_at' => now()->subHour()],
+            ['chore_id' => $vacuum->id, 'spender_id' => $aisha->id, 'completed_at' => now()->subHour()],
             ['status' => CompletionStatus::Pending]
         );
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $bins->id, 'spender_id' => $jack->id, 'completed_at' => now()->subMinutes(30)],
+            ['chore_id' => $bins->id, 'spender_id' => $tom->id, 'completed_at' => now()->subMinutes(30)],
             ['status' => CompletionStatus::Pending]
         );
 
         // ── Completions (declined) ───────────────────────────────────────────
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $dishes->id, 'spender_id' => $emma->id, 'completed_at' => now()->subHours(5)],
+            ['chore_id' => $dishes->id, 'spender_id' => $aisha->id, 'completed_at' => now()->subHours(5)],
             ['status' => CompletionStatus::Declined, 'reviewed_at' => now()->subHours(4), 'reviewed_by' => $user->id]
         );
 
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $vacuum->id, 'spender_id' => $jack->id, 'completed_at' => now()->subHours(3)],
+            ['chore_id' => $vacuum->id, 'spender_id' => $tom->id, 'completed_at' => now()->subHours(3)],
             ['status' => CompletionStatus::Declined, 'reviewed_at' => now()->subHours(2), 'reviewed_by' => $user->id]
         );
 
@@ -233,36 +233,36 @@ class DatabaseSeeder extends Seeder
         foreach (range(2, 7) as $daysAgo) {
             $day = now()->subDays($daysAgo)->startOfDay();
 
-            // Emma: made bed every day, did dishes most days
+            // Aisha: made bed every day, did dishes most days
             ChoreCompletion::firstOrCreate(
-                ['chore_id' => $makebed->id, 'spender_id' => $emma->id, 'completed_at' => $day->copy()->addHours(7)],
+                ['chore_id' => $makebed->id, 'spender_id' => $aisha->id, 'completed_at' => $day->copy()->addHours(7)],
                 ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(8), 'reviewed_by' => $user->id]
             );
             if ($daysAgo !== 4) { // skipped dishes 4 days ago
                 ChoreCompletion::firstOrCreate(
-                    ['chore_id' => $dishes->id, 'spender_id' => $emma->id, 'completed_at' => $day->copy()->addHours(18)],
+                    ['chore_id' => $dishes->id, 'spender_id' => $aisha->id, 'completed_at' => $day->copy()->addHours(18)],
                     ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(19), 'reviewed_by' => $user->id]
                 );
             }
 
-            // Jack: made bed some days, did dishes occasionally
+            // Tom: made bed some days, did dishes occasionally
             if ($daysAgo % 2 === 0) {
                 ChoreCompletion::firstOrCreate(
-                    ['chore_id' => $makebed->id, 'spender_id' => $jack->id, 'completed_at' => $day->copy()->addHours(8)],
+                    ['chore_id' => $makebed->id, 'spender_id' => $tom->id, 'completed_at' => $day->copy()->addHours(8)],
                     ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(9), 'reviewed_by' => $user->id]
                 );
             }
             if ($daysAgo >= 5) {
                 ChoreCompletion::firstOrCreate(
-                    ['chore_id' => $dishes->id, 'spender_id' => $jack->id, 'completed_at' => $day->copy()->addHours(19)],
+                    ['chore_id' => $dishes->id, 'spender_id' => $tom->id, 'completed_at' => $day->copy()->addHours(19)],
                     ['status' => CompletionStatus::Approved, 'reviewed_at' => $day->copy()->addHours(20), 'reviewed_by' => $user->id]
                 );
             }
 
-            // Theodore: did dishes most days
+            // Priya: did dishes most days
             if ($daysAgo !== 6) {
                 ChoreCompletion::firstOrCreate(
-                    ['chore_id' => $dishes->id, 'spender_id' => $theodore->id, 'completed_at' => $day->copy()->addHours(17)],
+                    ['chore_id' => $dishes->id, 'spender_id' => $priya->id, 'completed_at' => $day->copy()->addHours(17)],
                     ['status' => $daysAgo === 3 ? CompletionStatus::Declined : CompletionStatus::Approved,
                         'reviewed_at' => $day->copy()->addHours(18), 'reviewed_by' => $user->id]
                 );
@@ -271,15 +271,15 @@ class DatabaseSeeder extends Seeder
 
         // Weekly chores scattered through the past week
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $vacuum->id, 'spender_id' => $emma->id, 'completed_at' => now()->subDays(5)->startOfDay()->addHours(10)],
+            ['chore_id' => $vacuum->id, 'spender_id' => $aisha->id, 'completed_at' => now()->subDays(5)->startOfDay()->addHours(10)],
             ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(5)->startOfDay()->addHours(11), 'reviewed_by' => $user->id]
         );
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $bins->id, 'spender_id' => $jack->id, 'completed_at' => now()->subDays(4)->startOfDay()->addHours(16)],
+            ['chore_id' => $bins->id, 'spender_id' => $tom->id, 'completed_at' => now()->subDays(4)->startOfDay()->addHours(16)],
             ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(4)->startOfDay()->addHours(17), 'reviewed_by' => $user->id]
         );
         ChoreCompletion::firstOrCreate(
-            ['chore_id' => $laundry->id, 'spender_id' => $theodore->id, 'completed_at' => now()->subDays(6)->startOfDay()->addHours(14)],
+            ['chore_id' => $laundry->id, 'spender_id' => $priya->id, 'completed_at' => now()->subDays(6)->startOfDay()->addHours(14)],
             ['status' => CompletionStatus::Approved, 'reviewed_at' => now()->subDays(6)->startOfDay()->addHours(15), 'reviewed_by' => $user->id]
         );
 
@@ -300,18 +300,18 @@ class DatabaseSeeder extends Seeder
         );
 
         // --- Scenario A: pocket money due, no responsibility chores → auto-pays ---
-        $alice = Spender::firstOrCreate(
-            ['family_id' => $testFamily->id, 'name' => 'Alice'],
+        $amara = Spender::firstOrCreate(
+            ['family_id' => $testFamily->id, 'name' => 'Amara'],
             ['color' => '#22c55e']
         );
-        $aliceAccount = Account::firstOrCreate(
-            ['spender_id' => $alice->id, 'name' => 'Savings'],
+        $amaraAccount = Account::firstOrCreate(
+            ['spender_id' => $amara->id, 'name' => 'Savings'],
             ['balance' => '5.00']
         );
         PocketMoneySchedule::firstOrCreate(
-            ['spender_id' => $alice->id],
+            ['spender_id' => $amara->id],
             [
-                'account_id' => $aliceAccount->id,
+                'account_id' => $amaraAccount->id,
                 'amount' => '5.00',
                 'frequency' => 'weekly',
                 'day_of_week' => now()->dayOfWeek,
@@ -322,16 +322,16 @@ class DatabaseSeeder extends Seeder
         );
 
         // --- Scenario B: pocket money due, has responsibility chore, NOT completed → withheld ---
-        $bob = Spender::firstOrCreate(
-            ['family_id' => $testFamily->id, 'name' => 'Bob'],
+        $raj = Spender::firstOrCreate(
+            ['family_id' => $testFamily->id, 'name' => 'Raj'],
             ['color' => '#f97316']
         );
-        $bobAccount = Account::firstOrCreate(
-            ['spender_id' => $bob->id, 'name' => 'Savings'],
+        $rajAccount = Account::firstOrCreate(
+            ['spender_id' => $raj->id, 'name' => 'Savings'],
             ['balance' => '2.00']
         );
 
-        $bobResponsibility = Chore::firstOrCreate(
+        $rajResponsibility = Chore::firstOrCreate(
             ['family_id' => $testFamily->id, 'name' => 'Tidy bedroom'],
             [
                 'emoji' => '🧹',
@@ -342,13 +342,13 @@ class DatabaseSeeder extends Seeder
                 'created_by' => $user->id,
             ]
         );
-        $bobResponsibility->spenders()->syncWithoutDetaching([$bob->id]);
-        // No completion record — Bob hasn't done his chore yet
+        $rajResponsibility->spenders()->syncWithoutDetaching([$raj->id]);
+        // No completion record — Raj hasn't done his chore yet
 
         PocketMoneySchedule::firstOrCreate(
-            ['spender_id' => $bob->id],
+            ['spender_id' => $raj->id],
             [
-                'account_id' => $bobAccount->id,
+                'account_id' => $rajAccount->id,
                 'amount' => '4.00',
                 'frequency' => 'weekly',
                 'day_of_week' => now()->dayOfWeek,
@@ -422,7 +422,7 @@ class DatabaseSeeder extends Seeder
             ['family_id' => $trialExpiring->id, 'user_id' => $user->id],
             ['role' => FamilyRole::Admin]
         );
-        $this->seedFamilyKid($trialExpiring, 'Mia', '#ec4899', '8.00');
+        $this->seedFamilyKid($trialExpiring, 'Zara', '#ec4899', '8.00');
 
         // 2. Trial just expired (yesterday)
         $trialExpired = Family::firstOrCreate(
@@ -435,7 +435,7 @@ class DatabaseSeeder extends Seeder
             ['family_id' => $trialExpired->id, 'user_id' => $user->id],
             ['role' => FamilyRole::Admin]
         );
-        $this->seedFamilyKid($trialExpired, 'Noah', '#3b82f6', '15.00');
+        $this->seedFamilyKid($trialExpired, 'Khai', '#3b82f6', '15.00');
 
         // 3. Active subscription
         $activeSubscription = Family::firstOrCreate(
@@ -481,7 +481,7 @@ class DatabaseSeeder extends Seeder
             ['family_id' => $lapsedSubscription->id, 'user_id' => $user->id],
             ['role' => FamilyRole::Admin]
         );
-        $this->seedFamilyKid($lapsedSubscription, 'Liam', '#ef4444', '30.00');
+        $this->seedFamilyKid($lapsedSubscription, 'Jai', '#ef4444', '30.00');
 
         // Fake a past_due subscription record
         DB::table('subscriptions')->insertOrIgnore([

@@ -39,9 +39,9 @@ function IconCoins() {
 
 export default function PhoneMockup() {
   const kids = [
-    { initial: 'E', name: 'Emma',    bal: '$58.50', goal: 'Roller skates', goalAmt: '$12.50', goalTotal: '$45', bar: 28, color: '#8b5cf6' },
-    { initial: 'J', name: 'Jack',    bal: '$43.00', goal: 'LEGO set',      goalAmt: '$5.00',  goalTotal: '$30', bar: 17, color: '#0ea5e9' },
-    { initial: 'T', name: 'Theodore',bal: '$27.80', goal: 'Nintendo game', goalAmt: '$27.80', goalTotal: '$60', bar: 46, color: '#10b981' },
+    { initial: 'A', name: 'Aisha', bal: '$58.50', goal: 'Roller skates', goalAmt: '$12.50', goalTotal: '$45', bar: 28, color: '#8b5cf6' },
+    { initial: 'T', name: 'Tom',   bal: '$43.00', goal: 'LEGO set',      goalAmt: '$5.00',  goalTotal: '$30', bar: 17, color: '#0ea5e9' },
+    { initial: 'P', name: 'Priya', bal: '$27.80', goal: 'Nintendo game', goalAmt: '$27.80', goalTotal: '$60', bar: 46, color: '#10b981' },
   ];
 
   return (
@@ -141,8 +141,8 @@ export default function PhoneMockup() {
                 <span className="text-[8px] font-semibold border border-gumleaf-200 text-gumleaf-600 rounded px-1.5 py-0.5">Approve all</span>
               </div>
               {[
-                { initial: 'T', name: 'Theodore', chore: '\uD83C\uDF7D\uFE0F Wash the dishes', color: '#10b981' },
-                { initial: 'E', name: 'Emma',     chore: '\uD83E\uDDF9 Vacuum lounge',    color: '#8b5cf6' },
+                { initial: 'P', name: 'Priya', chore: '\uD83C\uDF7D\uFE0F Wash the dishes', color: '#10b981' },
+                { initial: 'A', name: 'Aisha', chore: '\uD83E\uDDF9 Vacuum lounge',        color: '#8b5cf6' },
               ].map((row, i) => (
                 <div key={row.name} className={`flex items-center gap-1.5 px-2.5 py-1.5 ${i === 0 ? 'border-b border-bark-200' : ''}`}>
                   <div
@@ -185,7 +185,7 @@ export default function PhoneMockup() {
 
       {/* Floating badge bottom-right */}
       <div className="absolute bottom-[80px] right-[-20px] bg-white rounded-[12px] px-3.5 py-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)] border border-bark-200 whitespace-nowrap z-10">
-        <div className="text-[10px] text-bark-500 mb-0.5">Emma just earned</div>
+        <div className="text-[10px] text-bark-500 mb-0.5">Aisha just earned</div>
         <div className="font-display text-lg font-bold text-gumleaf-400">+$1.50 {'\u2713'}</div>
       </div>
     </div>
