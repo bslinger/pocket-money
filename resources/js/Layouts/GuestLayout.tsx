@@ -1,10 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
-import { Wallet } from 'lucide-react';
+import { ChevronLeft, Wallet } from 'lucide-react';
 import { Card, CardContent } from '@/Components/ui/card';
 import { PageProps } from '@/types';
 
-export default function Guest({ children }: PropsWithChildren) {
+export default function Guest({ children, backHref }: PropsWithChildren<{ backHref?: string }>) {
     const { flash } = usePage<PageProps>().props;
 
     return (
@@ -13,6 +13,14 @@ export default function Guest({ children }: PropsWithChildren) {
                 <Wallet className="h-6 w-6 text-eucalyptus-400" />
                 <span className="font-display text-xl font-semibold text-eucalyptus-400">Quiddo</span>
             </Link>
+            {backHref && (
+                <div className="w-full max-w-sm mb-2">
+                    <Link href={backHref} className="inline-flex items-center gap-0.5 text-sm text-bark-600 hover:text-bark-700">
+                        <ChevronLeft className="h-4 w-4" />
+                        Back to login
+                    </Link>
+                </div>
+            )}
             <Card className="w-full max-w-sm border-bark-200">
                 <CardContent className="pt-6">
                     {flash.error && (
