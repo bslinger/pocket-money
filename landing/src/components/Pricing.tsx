@@ -6,6 +6,28 @@ export default function Pricing() {
         <p className="text-[15px] text-bark-500 mb-10">Per family. Not per child. Up to 12 kids on every plan.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left">
+          {/* Monthly */}
+          <div className="bg-white rounded-[14px] p-7 border-[1.5px] border-bark-200">
+            <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-bark-400 mb-2">Monthly</div>
+            <div className="font-display text-[38px] font-bold text-bark-700 leading-none">
+              $1.99<span className="text-[13px] font-normal text-bark-400">/month</span>
+            </div>
+            <p className="text-[13px] text-bark-500 mt-2.5 mb-5 leading-snug">All features, month to month. Cancel any time.</p>
+            <div className="flex flex-col gap-2 mb-6">
+              {['Up to 12 children', 'Recurring chores + approval', 'Savings goals', 'Auto pocket money', 'Kid-facing view', 'Multi-parent access', 'Responsibilities mode'].map(f => (
+                <div key={f} className="text-[13px] text-bark-600 flex gap-2 items-start">
+                  <span className="text-gumleaf-400 font-bold flex-shrink-0 mt-px">{'\u2713'}</span>{f}
+                </div>
+              ))}
+            </div>
+            <a
+              href="#waitlist-form"
+              className="block w-full py-2.5 rounded-full text-sm font-semibold text-center border-[1.5px] border-bark-200 text-bark-700 hover:border-bark-300 transition-colors"
+            >
+              Join the waitlist
+            </a>
+          </div>
+
           {/* Annual — featured */}
           <div className="bg-eucalyptus-600 rounded-[14px] p-7 border-[1.5px] border-eucalyptus-600 text-white">
             <div className="inline-block bg-wattle-400 text-bark-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-3">Best value</div>
@@ -25,28 +47,6 @@ export default function Pricing() {
             <a
               href="#waitlist-form"
               className="block w-full py-2.5 rounded-full text-sm font-semibold text-center bg-wattle-400 text-bark-700 hover:bg-wattle-300 transition-colors"
-            >
-              Join the waitlist
-            </a>
-          </div>
-
-          {/* Monthly */}
-          <div className="bg-white rounded-[14px] p-7 border-[1.5px] border-bark-200">
-            <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-bark-400 mb-2">Monthly</div>
-            <div className="font-display text-[38px] font-bold text-bark-700 leading-none">
-              $1.99<span className="text-[13px] font-normal text-bark-400">/month</span>
-            </div>
-            <p className="text-[13px] text-bark-500 mt-2.5 mb-5 leading-snug">All features, month to month. Cancel any time.</p>
-            <div className="flex flex-col gap-2 mb-6">
-              {['Up to 12 children', 'Recurring chores + approval', 'Savings goals', 'Auto pocket money', 'Kid-facing view', 'Multi-parent access', 'Responsibilities mode'].map(f => (
-                <div key={f} className="text-[13px] text-bark-600 flex gap-2 items-start">
-                  <span className="text-gumleaf-400 font-bold flex-shrink-0 mt-px">{'\u2713'}</span>{f}
-                </div>
-              ))}
-            </div>
-            <a
-              href="#waitlist-form"
-              className="block w-full py-2.5 rounded-full text-sm font-semibold text-center border-[1.5px] border-bark-200 text-bark-700 hover:border-bark-300 transition-colors"
             >
               Join the waitlist
             </a>
