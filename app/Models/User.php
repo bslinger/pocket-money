@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'display_name',
         'parent_title',
         'avatar_url',
+        'uses_apple_relay',
         'stripe_customer_id',
     ];
 
@@ -42,7 +43,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'uses_apple_relay' => 'boolean',
         ];
+    }
+
+    /** @return HasMany<SocialAccount, $this> */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 
     public function familyUsers(): HasMany
