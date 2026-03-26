@@ -338,7 +338,7 @@ export default function ChoreDetailScreen() {
         <TouchableOpacity style={styles.toggleRow} onPress={() => setUpForGrabs(prev => !prev)}>
           <View style={[styles.toggleDot, { backgroundColor: upForGrabs ? colors.eucalyptus[400] : colors.bark[200] }]} />
           <Text style={[styles.toggleLabel, { color: upForGrabs ? colors.eucalyptus[400] : colors.bark[600] }]}>
-            {upForGrabs ? 'Yes — any kid can claim it' : 'No — assigned to specific kids'}
+            {upForGrabs ? 'Yes - any kid can claim it' : 'No - assigned to specific kids'}
           </Text>
         </TouchableOpacity>
 

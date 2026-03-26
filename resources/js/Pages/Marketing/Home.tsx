@@ -218,10 +218,10 @@ function PhoneMockup() {
 
 const WHY_FEATURES = [
   { emoji: '💰', title: 'Track any currency', desc: 'Real dollars, stars, coins, or your own family currency. Works for every age and stage.' },
-  { emoji: '🧹', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Balance updates instantly — no cash needed.' },
+  { emoji: '🧹', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Balance updates instantly. No cash needed.' },
   { emoji: '🎯', title: 'Savings goals', desc: 'Kids set goals and watch progress bars fill up. More motivating than any piggy bank.' },
   { emoji: '📋', title: 'Responsibilities vs chores', desc: 'Separate "must do" responsibilities from paid chores. Pocket money only releases when responsibilities are done.' },
-  { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'One family plan covers everyone — no per-child fees. Big families finally get a fair deal.' },
+  { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'One family plan covers everyone. No per-child fees. Big families finally get a fair deal.' },
   { emoji: '⚡', title: 'Auto pocket money', desc: 'Set it once. Quiddo adds pocket money every Sunday automatically. Never forget again.' },
 ];
 
@@ -239,27 +239,27 @@ const HOW_STEPS = [
 const FAQ_ITEMS = [
   {
     q: 'How does Quiddo work?',
-    a: "Quiddo is a virtual ledger — it tracks what your kids have earned and spent without holding any real money. You pay pocket money and chore rewards in cash as you normally would, and Quiddo records the balance. Think of it as a digital version of the running tally you used to keep in your head.",
+    a: "Quiddo is a virtual ledger that tracks what your kids have earned and spent without holding any real money. You pay pocket money and chore rewards in cash as you normally would, and Quiddo records the balance. Think of it as a digital version of the running tally you used to keep in your head.",
   },
   {
     q: 'Do my kids need their own device?',
-    a: "Not necessarily. Parents manage everything from the parent view on their own device. Kids can have their own login to see their balance, goals, and chores — but it's optional, especially for younger children. The parent view works perfectly well without kids having their own device.",
+    a: "Not necessarily. Parents manage everything from the parent view on their own device. Kids can have their own login to see their balance, goals, and chores, but it's optional, especially for younger children. The parent view works perfectly well without kids having their own device.",
   },
   {
     q: 'Can both parents use Quiddo?',
-    a: "Yes — you can invite your partner, co-parent, or another carer to your family. All adults see the same balances and can approve chores from their own devices. This works well for separated families too, where both households want to stay in sync.",
+    a: "Yes, you can invite your partner, co-parent, or another carer to your family. All adults see the same balances and can approve chores from their own devices. This works well for separated families too, where both households want to stay in sync.",
   },
   {
     q: "What's the difference between chores and responsibilities?",
-    a: "Chores earn money or points directly — the balance goes up when the chore is approved. Responsibilities are things that must be done before that week's pocket money is released (making the bed, packing the school bag). They don't earn directly — they're the price of admission. You set what percentage needs to be completed before the weekly allowance unlocks.",
+    a: "Chores earn money or points directly. The balance goes up when the chore is approved. Responsibilities are things that must be done before that week's pocket money is released (making the bed, packing the school bag). They don't earn directly; they're the price of admission. You set what percentage needs to be completed before the weekly allowance unlocks.",
   },
   {
     q: 'Does Quiddo work with real dollars and points?',
-    a: "Both. You can track in Australian dollars, or create your own family currency — coins, stars, \"Smith Bucks\", whatever works for your family. Younger kids often respond better to points than money concepts. You can even set different currencies for different children if needed.",
+    a: "Both. You can track in Australian dollars, or create your own family currency: coins, stars, \"Smith Bucks\", whatever works for your family. Younger kids often respond better to points than money concepts. You can even set different currencies for different children if needed.",
   },
   {
     q: 'Is there a limit to how many children I can add?',
-    a: "The free plan supports 1 child. Paid plans (monthly and annual) support up to 12 children on a single family subscription. No per-child fees — ever.",
+    a: "The free plan supports 1 child. Paid plans (monthly and annual) support up to 12 children on a single family subscription. No per-child fees. Ever.",
   },
   {
     q: 'What happens after my 30-day trial?',
@@ -267,7 +267,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Is Quiddo available in Australia?',
-    a: "Quiddo is built specifically for Australian families. It supports Australian dollars natively, and is designed around how Aussie families actually handle pocket money — with cash, without debit cards, and with a healthy dose of \"you've got to earn it first\".",
+    a: "Quiddo is built specifically for Australian families. It supports Australian dollars natively, and is designed around how Aussie families actually handle pocket money: cash-based, no debit cards, and with a healthy dose of \"you've got to earn it first\".",
   },
 ];
 
@@ -285,7 +285,7 @@ export default function Home({ canLogin, canRegister }: Props) {
 
   return (
     <MarketingLayout canLogin={canLogin} canRegister={canRegister}>
-      <Head title="Quiddo — Pocket money, sorted." />
+      <Head title="Quiddo - Pocket money, sorted." />
 
       {/* ── HERO ── */}
       <section className="bg-bark-50 px-[5%]">
@@ -304,7 +304,7 @@ export default function Home({ canLogin, canRegister }: Props) {
               Your kids.<br />Their money.<br /><em className="text-eucalyptus-400 not-italic">All sorted.</em>
             </h1>
             <p className="text-[17px] text-bark-500 leading-relaxed mb-8 max-w-[420px]">
-              Track what your kids earn, spend, and save — without the forgotten IOUs, the Sunday cash scramble, or the spreadsheet you abandoned after a week.
+              Track what your kids earn, spend, and save. No forgotten IOUs, no Sunday cash scramble, no spreadsheet you abandoned after a week.
             </p>
 
             <form className="flex flex-col gap-3 max-w-[400px]" onSubmit={handleEmailSubmit}>
@@ -319,7 +319,7 @@ export default function Home({ canLogin, canRegister }: Props) {
                 type="submit"
                 className="bg-eucalyptus-400 text-white py-4 rounded-[10px] text-[15px] font-semibold hover:bg-eucalyptus-500 transition-colors text-center"
               >
-                Start free — 30 days, no card needed
+                Start free. 30 days, no card needed
               </button>
               <p className="text-xs text-bark-400 text-center">
                 By signing up you agree to our{' '}
@@ -344,10 +344,10 @@ export default function Home({ canLogin, canRegister }: Props) {
         <div className="max-w-[680px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-5">What is Quiddo?</h2>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            Quiddo is a pocket money app built for Australian families who pay their kids in cash. It's not a bank, not a debit card, not a fintech product. It's a simple ledger that tracks what each child has earned, spent, and saved — so you're always in sync and nobody's arguing about how much is owed.
+            Quiddo is a pocket money app built for Australian families who pay their kids in cash. It's not a bank, not a debit card, not a fintech product. It's a simple ledger that tracks what each child has earned, spent, and saved, so you're always in sync and nobody's arguing about how much is owed.
           </p>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            As a parent, <strong className="text-bark-600">you stay in control</strong> — you own the money, you approve the chores, you release the pocket money. Your kids get a view of their own balance and goals that makes saving feel real. No bank account required. No monthly fees per child. No surprises.
+            As a parent, <strong className="text-bark-600">you stay in control</strong>. You own the money, you approve the chores, you release the pocket money. Your kids get a view of their own balance and goals that makes saving feel real. No bank account required. No monthly fees per child. No surprises.
           </p>
           <p className="text-base text-bark-500 leading-[1.8]">
             Works for real dollars, points, stars, or whatever currency your family uses. Up to <strong className="text-bark-600">12 kids on one family plan.</strong>
@@ -448,7 +448,7 @@ export default function Home({ canLogin, canRegister }: Props) {
               <h3 className="text-sm font-bold text-eucalyptus-600 uppercase tracking-[0.6px] mb-4">How to get started</h3>
               <ul className="flex flex-col gap-2.5">
                 {[
-                  'Sign up with your email — no credit card needed for trial',
+                  'Sign up with your email. No credit card needed for the trial.',
                   'Set up your family name and currency type',
                   'Add your children and their pocket money amounts',
                   'Create your first chore and watch it go',
@@ -504,7 +504,7 @@ export default function Home({ canLogin, canRegister }: Props) {
               <div className="font-display text-[38px] font-bold text-wattle-300 leading-none">
                 $15<span className="text-[13px] font-normal text-white/40">/year</span>
               </div>
-              <p className="text-[13px] text-white/55 mt-2.5 mb-5 leading-snug">Best value — save 37% vs monthly. The full Quiddo for the whole family.</p>
+              <p className="text-[13px] text-white/55 mt-2.5 mb-5 leading-snug">Best value. Save 37% vs monthly. The full Quiddo for the whole family.</p>
               <div className="flex flex-col gap-2 mb-6">
                 {['Up to 12 children', 'Recurring chores + approval', 'Savings goals', 'Auto pocket money', 'Kid-facing view', 'Multi-parent access', 'Responsibilities mode'].map(f => (
                   <div key={f} className="text-[13px] text-white/75 flex gap-2 items-start">

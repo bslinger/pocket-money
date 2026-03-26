@@ -8,7 +8,7 @@
     <h2>You've been invited to Quiddo!</h2>
 
     <p><strong>{{ $inviterName }}</strong> has invited you to join
-        <strong>{{ $invitation->family->name }}</strong> on Quiddo — a family
+        <strong>{{ $invitation->family->name }}</strong> on Quiddo, a family
         finance app to manage pocket money, chores, and savings goals for your kids.</p>
 
     <p style="margin: 24px 0;">

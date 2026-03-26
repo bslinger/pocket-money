@@ -331,7 +331,7 @@ export default function ChoresIndex({ families, weekCompletions, pendingCompleti
             {pending.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
                 <CheckCircle2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">All caught up — no chores waiting for approval.</p>
+                <p className="text-sm">All caught up. No chores waiting for approval.</p>
               </div>
             ) : (
               <Card>

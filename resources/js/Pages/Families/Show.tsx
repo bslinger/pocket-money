@@ -238,7 +238,7 @@ function ParentsSection({ family, authUserId, pendingInvitations, isAdmin }: {
                                     <button
                                         type="button"
                                         onClick={() => toggleRole(fu)}
-                                        title={fu.role === 'admin' ? 'Admin — click to make Member' : 'Member — click to make Admin'}
+                                        title={fu.role === 'admin' ? 'Admin - click to make Member' : 'Member - click to make Admin'}
                                         className="flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors hover:bg-muted"
                                     >
                                         {fu.role === 'admin'
@@ -280,7 +280,7 @@ function ParentsSection({ family, authUserId, pendingInvitations, isAdmin }: {
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate">{inv.email}</p>
                                 <p className="text-xs text-muted-foreground">
-                                    Invited — expires {new Date(inv.expires_at).toLocaleDateString()}
+                                    Invited, expires {new Date(inv.expires_at).toLocaleDateString()}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">

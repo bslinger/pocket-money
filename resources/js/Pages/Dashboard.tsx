@@ -95,7 +95,7 @@ function ParentDashboard({
           <div>
             <h2 className="font-semibold text-lg">Add your first kid</h2>
             <p className="text-bark-500 text-sm mt-1">
-              Family "{families[0].name}" is ready — now add a spender profile for each child.
+              Family "{families[0].name}" is ready. Add a spender profile for each child.
             </p>
           </div>
           <Button asChild>

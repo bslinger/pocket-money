@@ -299,7 +299,7 @@ export default function OnboardingContinue({ family }: Props) {
                                     <div>
                                         <h2 className="text-lg font-semibold">Add some chores</h2>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Chores let kids earn money by completing tasks. Add as many as you like — you can always add more later.
+                                            Chores let kids earn money by completing tasks. Add as many as you like - you can always add more later.
                                         </p>
                                     </div>
 

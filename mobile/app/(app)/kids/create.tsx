@@ -172,7 +172,7 @@ export default function CreateKidScreen() {
         <View style={[styles.toggleDot, overrideCurrency && styles.toggleDotActive]} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.toggleLabel, overrideCurrency && styles.toggleLabelActive]}>
-            {overrideCurrency ? 'Yes — this kid uses a custom currency' : 'No — uses family default'}
+            {overrideCurrency ? 'Yes - this kid uses a custom currency' : 'No - uses family default'}
           </Text>
           {activeFamily && !overrideCurrency && (
             <Text style={styles.toggleHint}>

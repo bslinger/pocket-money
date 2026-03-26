@@ -297,7 +297,7 @@ export default function CreateChoreScreen() {
         <View style={[styles.toggleDot, upForGrabs && styles.toggleDotActive]} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.toggleLabel, upForGrabs && styles.toggleLabelActive]}>
-            {upForGrabs ? 'Yes — any kid can claim it' : 'No — assigned to specific kids'}
+            {upForGrabs ? 'Yes - any kid can claim it' : 'No - assigned to specific kids'}
           </Text>
         </View>
       </TouchableOpacity>

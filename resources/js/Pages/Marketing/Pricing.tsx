@@ -28,7 +28,7 @@ const plans = [
     name: 'Annual',
     price: 'A$15',
     period: 'per year',
-    description: 'Best value — save 37%.',
+    description: 'Best value. Save 37%.',
     features: [
       'Everything in Monthly',
       'Save A$8.88 vs monthly',
@@ -43,7 +43,7 @@ const plans = [
 export default function Pricing({ canLogin, canRegister }: Props) {
   return (
     <MarketingLayout canLogin={canLogin} canRegister={canRegister}>
-      <Head title="Pricing — Quiddo" />
+      <Head title="Pricing - Quiddo" />
 
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-24">
         <div className="text-center mb-14">
@@ -103,7 +103,7 @@ export default function Pricing({ canLogin, canRegister }: Props) {
 
         <p className="text-center text-sm text-bark-400 mt-10">
           30-day free trial, no credit card required. Prices in Australian dollars.<br />
-          One subscription covers your whole family — up to 12 kids.
+          One subscription covers your whole family, up to 12 kids.
         </p>
       </section>
     </MarketingLayout>

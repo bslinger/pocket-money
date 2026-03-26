@@ -261,7 +261,7 @@ export default function GoalsIndex({ spenders, recentCompletedCutoff }: Props) {
                 <div className="space-y-1">
                   <p className="font-medium">Goals fill in priority order</p>
                   <p className="text-eucalyptus-600 text-xs">
-                    An account's balance is allocated to goals from top to bottom — the first goal fills completely before any remainder spills to the next.
+                    An account's balance is allocated to goals from top to bottom. The first goal fills completely before any remainder spills to the next.
                     Use the arrows to change the order within each account.
                   </p>
                 </div>

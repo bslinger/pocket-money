@@ -141,7 +141,7 @@ export default function OnboardingIndex() {
                                     <div>
                                         <h2 className="text-lg font-semibold">Your family</h2>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Give your family a name. This is your workspace in Quiddo — everything
+                                            Give your family a name. This is your workspace in Quiddo. Everything
                                             belongs to a family: kids, accounts, chores, and goals.
                                         </p>
                                     </div>
@@ -159,7 +159,7 @@ export default function OnboardingIndex() {
                                     </div>
                                     <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground space-y-1">
                                         <p className="font-medium text-foreground">What's a family?</p>
-                                        <p>Your family is your shared workspace. Most families only need one, but you can create more for different arrangements — like shared custody or separate groups of kids.</p>
+                                        <p>Your family is your shared workspace. Most families only need one, but you can create more for different arrangements, like shared custody or separate groups of kids.</p>
                                     </div>
                                 </div>
                             )}
@@ -305,7 +305,7 @@ export default function OnboardingIndex() {
                                     <div>
                                         <h2 className="text-lg font-semibold">Add your kids</h2>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Each kid gets their own account. You can set up pocket money and chores in the next steps — or add more kids later.
+                                            Each kid gets their own account. You can set up pocket money and chores in the next steps, or add more kids later.
                                         </p>
                                     </div>
 

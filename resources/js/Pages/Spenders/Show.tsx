@@ -343,7 +343,7 @@ function LinkedDevicesCard({ spender, devices, flashLinkCode }: { spender: Spend
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <p className="text-xs text-muted-foreground">
-                        Link a child's device so they can view their accounts and mark chores complete — no email needed.
+                        Link a child's device so they can view their accounts and mark chores complete. No email needed.
                     </p>
 
                     <Button

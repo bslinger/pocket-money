@@ -124,7 +124,7 @@ export default function ChildLinkScreen() {
         </TouchableOpacity>
 
         <Link href="/(auth)/login" style={styles.link}>
-          <Text style={styles.linkText}>I have an account — sign in instead</Text>
+          <Text style={styles.linkText}>I have an account - sign in instead</Text>
         </Link>
       </View>
     </KeyboardAvoidingView>

@@ -246,7 +246,7 @@ function FeedbackSection() {
           <MessageSquare className="h-4 w-4" />
           Send Feedback
         </h2>
-        <p className="text-xs text-bark-400 mt-1">Help us improve Quiddo — report bugs, suggest features, or share your thoughts.</p>
+        <p className="text-xs text-bark-400 mt-1">Help us improve Quiddo. Report bugs, suggest features, or share your thoughts.</p>
       </div>
       <div className="px-6 py-5 space-y-4">
         {submitted ? (

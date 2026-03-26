@@ -99,7 +99,7 @@ export default function SpenderDevicesScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       <Text style={styles.description}>
-        Link a child's device so they can view their accounts and mark chores complete — no email needed.
+        Link a child's device so they can view their accounts and mark chores complete. No email needed.
       </Text>
 
       {/* Link Code with QR */}

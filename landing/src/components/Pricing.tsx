@@ -38,7 +38,7 @@ export default function Pricing() {
             <div className="font-display text-[38px] font-bold text-wattle-300 leading-none">
               $15<span className="text-[13px] font-normal text-white/40">/year</span>
             </div>
-            <p className="text-[13px] text-white/55 mt-1">That's just $1.25/month — save 37%.</p>
+            <p className="text-[13px] text-white/55 mt-1">That's just $1.25/month. Save 37%.</p>
             <a
               href="#waitlist-form"
               className="block w-full mt-6 py-2.5 rounded-full text-sm font-semibold text-center bg-wattle-400 text-bark-700 hover:bg-wattle-300 transition-colors"

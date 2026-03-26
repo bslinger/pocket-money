@@ -10,13 +10,13 @@ const steps = [
   {
     number: '01',
     title: 'Create your family',
-    desc: 'Sign up and create a family profile. Invite your partner or co-parent — everyone stays in sync.',
+    desc: 'Sign up and create a family profile. Invite your partner or co-parent so everyone stays in sync.',
     emoji: '👨‍👩‍👧‍👦',
   },
   {
     number: '02',
     title: 'Set pocket money',
-    desc: 'Choose a weekly amount for each child. Quiddo credits it automatically — no more forgetting.',
+    desc: 'Choose a weekly amount for each child. Quiddo credits it automatically. No more forgetting.',
     emoji: '💸',
   },
   {
@@ -36,7 +36,7 @@ const steps = [
 export default function HowItWorks({ canLogin, canRegister }: Props) {
   return (
     <MarketingLayout canLogin={canLogin} canRegister={canRegister}>
-      <Head title="How It Works — Quiddo" />
+      <Head title="How It Works - Quiddo" />
 
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-8 text-center">
         <h1 className="font-display text-5xl font-bold text-bark-700">How It Works</h1>
