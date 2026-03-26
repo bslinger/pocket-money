@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Events\WebhookReceived;
+use SocialiteProviders\Apple\Provider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +35,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Registered::class, SyncUserToLoops::class);
         Event::listen(Registered::class, TrackUserRegistered::class);
         Event::listen(WebhookReceived::class, TrackSubscriptionEvent::class);
+        Event::listen(SocialiteWasCalled::class, function (SocialiteWasCalled $event): void {
+            $event->extendSocialite('apple', Provider::class);
+        });
 
         $this->decodePushCredentials();
     }

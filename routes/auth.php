@@ -8,8 +8,23 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+
+// Social auth — redirect and callback accessible to guests; Apple callback is POST
+Route::middleware('guest')->group(function () {
+    Route::get('auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+        ->name('auth.social.redirect');
+
+    Route::get('auth/{provider}/callback', [SocialAuthController::class, 'callback'])
+        ->name('auth.social.callback');
+
+    // Apple sends its callback as a POST with form data
+    Route::post('auth/apple/callback', [SocialAuthController::class, 'callback'])
+        ->withoutMiddleware(['guest'])
+        ->defaults('provider', 'apple');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
