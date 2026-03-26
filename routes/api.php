@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\FeedbackController;
 use App\Http\Controllers\Api\V1\PocketMoneyController;
 use App\Http\Controllers\Api\V1\RecurringTransactionController;
 use App\Http\Controllers\Api\V1\SavingsGoalController;
+use App\Http\Controllers\Api\V1\SocialAuthController;
 use App\Http\Controllers\Api\V1\SpenderController;
 use App\Http\Controllers\Api\V1\SpenderLinkCodeController;
 use App\Http\Controllers\Api\V1\TransactionController;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 // ---------------------------------------------------------------------------
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/social/{provider}', [SocialAuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/spender-devices/claim', [SpenderLinkCodeController::class, 'claim']);
 Route::post('/family-link-codes/claim', [FamilyLinkCodeController::class, 'claim']);
