@@ -9,6 +9,8 @@ export default function AppLayout() {
         headerTintColor: colors.bark[700],
         headerTitleStyle: { fontWeight: '600' },
         contentStyle: { backgroundColor: colors.bark[100] },
+        gestureEnabled: true,
+        animation: 'slide_from_right',
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
