@@ -3,35 +3,35 @@ import { useState } from 'react';
 const FAQ_ITEMS = [
   {
     q: 'How does Quiddo work?',
-    a: "Quiddo is a virtual ledger \u2014 it tracks what your kids have earned and spent without holding any real money. You pay pocket money and chore rewards in cash as you normally would, and Quiddo records the balance. Think of it as a digital version of the running tally you used to keep in your head.",
+    a: "Quiddo is a virtual ledger — it tracks what your kids have earned and saved without holding any real money. Kids earn a balance through chores and weekly pocket money. When they want to buy something, you pay on your own card and log it as a spend in Quiddo. Their balance goes down. No cash changes hands, no separate bank account needed.",
+  },
+  {
+    q: 'So my kids never actually get the money?',
+    a: "Exactly — that's the point. The balance is virtual. It represents their purchasing power, not a pile of cash in their room. When they want something, they ask you to spend it for them, you approve it in the app, and the balance adjusts. It teaches saving and delayed gratification without the logistics of handling physical money.",
   },
   {
     q: 'Do my kids need their own device?',
-    a: "Not necessarily. Parents manage everything from the parent view on their own device. Kids can have their own login to see their balance, goals, and chores \u2014 but it\u2019s optional, especially for younger children. The parent view works perfectly well without kids having their own device.",
+    a: "Not necessarily. Parents manage everything from the parent view on their own device. Kids can have their own login to see their balance, goals, and chores — but it's optional, especially for younger children. The parent view works perfectly well on its own.",
   },
   {
     q: 'Can both parents use Quiddo?',
-    a: "Yes \u2014 you can invite your partner, co-parent, or another carer to your family. All adults see the same balances and can approve chores from their own devices. This works well for separated families too, where both households want to stay in sync.",
+    a: "Yes — you can invite your partner, co-parent, or another carer to your family. All adults see the same balances and can approve chores and log spends from their own devices. Works well for separated families who want to stay in sync across two households.",
   },
   {
-    q: "What\u2019s the difference between chores and responsibilities?",
-    a: "Chores earn money or points directly \u2014 the balance goes up when the chore is approved. Responsibilities are things that must be done before that week\u2019s pocket money is released (making the bed, packing the school bag). They don\u2019t earn directly \u2014 they\u2019re the price of admission. You set what percentage needs to be completed before the weekly allowance unlocks.",
+    q: "What's the difference between chores and responsibilities?",
+    a: "Chores earn money directly — the balance goes up when the chore is approved. Responsibilities are things that must be done before that week's pocket money is released (making the bed, packing the school bag). They don't earn directly — they're the price of admission. You set what percentage needs to be completed before the weekly allowance unlocks.",
   },
   {
-    q: 'Does Quiddo work with real dollars and points?',
-    a: "Both. You can track in Australian dollars, or create your own family currency \u2014 coins, stars, \u201cSmith Bucks\u201d, whatever works for your family. Younger kids often respond better to points than money concepts. You can even set different currencies for different children if needed.",
+    q: 'Does Quiddo work with points or a custom currency?',
+    a: "Yes. You can track in Australian dollars, or create your own family currency — coins, stars, 'Smith Bucks', whatever works for your family. Younger kids often respond better to points than money concepts. You can even set different currencies for different children if needed.",
   },
   {
     q: 'Is there a limit to how many children I can add?',
-    a: "Every plan supports up to 12 children on a single family subscription. No per-child fees \u2014 ever.",
+    a: "Every plan supports up to 12 children on a single family subscription. No per-child fees — ever.",
   },
   {
     q: 'What happens after my 30-day trial?',
-    a: "At the end of your trial you\u2019ll be asked to choose a plan. If you don\u2019t subscribe, your account becomes read-only \u2014 you can still see all your data, but can\u2019t make changes until you subscribe. No credit card is required to start the trial.",
-  },
-  {
-    q: 'Is Quiddo available in Australia?',
-    a: "Quiddo is built specifically for Australian families. It supports Australian dollars natively, and is designed around how Aussie families actually handle pocket money \u2014 with cash, without debit cards, and with a healthy dose of \u201cyou\u2019ve got to earn it first\u201d.",
+    a: "At the end of your trial you'll be asked to choose a plan. If you don't subscribe, your account becomes read-only — you can still see all your data, but can't make changes until you subscribe. No credit card is required to start the trial.",
   },
 ];
 

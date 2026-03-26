@@ -1,10 +1,10 @@
 const WHY_FEATURES = [
-  { emoji: '\uD83D\uDCB0', title: 'Track any currency', desc: 'Real dollars, stars, coins, or your own family currency. Works for every age and stage.' },
-  { emoji: '\uD83E\uDDF9', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Balance updates instantly \u2014 no cash needed.' },
-  { emoji: '\uD83C\uDFAF', title: 'Savings goals', desc: 'Kids set goals and watch progress bars fill up. More motivating than any piggy bank.' },
-  { emoji: '\uD83D\uDCCB', title: 'Responsibilities vs chores', desc: 'Separate \u201cmust do\u201d responsibilities from paid chores. Pocket money only releases when responsibilities are done.' },
-  { emoji: '\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67\u200D\uD83D\uDC66', title: 'Up to 12 kids', desc: 'One family plan covers everyone \u2014 no per-child fees. Big families finally get a fair deal.' },
-  { emoji: '\u26A1', title: 'Auto pocket money', desc: 'Set it once. Quiddo adds pocket money every Sunday automatically. Never forget again.' },
+  { emoji: '💳', title: 'Cashless by design', desc: 'No cash changes hands. Kids earn and save digitally — you pay with your card when they spend. Clean, simple, no loose change.' },
+  { emoji: '🧹', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Their balance updates instantly — no envelope stuffing required.' },
+  { emoji: '🎯', title: 'Savings goals', desc: 'Kids set goals and watch progress bars fill up. They see exactly how many more chores until they can afford what they want.' },
+  { emoji: '📋', title: 'Responsibilities vs chores', desc: 'Separate "must do" responsibilities from paid chores. Pocket money only releases when responsibilities are done.' },
+  { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'One family plan covers everyone — no per-child fees. Big families finally get a fair deal.' },
+  { emoji: '⚡', title: 'Auto pocket money', desc: 'Set it once. Quiddo credits each child\'s balance automatically every week. Never forget again.' },
 ];
 
 export default function Features() {
@@ -15,13 +15,13 @@ export default function Features() {
         <div className="max-w-[680px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-5">What is Quiddo?</h2>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            Quiddo is a pocket money app built for Australian families who pay their kids in cash. It's not a bank, not a debit card, not a fintech product. It's a simple ledger that tracks what each child has earned, spent, and saved — so you're always in sync and nobody's arguing about how much is owed.
+            Quiddo is a pocket money tracker for Australian families who don't want to deal with cash. It's not a bank, not a debit card, not a fintech product. It's a digital ledger — kids earn a virtual balance through chores and weekly allowances, and when they want to buy something, you pay on your card and log it as a spend. Their balance goes down, the lesson lands.
           </p>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            As a parent, <strong className="text-bark-600">you stay in control</strong> — you own the money, you approve the chores, you release the pocket money. Your kids get a view of their own balance and goals that makes saving feel real. No bank account required. No monthly fees per child. No surprises.
+            As a parent, <strong className="text-bark-600">you stay in control</strong> — you own the money, you approve the chores, you decide when a spend goes through. Your kids get a real-time view of their balance and goals that makes saving feel tangible. No bank account required. No debit card for a 7-year-old.
           </p>
           <p className="text-base text-bark-500 leading-[1.8]">
-            Works for real dollars, points, stars, or whatever currency your family uses. Up to <strong className="text-bark-600">12 kids on one family plan.</strong>
+            Works for real dollars or your own family currency. Up to <strong className="text-bark-600">12 kids on one family plan.</strong>
           </p>
         </div>
       </section>
@@ -71,7 +71,7 @@ export default function Features() {
               <ul className="flex flex-col gap-2.5">
                 {[
                   'Up to 12 child profiles per family',
-                  'Balance tracking for each child',
+                  'Virtual balance tracking for each child',
                   'Recurring and one-off chores',
                   'Chore approval workflow',
                   'Savings goals with progress tracking',
@@ -90,9 +90,9 @@ export default function Features() {
               <h3 className="text-sm font-bold text-eucalyptus-600 uppercase tracking-[0.6px] mb-4">How to get started</h3>
               <ul className="flex flex-col gap-2.5">
                 {[
-                  'Sign up with your email \u2014 no credit card needed for trial',
+                  'Sign up with your email — no credit card needed for trial',
                   'Set up your family name and currency type',
-                  'Add your children and their pocket money amounts',
+                  'Add your children and their weekly pocket money amounts',
                   'Create your first chore and watch it go',
                   'Download the app for iOS or Android',
                   'Invite your partner or co-parent to join',

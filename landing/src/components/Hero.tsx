@@ -49,10 +49,10 @@ export default function Hero() {
             {'\uD83C\uDDE6\uD83C\uDDFA'} Made for Aussie families
           </div>
           <h1 className="font-display text-[52px] font-bold leading-[1.1] tracking-tight text-bark-700 mb-[18px]">
-            Your kids.<br />Their money.<br /><em className="text-eucalyptus-400 not-italic">All sorted.</em>
+            Their money.<br />Your card.<br /><em className="text-eucalyptus-400 not-italic">All sorted.</em>
           </h1>
           <p className="text-[17px] text-bark-500 leading-relaxed mb-8 max-w-[420px]">
-            Track what your kids earn, spend, and save — without the forgotten IOUs, the Sunday cash scramble, or the spreadsheet you abandoned after a week.
+            Kids earn pocket money and save up for what they want. When they're ready to spend, you pay on your card — and it comes off their balance. No cash. No IOUs. No "I'll get you back later."
           </p>
 
           <form id="waitlist-form" className="flex flex-col gap-3 max-w-[400px]" onSubmit={handleEmailSubmit}>

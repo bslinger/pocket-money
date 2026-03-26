@@ -1,8 +1,8 @@
 const HOW_STEPS = [
   { num: 1, title: 'Create your family', desc: 'Sign up, name your family, choose your currency. Add up to 12 kids with avatars and ages.' },
-  { num: 2, title: 'Set up pocket money', desc: 'Choose an amount and a day. Quiddo credits each child\'s balance automatically every week.' },
-  { num: 3, title: 'Add chores', desc: 'Create recurring chores with values. Kids claim them in their view, you approve with one tap.' },
-  { num: 4, title: 'Watch them save', desc: 'Kids set goals and track progress. When they want to spend, you log it and the balance updates.' },
+  { num: 2, title: 'Set up pocket money', desc: 'Choose an amount and a day. Quiddo credits each child\'s virtual balance automatically every week.' },
+  { num: 3, title: 'Add chores', desc: 'Create recurring chores with dollar values. Kids claim them in their view, you approve with one tap.' },
+  { num: 4, title: 'They save, you pay', desc: 'Kids save up for what they want. When they\'re ready to buy, you pay on your card and log the spend — their balance updates instantly.' },
 ];
 
 export default function HowItWorks() {
