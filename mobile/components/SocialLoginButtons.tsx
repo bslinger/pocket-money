@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { LoginManager, AccessToken } from 'react-native-fbsdk-next';
 import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
@@ -59,24 +58,6 @@ export default function SocialLoginButtons({ verb = 'Continue' }: { verb?: strin
     }
   };
 
-  const handleFacebook = async () => {
-    setLoading('facebook');
-    try {
-      const result = await LoginManager.logInWithPermissions(['public_profile', 'email']);
-      if (result.isCancelled) return;
-
-      const data = await AccessToken.getCurrentAccessToken();
-      if (!data) throw new Error('No access token');
-
-      await socialLogin({ provider: 'facebook', token: data.accessToken, deviceName: Platform.OS });
-    } catch (e: any) {
-      const msg = e.response?.status === 429 ? 'Too many attempts. Please wait a moment and try again.' : 'Something went wrong. Please try again.';
-      Alert.alert('Facebook Sign In', msg);
-    } finally {
-      setLoading(null);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <TouchableOpacity style={[styles.button, styles.google]} onPress={handleGoogle} disabled={!!loading}>
@@ -88,10 +69,6 @@ export default function SocialLoginButtons({ verb = 'Continue' }: { verb?: strin
           <Text style={styles.appleText}>{loading === 'apple' ? 'Signing in...' : `${verb} with Apple`}</Text>
         </TouchableOpacity>
       )}
-
-      <TouchableOpacity style={[styles.button, styles.facebook]} onPress={handleFacebook} disabled={!!loading}>
-        <Text style={styles.facebookText}>{loading === 'facebook' ? 'Signing in...' : `${verb} with Facebook`}</Text>
-      </TouchableOpacity>
 
       <View style={styles.divider}>
         <View style={styles.dividerLine} />
@@ -113,10 +90,8 @@ const styles = StyleSheet.create({
   },
   google: { backgroundColor: colors.white, borderColor: colors.bark[200] },
   apple: { backgroundColor: '#000000' },
-  facebook: { backgroundColor: '#1877F2' },
   googleText: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700] },
   appleText: { fontFamily: fonts.body, fontSize: 15, color: colors.white },
-  facebookText: { fontFamily: fonts.body, fontSize: 15, color: colors.white },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
   dividerLine: { flex: 1, height: 1, backgroundColor: colors.bark[200] },
   dividerText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600] },
