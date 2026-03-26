@@ -1,13 +1,23 @@
+import { useEffect } from 'react';
 import { View } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 import { useAuth } from '@/lib/auth';
+import { useFamily } from '@/lib/family';
 import AppHeader from '@/components/AppHeader';
 
 export default function TabLayout() {
   const { isChildDevice } = useAuth();
+  const { families, isLoading } = useFamily();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isChildDevice && families.length === 0) {
+      router.replace('/(app)/onboarding');
+    }
+  }, [isLoading, isChildDevice, families.length]);
 
   return (
     <View style={{ flex: 1, backgroundColor: isChildDevice ? colors.nightsky[900] : colors.bark[100] }}>
