@@ -27,10 +27,10 @@ use Illuminate\Support\Facades\Route;
 // ---------------------------------------------------------------------------
 // Public (unauthenticated)
 // ---------------------------------------------------------------------------
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/social/{provider}', [SocialAuthController::class, 'login']);
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+Route::post('/auth/social/{provider}', [SocialAuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
 Route::post('/spender-devices/claim', [SpenderLinkCodeController::class, 'claim']);
 Route::post('/family-link-codes/claim', [FamilyLinkCodeController::class, 'claim']);
 
