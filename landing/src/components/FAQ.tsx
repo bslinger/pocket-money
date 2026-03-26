@@ -47,7 +47,7 @@ export default function FAQ() {
   }
 
   return (
-    <section id="faq" className="bg-white border-t border-bark-200 py-[72px] px-[5%]">
+    <section id="faq" className="bg-white border-t border-bark-200 pt-10 pb-[72px] px-[5%]">
       <div className="max-w-[720px] mx-auto">
         <h2 className="font-display text-[34px] font-semibold text-bark-700 text-center mb-10">Frequently asked questions</h2>
 

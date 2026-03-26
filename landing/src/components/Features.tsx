@@ -11,7 +11,7 @@ export default function Features() {
   return (
     <>
       {/* WHAT IS QUIDDO */}
-      <section className="bg-white border-t border-bark-200 py-[72px] px-[5%] text-center">
+      <section className="bg-white border-t border-bark-200 pt-10 pb-[72px] px-[5%] text-center">
         <div className="max-w-[680px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-5">What is Quiddo?</h2>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
@@ -27,7 +27,7 @@ export default function Features() {
       </section>
 
       {/* WHY USE QUIDDO */}
-      <section className="bg-bark-50 py-[72px] px-[5%] text-center">
+      <section className="bg-bark-50 pt-10 pb-[72px] px-[5%] text-center">
         <div className="max-w-[560px] mx-auto mb-14">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-4">Why use Quiddo?</h2>
           <p className="text-base text-bark-500">Here's what it actually does.</p>
@@ -66,7 +66,7 @@ export default function Features() {
       </section>
 
       {/* WHAT YOU GET */}
-      <section className="bg-eucalyptus-50 border-t border-eucalyptus-100 border-b border-b-eucalyptus-100 pt-10 pb-[72px] md:py-[72px] px-[5%]">
+      <section className="bg-eucalyptus-50 border-t border-eucalyptus-100 border-b border-b-eucalyptus-100 pt-10 pb-[72px] px-[5%]">
         <div className="max-w-[900px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 text-center mb-10">What you get</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

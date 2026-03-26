@@ -10,7 +10,7 @@ const FEATURES = [
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="bg-bark-50 border-t border-bark-200 py-[72px] px-[5%] text-center">
+    <section id="pricing" className="bg-bark-50 border-t border-bark-200 pt-10 pb-[72px] px-[5%] text-center">
       <div className="max-w-[700px] mx-auto">
         <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-2">Simple pricing</h2>
         <p className="text-[15px] text-bark-500 mb-10">Per family. Not per child. Up to 12 kids on every plan.</p>
