@@ -211,3 +211,5 @@ Organised by strategic area, with specific tasks nested under each.
 
 ## Infrastructure and Privacy
  - [ ] Encrypt certain fields at the database layer using Laravel's encrypted cast. Kid's names, parent names, stripe IDs, etc. Don't do this until we have a proper key rotation and backup strategy in place - losing the key means all that data is gone.
+
+- [ ] **Facebook login** — re-add `react-native-fbsdk-next` once real Facebook App credentials are set up (App ID + Client Token from developers.facebook.com). Restore plugin in `mobile/app.json` and Facebook button in `mobile/components/SocialLoginButtons.tsx`.
