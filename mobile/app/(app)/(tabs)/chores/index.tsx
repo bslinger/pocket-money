@@ -18,7 +18,7 @@ function formatRewardType(r: string) { return REWARD_TYPE_LABELS[r] ?? r; }
 
 function formatScheduleDetail(chore: Chore): string {
   if (chore.frequency === 'weekly' && chore.days_of_week && chore.days_of_week.length > 0) {
-    const dayNames = chore.days_of_week.map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.label ?? '').filter(Boolean);
+    const dayNames = chore.days_of_week.slice().sort((a, b) => a - b).map((d) => DAYS_OF_WEEK.find((dw) => dw.value === d)?.label ?? '').filter(Boolean);
     return dayNames.join(', ');
   }
   if (chore.frequency === 'monthly' && chore.day_of_month != null) {
@@ -276,7 +276,9 @@ export default function ChoresScreen() {
               <Text style={styles.manageSub}>
                 {formatFrequency(chore.frequency)}
                 {formatScheduleDetail(chore) ? ` (${formatScheduleDetail(chore)})` : ''}
-                {' · '}{formatRewardType(chore.reward_type)}
+              </Text>
+              <Text style={styles.manageSub}>
+                {formatRewardType(chore.reward_type)}
                 {chore.amount ? ` · $${parseFloat(chore.amount).toFixed(2)}` : ''}
               </Text>
             </View>

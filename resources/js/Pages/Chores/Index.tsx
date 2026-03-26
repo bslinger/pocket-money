@@ -99,7 +99,7 @@ const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function scheduleDetail(chore: Chore): string | null {
   if (chore.frequency === 'weekly' && chore.days_of_week?.length) {
-    return chore.days_of_week.map(d => DAY_NAMES[d] ?? '').filter(Boolean).join(', ');
+    return chore.days_of_week.slice().sort((a, b) => a - b).map(d => DAY_NAMES[d] ?? '').filter(Boolean).join(', ');
   }
   if (chore.frequency === 'monthly' && chore.day_of_month != null) {
     const s = chore.day_of_month === 1 || chore.day_of_month === 21 || chore.day_of_month === 31 ? 'st'
