@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import PasswordField from '@/components/PasswordField';
+import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 
@@ -39,6 +40,8 @@ export default function RegisterScreen() {
         <Text style={styles.subtitle}>Create your account</Text>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        <SocialLoginButtons />
 
         <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} placeholderTextColor={colors.bark[600]} />
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.bark[600]} />

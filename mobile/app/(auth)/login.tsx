@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import PasswordField from '@/components/PasswordField';
+import SocialLoginButtons from '@/components/SocialLoginButtons';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 
@@ -33,6 +34,8 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>Family pocket money, sorted.</Text>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        <SocialLoginButtons />
 
         <TextInput
           style={styles.input}

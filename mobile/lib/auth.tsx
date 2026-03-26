@@ -15,9 +15,18 @@ interface AuthState {
   authError: string | null;
 }
 
+interface SocialLoginParams {
+  provider: 'google' | 'apple' | 'facebook';
+  token: string;
+  deviceName: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string, deviceName: string) => Promise<void>;
   register: (name: string, email: string, password: string, passwordConfirmation: string, deviceName: string) => Promise<void>;
+  socialLogin: (params: SocialLoginParams) => Promise<void>;
   childLogin: (code: string, deviceName: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -142,6 +151,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     registerForPushNotifications(false);
   }, []);
 
+  const socialLogin = useCallback(async ({ provider, token, deviceName, firstName, lastName }: SocialLoginParams) => {
+    const response = await api.post(`/auth/social/${provider}`, {
+      token,
+      device_name: deviceName,
+      first_name: firstName,
+      last_name: lastName,
+    });
+    const { user, token: sanctumToken } = response.data.data;
+    await setToken(sanctumToken);
+    setState({ user, token: sanctumToken, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
+    registerForPushNotifications(false);
+  }, []);
+
   const childLogin = useCallback(async (code: string, deviceName: string) => {
     const response = await api.post('/spender-devices/claim', { code, device_name: deviceName });
     const { token, spender } = response.data.data;
@@ -167,7 +189,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, childLogin, logout }}>
+    <AuthContext.Provider value={{ ...state, login, register, socialLogin, childLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );
