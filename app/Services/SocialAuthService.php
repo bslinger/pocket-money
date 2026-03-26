@@ -56,8 +56,11 @@ class SocialAuthService
             'email' => $data['email'],
             'avatar_url' => $data['avatar_url'],
             'uses_apple_relay' => $data['uses_apple_relay'],
-            'email_verified_at' => $data['email'] ? now() : null,
         ]);
+
+        if ($data['email']) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
 
         $this->createSocialAccount($user, $data);
 
