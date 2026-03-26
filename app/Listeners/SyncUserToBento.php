@@ -11,6 +11,10 @@ class SyncUserToBento
 {
     public function handle(Registered $event): void
     {
+        if (! app()->isProduction()) {
+            return;
+        }
+
         /** @var User $user */
         $user = $event->user;
 
