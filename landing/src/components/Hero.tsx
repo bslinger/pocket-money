@@ -52,7 +52,7 @@ export default function Hero() {
             Their money.<br />Your card.<br /><em className="text-eucalyptus-400 not-italic">All sorted.</em>
           </h1>
           <p className="text-[17px] text-bark-500 leading-relaxed mb-8 max-w-[420px]">
-            Kids earn pocket money and save up for what they want. When they're ready to spend, you pay on your card — and it comes off their balance. No cash. No IOUs.
+            Kids earn pocket money and save up for what they want. When they're ready to spend, you pay on your card and it comes off their balance. No cash. No IOUs.
           </p>
 
           <form id="waitlist-form" className="flex flex-col gap-3 max-w-[400px]" onSubmit={handleEmailSubmit}>
@@ -100,7 +100,7 @@ export default function Hero() {
             )}
             {status === 'error' && (
               <p className="text-sm text-redearth-500 text-center">
-                Something went wrong — please try again.{' '}
+                Something went wrong. Please try again.{' '}
                 <button type="button" className="underline" onClick={() => setStatus('idle')}>Retry</button>
               </p>
             )}

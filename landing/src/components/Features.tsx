@@ -1,9 +1,9 @@
 const WHY_FEATURES = [
-  { emoji: '💳', title: 'Cashless by design', desc: 'No cash changes hands. Kids earn digitally — you pay with your card when they spend, and it comes off their balance.' },
-  { emoji: '🧹', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Their balance updates instantly — no envelope stuffing required.' },
+  { emoji: '💳', title: 'Cashless by design', desc: 'No cash changes hands. Kids earn digitally. When they spend, you pay with your card and it comes off their balance.' },
+  { emoji: '🧹', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Their balance updates instantly. No envelope stuffing required.' },
   { emoji: '🎯', title: 'Savings goals', desc: 'Kids set goals and watch progress bars fill up. They see exactly how many more chores until they can afford what they want.' },
   { emoji: '📋', title: 'Responsibilities vs chores', desc: 'Separate "must do" responsibilities from paid chores. Pocket money only releases when responsibilities are done.' },
-  { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'One family plan covers everyone — no per-child fees. Big families finally get a fair deal.' },
+  { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'One family plan covers everyone with no per-child fees. Big families finally get a fair deal.' },
   { emoji: '⚡', title: 'Auto pocket money', desc: 'Set it once. Quiddo credits each child\'s balance on the same day every week, on schedule, without any reminders.' },
 ];
 
@@ -15,10 +15,10 @@ export default function Features() {
         <div className="max-w-[680px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-5">What is Quiddo?</h2>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            Quiddo is a pocket money tracker for Australian families who don't want to deal with cash. It's not a bank or a debit card. It's a digital ledger — kids earn a virtual balance through chores and weekly allowances, and when they want to buy something, you pay on your card and log it as a spend. Their balance goes down.
+            Quiddo is a pocket money tracker for Australian families who don't want to deal with cash. It's not a bank or a debit card. It's a digital ledger. Kids earn a virtual balance through chores and weekly allowances. When they want to buy something, you pay on your card and log it as a spend. Their balance goes down.
           </p>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            As a parent, <strong className="text-bark-600">you stay in control</strong> — you own the money and decide when a spend goes through. Your kids see their balance and goals update in real time. No bank account required. No debit card for a 7-year-old.
+            As a parent, <strong className="text-bark-600">you stay in control.</strong> You own the money and decide when a spend goes through. Your kids see their balance and goals update in real time. No bank account required. No debit card for a 7-year-old.
           </p>
           <p className="text-base text-bark-500 leading-[1.8]">
             Works for real dollars or your own family currency. Up to <strong className="text-bark-600">12 kids on one family plan.</strong>
@@ -90,7 +90,7 @@ export default function Features() {
               <h3 className="text-sm font-bold text-eucalyptus-600 uppercase tracking-[0.6px] mb-4">How to get started</h3>
               <ul className="flex flex-col gap-2.5">
                 {[
-                  'Sign up with your email — no credit card needed for trial',
+                  'Sign up with your email. No credit card needed for the trial.',
                   'Set up your family name and currency type',
                   'Add your children and their weekly pocket money amounts',
                   'Create your first chore and watch it go',
