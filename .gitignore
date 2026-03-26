@@ -27,6 +27,7 @@ Thumbs.db
 playwright-debug.cjs
 *.png
 !mobile/assets/images/*.png
+!landing/public/*.png
 
 # Terraform
 terraform/terraform.tfvars
