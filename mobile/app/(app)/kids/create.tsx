@@ -101,17 +101,38 @@ export default function CreateKidScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Preview */}
       <View style={styles.preview}>
-        {avatarPreview ? (
-          <Image source={{ uri: avatarPreview }} style={styles.previewAvatarImg} />
-        ) : (
-          <View style={[styles.previewAvatar, { backgroundColor: selectedColor }]}>
-            <Text style={styles.previewAvatarText}>
-              {name.trim().length > 0 ? name[0].toUpperCase() : '?'}
-            </Text>
-          </View>
-        )}
+        <View style={styles.avatarWrapper}>
+          {avatarPreview ? (
+            <Image source={{ uri: avatarPreview }} style={styles.previewAvatarImg} />
+          ) : (
+            <View style={[styles.previewAvatar, { backgroundColor: selectedColor }]}>
+              <Text style={styles.previewAvatarText}>
+                {name.trim().length > 0 ? name[0].toUpperCase() : '?'}
+              </Text>
+            </View>
+          )}
+          {avatarPreview && (
+            <TouchableOpacity
+              style={styles.clearPhotoBtn}
+              onPress={() => { setAvatarPreview(null); setAvatarKey(''); }}
+            >
+              <Feather name="x" size={12} color={colors.white} />
+            </TouchableOpacity>
+          )}
+        </View>
         <Text style={styles.previewName}>{name.trim() || 'Kid name'}</Text>
       </View>
+
+      {/* Name */}
+      <Text style={styles.label}>Name</Text>
+      <TextInput
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+        placeholder="Enter kid's name"
+        placeholderTextColor={colors.bark[400]}
+        autoFocus
+      />
 
       {/* Photo */}
       <Text style={styles.label}>Photo <Text style={styles.optional}>(optional)</Text></Text>
@@ -124,42 +145,30 @@ export default function CreateKidScreen() {
           <Feather name="image" size={18} color={colors.eucalyptus[400]} />
           <Text style={styles.photoButtonText}>Gallery</Text>
         </TouchableOpacity>
-        {avatarPreview && (
-          <TouchableOpacity onPress={() => { setAvatarPreview(null); setAvatarKey(''); }}>
-            <Feather name="x-circle" size={20} color={colors.redearth[400]} />
-          </TouchableOpacity>
-        )}
       </View>
       {uploading && <Text style={styles.uploadingText}>Uploading...</Text>}
-
-      {/* Name */}
-      <Text style={styles.label}>Name</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Enter kid's name"
-        placeholderTextColor={colors.bark[600]}
-        autoFocus
-      />
 
       {/* Color Picker */}
       <Text style={styles.label}>Colour</Text>
       <View style={styles.colorGrid}>
-        {SPENDER_COLORS.map((color) => (
-          <TouchableOpacity
-            key={color}
-            style={[
-              styles.colorSwatch,
-              { backgroundColor: color },
-              selectedColor === color && styles.colorSwatchSelected,
-            ]}
-            onPress={() => setSelectedColor(color)}
-          >
-            {selectedColor === color && (
-              <Feather name="check" size={18} color={colors.white} />
-            )}
-          </TouchableOpacity>
+        {[SPENDER_COLORS.slice(0, 6), SPENDER_COLORS.slice(6, 12)].map((row, rowIdx) => (
+          <View key={rowIdx} style={styles.colorRow}>
+            {row.map((color) => (
+              <TouchableOpacity
+                key={color}
+                style={[
+                  styles.colorSwatch,
+                  { backgroundColor: color },
+                  selectedColor === color && styles.colorSwatchSelected,
+                ]}
+                onPress={() => setSelectedColor(color)}
+              >
+                {selectedColor === color && (
+                  <Feather name="check" size={18} color={colors.white} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
         ))}
       </View>
 
@@ -223,7 +232,7 @@ export default function CreateKidScreen() {
                   setCurrencyNamePlural(t.endsWith('s') ? t : t + 's');
                 }}
                 placeholder="e.g. Star"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -233,7 +242,7 @@ export default function CreateKidScreen() {
                 value={currencyNamePlural}
                 onChangeText={setCurrencyNamePlural}
                 placeholder="e.g. Stars"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
             </View>
           </View>
@@ -277,6 +286,7 @@ const styles = StyleSheet.create({
   },
   // Preview
   preview: { alignItems: 'center', marginVertical: 24 },
+  avatarWrapper: { position: 'relative' },
   previewAvatar: {
     width: 80, height: 80, borderRadius: 40,
     justifyContent: 'center', alignItems: 'center',
@@ -284,17 +294,24 @@ const styles = StyleSheet.create({
   previewAvatarImg: { width: 80, height: 80, borderRadius: 40 },
   previewAvatarText: { fontFamily: fonts.display, color: colors.white, fontSize: 32, fontWeight: '700' },
   previewName: { fontFamily: fonts.display, fontSize: 20, fontWeight: '600', color: colors.bark[700], marginTop: 12 },
+  clearPhotoBtn: {
+    position: 'absolute', top: -4, right: -4,
+    width: 22, height: 22, borderRadius: 11,
+    backgroundColor: colors.redearth[400],
+    alignItems: 'center', justifyContent: 'center',
+  },
   // Photo
-  photoButtons: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  photoButtons: { flexDirection: 'row', gap: 10 },
   photoButton: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: colors.white, borderWidth: 1, borderColor: colors.bark[200],
-    borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10,
+    borderRadius: 8, paddingVertical: 12,
   },
   photoButtonText: { fontFamily: fonts.body, fontSize: 14, color: colors.eucalyptus[400] },
   uploadingText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginTop: 4 },
   // Color
-  colorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  colorGrid: { gap: 12 },
+  colorRow: { flexDirection: 'row', justifyContent: 'space-between' },
   colorSwatch: {
     width: 44, height: 44, borderRadius: 22,
     justifyContent: 'center', alignItems: 'center',
