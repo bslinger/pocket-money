@@ -1,5 +1,5 @@
 const HOW_STEPS = [
-  { num: 1, title: 'Create your family', desc: 'Sign up and give your family a name. Add each kid with an age and a weekly pocket money amount.' },
+  { num: 1, title: 'Create your family', desc: 'Sign up and give your family a name. Add each kid with a name and a weekly pocket money amount.' },
   { num: 2, title: 'Set up pocket money', desc: 'Pick a day and Quiddo handles the rest. The same amount drops into each kid\'s balance every week without you doing anything.' },
   { num: 3, title: 'Add chores', desc: 'Add chores with a dollar value attached. Kids pick them up from their own view and they land in your approval queue.' },
   { num: 4, title: 'They save, you pay', desc: 'When a kid wants to buy something, you pay on your card and log it. Their balance drops. That\'s the whole flow.' },
