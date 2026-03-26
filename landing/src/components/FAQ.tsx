@@ -36,7 +36,15 @@ const FAQ_ITEMS = [
 ];
 
 export default function FAQ() {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openFaqs, setOpenFaqs] = useState<Set<number>>(() => new Set(FAQ_ITEMS.map((_, i) => i)));
+
+  function toggle(i: number) {
+    setOpenFaqs(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  }
 
   return (
     <section id="faq" className="bg-white border-t border-bark-200 py-[72px] px-[5%]">
@@ -49,17 +57,17 @@ export default function FAQ() {
               <button
                 type="button"
                 className="w-full bg-transparent py-[18px] flex justify-between items-center text-left text-[15px] font-medium text-bark-700 hover:text-eucalyptus-400 transition-colors gap-3"
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                onClick={() => toggle(i)}
               >
                 <span>{item.q}</span>
                 <span
                   className="text-lg text-bark-400 flex-shrink-0 transition-transform duration-200"
-                  style={{ transform: openFaq === i ? 'rotate(180deg)' : 'none' }}
+                  style={{ transform: openFaqs.has(i) ? 'rotate(180deg)' : 'none' }}
                 >
                   {'\u2304'}
                 </span>
               </button>
-              {openFaq === i && (
+              {openFaqs.has(i) && (
                 <div className="pb-[18px] text-sm text-bark-500 leading-[1.7]">
                   {item.a}
                 </div>
