@@ -1,7 +1,7 @@
 const WHY_FEATURES = [
   { emoji: '💳', title: 'Cashless by design', desc: 'No cash changes hands. Kids earn digitally. When they spend, you pay with your card and it comes off their balance.' },
   { emoji: '🧹', title: 'Chore approval loop', desc: 'Kids claim chores, you approve with one tap. Their balance updates instantly. No envelope stuffing required.' },
-  { emoji: '🎯', title: 'Savings goals', desc: 'Kids set goals and watch progress bars fill up. They see exactly how many more chores until they can afford what they want.' },
+  { emoji: '🎯', title: 'Savings goals', desc: 'Pick a goal, track what\'s missing. Kids can see at a glance how many more chores get them there.' },
   { emoji: '📋', title: 'Responsibilities vs chores', desc: 'Separate "must do" responsibilities from paid chores. Pocket money only releases when responsibilities are done.' },
   { emoji: '👨‍👩‍👧‍👦', title: 'Up to 12 kids', desc: 'One family plan covers everyone with no per-child fees. Big families finally get a fair deal.' },
   { emoji: '⚡', title: 'Auto pocket money', desc: 'Set it once. Quiddo credits each child\'s balance on the same day every week, on schedule, without any reminders.' },
@@ -15,7 +15,7 @@ export default function Features() {
         <div className="max-w-[680px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 mb-5">What is Quiddo?</h2>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
-            Quiddo is a pocket money tracker for Australian families who don't want to deal with cash. It's not a bank or a debit card. It's a digital ledger. Kids earn a virtual balance through chores and weekly allowances. When they want to buy something, you pay on your card and log it as a spend. Their balance goes down.
+            Quiddo is a pocket money tracker for Australian families who don't want to deal with cash. It's not a bank or a debit card. It's a digital ledger. Every chore completed and every pocket money day builds up their running balance. When they want to buy something, you pay on your card and log it as a spend. Their balance goes down.
           </p>
           <p className="text-base text-bark-500 leading-[1.8] mb-4">
             As a parent, <strong className="text-bark-600">you stay in control.</strong> You own the money and decide when a spend goes through. Your kids see their balance and goals update in real time. No bank account required. No debit card for a 7-year-old.
