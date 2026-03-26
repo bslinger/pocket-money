@@ -4,6 +4,8 @@ import PhoneMockup from './PhoneMockup';
 const LOOPS_FORM_URL = 'https://app.loops.so/api/newsletter-form/cmn6vgp1u0ktn0i3cvwyyl33j';
 
 export default function Hero() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
@@ -12,7 +14,7 @@ export default function Hero() {
     if (!email || status === 'submitting' || status === 'success') return;
     setStatus('submitting');
     try {
-      const body = new URLSearchParams({ email });
+      const body = new URLSearchParams({ firstName, lastName, email, userGroup: 'waitlist' });
       const response = await fetch(LOOPS_FORM_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -20,6 +22,8 @@ export default function Hero() {
       });
       if (response.ok) {
         setStatus('success');
+        setFirstName('');
+        setLastName('');
         setEmail('');
       } else {
         setStatus('error');
@@ -28,6 +32,8 @@ export default function Hero() {
       setStatus('error');
     }
   }
+
+  const inputClass = "px-4 py-3.5 border-[1.5px] border-bark-200 rounded-[10px] text-[15px] text-bark-700 bg-white placeholder-bark-400 focus:outline-none focus:border-eucalyptus-400 transition-colors font-body disabled:opacity-50";
 
   return (
     <section className="bg-bark-50 px-[5%]">
@@ -50,6 +56,26 @@ export default function Hero() {
           </p>
 
           <form id="waitlist-form" className="flex flex-col gap-3 max-w-[400px]" onSubmit={handleEmailSubmit}>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="First name"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                required
+                disabled={status === 'success'}
+                className={inputClass}
+              />
+              <input
+                type="text"
+                placeholder="Last name"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+                required
+                disabled={status === 'success'}
+                className={inputClass}
+              />
+            </div>
             <input
               id="waitlist-email"
               type="email"
@@ -58,7 +84,7 @@ export default function Hero() {
               onChange={e => setEmail(e.target.value)}
               required
               disabled={status === 'success'}
-              className="px-4 py-3.5 border-[1.5px] border-bark-200 rounded-[10px] text-[15px] text-bark-700 bg-white placeholder-bark-400 focus:outline-none focus:border-eucalyptus-400 transition-colors font-body disabled:opacity-50"
+              className={inputClass}
             />
             <button
               type="submit"
