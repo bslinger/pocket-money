@@ -182,7 +182,7 @@ export default function EnterCodeScreen() {
               onChangeText={handleCodeChange}
               autoCapitalize="characters"
               maxLength={6}
-              placeholderTextColor={colors.bark[400]}
+              placeholderTextColor={colors.bark[600]}
               textAlign="center"
               autoFocus
             />

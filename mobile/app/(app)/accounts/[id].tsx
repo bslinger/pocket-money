@@ -84,7 +84,7 @@ export default function AccountDetailScreen() {
       {/* Transactions list */}
       <FlashList
         data={transactions}
-        estimatedItemSize={64}
+
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         onRefresh={onRefresh}

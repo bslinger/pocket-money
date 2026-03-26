@@ -53,7 +53,7 @@ export default function KidsListScreen() {
 
       <FlashList
         data={spenders ?? []}
-        estimatedItemSize={80}
+
         keyExtractor={(item) => item.id}
         onRefresh={refetch}
         refreshing={false}

@@ -231,7 +231,7 @@ export default function DashboardScreen() {
     queryFn: async () => {
       if (isChildDevice) {
         const res = await api.get('/child/dashboard');
-        return res.data.data;
+        return res.data.data as DashboardData;
       }
       const res = await api.get<{ data: DashboardData }>('/dashboard');
       return res.data.data;

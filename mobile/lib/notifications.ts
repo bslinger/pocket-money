@@ -118,8 +118,8 @@ function resolveDeepLink(deepLink: string): { path: string; params?: Record<stri
  */
 export function useNotificationListeners(): void {
   const router = useRouter();
-  const responseListener = useRef<any>();
-  const receivedListener = useRef<any>();
+  const responseListener = useRef<any>(null);
+  const receivedListener = useRef<any>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -148,10 +148,10 @@ export function useNotificationListeners(): void {
     return () => {
       mounted = false;
       if (receivedListener.current) {
-        getNotifications().then(N => N?.removeNotificationSubscription(receivedListener.current));
+        receivedListener.current?.remove();
       }
       if (responseListener.current) {
-        getNotifications().then(N => N?.removeNotificationSubscription(responseListener.current));
+        responseListener.current?.remove();
       }
     };
   }, []);

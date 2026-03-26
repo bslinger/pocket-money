@@ -32,7 +32,7 @@ export default function FamilyListScreen() {
     <View style={styles.container}>
       <FlashList
         data={families ?? []}
-        estimatedItemSize={90}
+
         keyExtractor={(item) => item.id}
         onRefresh={refetch}
         refreshing={false}
