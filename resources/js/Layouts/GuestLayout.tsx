@@ -1,9 +1,12 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 import { Wallet } from 'lucide-react';
 import { Card, CardContent } from '@/Components/ui/card';
+import { PageProps } from '@/types';
 
 export default function Guest({ children }: PropsWithChildren) {
+    const { flash } = usePage<PageProps>().props;
+
     return (
         <div className="flex min-h-dvh flex-col items-center justify-start sm:justify-center bg-bark-100 px-4 pt-16 pb-8 sm:pt-0 sm:pb-0 overflow-y-auto">
             <Link href="/" className="flex items-center gap-2 mb-6">
@@ -12,6 +15,9 @@ export default function Guest({ children }: PropsWithChildren) {
             </Link>
             <Card className="w-full max-w-sm border-bark-200">
                 <CardContent className="pt-6">
+                    {flash.error && (
+                        <p className="mb-4 text-sm text-center text-destructive">{flash.error}</p>
+                    )}
                     {children}
                 </CardContent>
             </Card>

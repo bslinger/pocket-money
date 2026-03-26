@@ -26,6 +26,10 @@ export interface SubscriptionStatus {
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
+    flash: {
+        linkCode?: string | null;
+        error?: string | null;
+    };
     auth: {
         user: User;
         isParent: boolean;

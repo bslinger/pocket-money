@@ -22,11 +22,15 @@ export default function RegisterScreen() {
     try {
       await register(name, email, password, passwordConfirmation, Platform.OS);
     } catch (e: any) {
-      const errors = e.response?.data?.errors;
-      if (errors) {
-        setError(Object.values(errors).flat().join('\n'));
+      if (e.response?.status === 429) {
+        setError('Too many attempts. Please wait a moment and try again.');
       } else {
-        setError(e.response?.data?.message ?? 'Registration failed');
+        const errors = e.response?.data?.errors;
+        if (errors) {
+          setError(Object.values(errors).flat().join('\n'));
+        } else {
+          setError(e.response?.data?.message ?? 'Registration failed');
+        }
       }
     } finally {
       setLoading(false);

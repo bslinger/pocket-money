@@ -21,8 +21,12 @@ export default function ForgotPasswordScreen() {
       setStatus('Password reset link sent to your email.');
     } catch (e: any) {
       console.error('Forgot password error:', JSON.stringify(e.response?.data ?? e.message, null, 2));
-      const msg = e.response?.data?.message ?? e.response?.data?.errors?.email?.[0] ?? e.message ?? 'Failed to send reset link';
-      setError(msg);
+      if (e.response?.status === 429) {
+        setError('Too many attempts. Please wait a moment and try again.');
+      } else {
+        const msg = e.response?.data?.message ?? e.response?.data?.errors?.email?.[0] ?? e.message ?? 'Failed to send reset link';
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

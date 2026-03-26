@@ -21,7 +21,11 @@ export default function LoginScreen() {
       await login(email, password, Platform.OS);
     } catch (e: any) {
       console.error('Login error:', e.response?.status, JSON.stringify(e.response?.data ?? e.message));
-      setError(e.response?.data?.message ?? e.message ?? 'Login failed');
+      if (e.response?.status === 429) {
+        setError('Too many attempts. Please wait a moment and try again.');
+      } else {
+        setError(e.response?.data?.message ?? e.message ?? 'Login failed');
+      }
     } finally {
       setLoading(false);
     }

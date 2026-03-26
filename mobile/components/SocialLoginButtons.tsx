@@ -25,7 +25,8 @@ export default function SocialLoginButtons({ verb = 'Continue' }: { verb?: strin
       await socialLogin({ provider: 'google', token: tokens.idToken, deviceName: Platform.OS });
     } catch (e: any) {
       if (e.code !== 'SIGN_IN_CANCELLED') {
-        Alert.alert('Google Sign In', 'Something went wrong. Please try again.');
+        const msg = e.response?.status === 429 ? 'Too many attempts. Please wait a moment and try again.' : 'Something went wrong. Please try again.';
+        Alert.alert('Google Sign In', msg);
       }
     } finally {
       setLoading(null);
@@ -50,7 +51,8 @@ export default function SocialLoginButtons({ verb = 'Continue' }: { verb?: strin
       });
     } catch (e: any) {
       if (e.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert('Apple Sign In', 'Something went wrong. Please try again.');
+        const msg = e.response?.status === 429 ? 'Too many attempts. Please wait a moment and try again.' : 'Something went wrong. Please try again.';
+        Alert.alert('Apple Sign In', msg);
       }
     } finally {
       setLoading(null);
@@ -68,7 +70,8 @@ export default function SocialLoginButtons({ verb = 'Continue' }: { verb?: strin
 
       await socialLogin({ provider: 'facebook', token: data.accessToken, deviceName: Platform.OS });
     } catch (e: any) {
-      Alert.alert('Facebook Sign In', 'Something went wrong. Please try again.');
+      const msg = e.response?.status === 429 ? 'Too many attempts. Please wait a moment and try again.' : 'Something went wrong. Please try again.';
+      Alert.alert('Facebook Sign In', msg);
     } finally {
       setLoading(null);
     }
