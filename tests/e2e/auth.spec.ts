@@ -75,7 +75,7 @@ test.describe('Logout', () => {
         // Logout is inside a Radix DropdownMenu — open it first, then click "Log out"
         await page.getByRole('button', { name: /ben/i }).first().click();
         await page.getByText('Log out').click();
-        await expect(page).toHaveURL('/');
+        await expect(page).toHaveURL('/login');
     });
 });
 
