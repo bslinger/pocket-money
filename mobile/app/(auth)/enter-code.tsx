@@ -182,7 +182,7 @@ export default function EnterCodeScreen() {
               onChangeText={handleCodeChange}
               autoCapitalize="characters"
               maxLength={6}
-              placeholderTextColor={colors.bark[600]}
+              placeholderTextColor={colors.bark[400]}
               textAlign="center"
               autoFocus
             />
@@ -243,7 +243,7 @@ export default function EnterCodeScreen() {
               value={name}
               onChangeText={setName}
               placeholder="Full name"
-              placeholderTextColor={colors.bark[600]}
+              placeholderTextColor={colors.bark[400]}
             />
 
             <Text style={styles.label}>Email</Text>
@@ -252,7 +252,7 @@ export default function EnterCodeScreen() {
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
-              placeholderTextColor={colors.bark[600]}
+              placeholderTextColor={colors.bark[400]}
               keyboardType="email-address"
               autoCapitalize="none"
             />

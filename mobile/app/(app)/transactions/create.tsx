@@ -78,7 +78,7 @@ export default function CreateTransactionScreen() {
           onChangeText={setAmount}
           placeholder="0.00"
           keyboardType="decimal-pad"
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
         />
       </View>
 
@@ -89,7 +89,7 @@ export default function CreateTransactionScreen() {
         value={description}
         onChangeText={setDescription}
         placeholder="What was this for?"
-        placeholderTextColor={colors.bark[600]}
+        placeholderTextColor={colors.bark[400]}
       />
 
       {/* Date */}
@@ -99,7 +99,7 @@ export default function CreateTransactionScreen() {
         value={occurredAt}
         onChangeText={setOccurredAt}
         placeholder="YYYY-MM-DD"
-        placeholderTextColor={colors.bark[600]}
+        placeholderTextColor={colors.bark[400]}
       />
 
       <TouchableOpacity

@@ -47,10 +47,10 @@ export default function RegisterScreen() {
 
         <SocialLoginButtons verb="Register" />
 
-        <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} placeholderTextColor={colors.bark[600]} />
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.bark[600]} />
-        <PasswordField style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} placeholderTextColor={colors.bark[600]} />
-        <PasswordField style={styles.input} placeholder="Confirm Password" value={passwordConfirmation} onChangeText={setPasswordConfirmation} placeholderTextColor={colors.bark[600]} />
+        <TextInput style={styles.input} placeholder="Name" value={name} onChangeText={setName} placeholderTextColor={colors.bark[400]} />
+        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.bark[400]} />
+        <PasswordField style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} placeholderTextColor={colors.bark[400]} />
+        <PasswordField style={styles.input} placeholder="Confirm Password" value={passwordConfirmation} onChangeText={setPasswordConfirmation} placeholderTextColor={colors.bark[400]} />
 
         <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? 'Creating account...' : 'Create Account'}</Text>

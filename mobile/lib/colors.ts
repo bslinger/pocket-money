@@ -11,6 +11,7 @@ export const colors = {
   bark: {
     100: '#F5F0E8',
     200: '#E8DFD2',
+    400: '#C4B5A2',
     600: '#8C7A60',
     700: '#3A3028',
   },

@@ -88,7 +88,7 @@ export default function FeedbackModal({ visible, onClose }: Props) {
                 value={title}
                 onChangeText={setTitle}
                 placeholder="Brief summary"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
 
               <Text style={styles.label}>Description</Text>
@@ -97,7 +97,7 @@ export default function FeedbackModal({ visible, onClose }: Props) {
                 value={description}
                 onChangeText={setDescription}
                 placeholder="Tell us more..."
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"

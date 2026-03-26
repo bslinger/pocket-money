@@ -123,7 +123,7 @@ export default function TransferScreen() {
         onChangeText={setAmount}
         placeholder="0.00"
         keyboardType="decimal-pad"
-        placeholderTextColor={colors.bark[600]}
+        placeholderTextColor={colors.bark[400]}
       />
 
       {/* Description */}
@@ -133,7 +133,7 @@ export default function TransferScreen() {
         value={description}
         onChangeText={setDescription}
         placeholder="Transfer note"
-        placeholderTextColor={colors.bark[600]}
+        placeholderTextColor={colors.bark[400]}
       />
 
       <TouchableOpacity

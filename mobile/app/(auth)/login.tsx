@@ -48,14 +48,14 @@ export default function LoginScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
         />
         <PasswordField
           style={styles.input}
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
         />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>

@@ -176,7 +176,7 @@ export default function CreateGoalScreen() {
         value={name}
         onChangeText={setName}
         placeholder="e.g. New Bike, Holiday Fund"
-        placeholderTextColor={colors.bark[600]}
+        placeholderTextColor={colors.bark[400]}
       />
 
       {/* Target Amount — with dynamic currency symbol */}
@@ -189,7 +189,7 @@ export default function CreateGoalScreen() {
           onChangeText={setTargetAmount}
           placeholder="0.00"
           keyboardType="decimal-pad"
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
         />
       </View>
 
@@ -236,7 +236,7 @@ export default function CreateGoalScreen() {
           value={targetDate}
           onChangeText={setTargetDate}
           placeholder="YYYY-MM-DD"
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
           keyboardType="numbers-and-punctuation"
           maxLength={10}
         />

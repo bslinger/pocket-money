@@ -161,7 +161,7 @@ export default function FamilyDetailScreen() {
             placeholder="Email address"
             keyboardType="email-address"
             autoCapitalize="none"
-            placeholderTextColor={colors.bark[600]}
+            placeholderTextColor={colors.bark[400]}
           />
           <TouchableOpacity
             style={[styles.inviteButton, !inviteEmail && styles.inviteButtonDisabled]}

@@ -57,7 +57,7 @@ export default function JoinFamilyScreen() {
           value={code}
           onChangeText={(t) => setCode(t.toUpperCase())}
           placeholder="ABC123"
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
           maxLength={6}
           autoCapitalize="characters"
           autoFocus={!prefilledCode}
@@ -69,7 +69,7 @@ export default function JoinFamilyScreen() {
           value={name}
           onChangeText={setName}
           placeholder="Full name"
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
         />
 
         <Text style={styles.label}>Email</Text>
@@ -78,7 +78,7 @@ export default function JoinFamilyScreen() {
           value={email}
           onChangeText={setEmail}
           placeholder="you@example.com"
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
           keyboardType="email-address"
           autoCapitalize="none"
         />

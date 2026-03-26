@@ -111,7 +111,7 @@ export default function ChildLinkScreen() {
           onChangeText={(t) => setCode(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
           autoCapitalize="characters"
           maxLength={6}
-          placeholderTextColor={colors.bark[600]}
+          placeholderTextColor={colors.bark[400]}
           textAlign="center"
         />
 

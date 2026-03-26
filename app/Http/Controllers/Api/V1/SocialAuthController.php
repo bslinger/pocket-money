@@ -46,6 +46,7 @@ class SocialAuthController extends Controller
             'data' => [
                 'user' => new UserResource($user),
                 'token' => $sanctumToken,
+                'needs_onboarding' => $user->familyUsers()->doesntExist(),
             ],
         ]);
     }

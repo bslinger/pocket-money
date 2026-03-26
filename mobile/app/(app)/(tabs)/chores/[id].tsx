@@ -166,7 +166,7 @@ export default function ChoreDetailScreen() {
             value={name}
             onChangeText={setName}
             placeholder="e.g. Make bed, Feed the dog"
-            placeholderTextColor={colors.bark[600]}
+            placeholderTextColor={colors.bark[400]}
           />
           <TouchableOpacity style={styles.emojiButton} onPress={() => setEmojiPickerOpen(true)}>
             <Text style={styles.emojiButtonText}>{emoji}</Text>
@@ -223,7 +223,7 @@ export default function ChoreDetailScreen() {
                 onChangeText={setAmount}
                 placeholder="0.00"
                 keyboardType="decimal-pad"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
             </View>
           </>

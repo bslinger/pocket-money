@@ -41,7 +41,7 @@ export default function ForgotPasswordScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {status ? <Text style={styles.success}>{status}</Text> : null}
 
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.bark[600]} />
+        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.bark[400]} />
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? 'Sending...' : 'Send Reset Link'}</Text>

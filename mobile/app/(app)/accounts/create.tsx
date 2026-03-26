@@ -125,7 +125,7 @@ export default function CreateAccountScreen() {
         value={name}
         onChangeText={setName}
         placeholder="e.g. Spending, Savings, Birthday"
-        placeholderTextColor={colors.bark[600]}
+        placeholderTextColor={colors.bark[400]}
       />
 
       {/* Currency Selection */}
@@ -227,7 +227,7 @@ export default function CreateAccountScreen() {
                   setCurrencyNamePlural(t.endsWith('s') ? t : t + 's');
                 }}
                 placeholder="e.g. Star"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -237,7 +237,7 @@ export default function CreateAccountScreen() {
                 value={currencyNamePlural}
                 onChangeText={setCurrencyNamePlural}
                 placeholder="e.g. Stars"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
             </View>
           </View>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -73,39 +73,26 @@ export default function SettingsScreen() {
     );
   };
 
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('');
+
   const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'This action is permanent and cannot be undone. All your data will be deleted.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete Account',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'Are you absolutely sure?',
-              'Type your email to confirm account deletion.',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Confirm Delete',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      await api.delete('/auth/user');
-                      await logout();
-                    } catch (err: any) {
-                      Alert.alert('Error', err.response?.data?.message ?? 'Failed to delete account');
-                    }
-                  },
-                },
-              ],
-            );
-          },
-        },
-      ],
-    );
+    setDeleteConfirmEmail('');
+    setDeleteConfirmVisible(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (deleteConfirmEmail.toLowerCase().trim() !== (user?.email ?? '').toLowerCase().trim()) {
+      Alert.alert('Email does not match', 'Please enter your email address exactly as shown.');
+      return;
+    }
+    try {
+      setDeleteConfirmVisible(false);
+      await api.delete('/auth/user');
+      await logout();
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.message ?? 'Failed to delete account');
+    }
   };
 
   return (
@@ -121,7 +108,7 @@ export default function SettingsScreen() {
                 style={styles.input}
                 value={name}
                 onChangeText={setName}
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
               <Text style={styles.fieldLabel}>Display Name</Text>
               <TextInput
@@ -129,7 +116,7 @@ export default function SettingsScreen() {
                 value={displayName}
                 onChangeText={setDisplayName}
                 placeholder="How kids see you"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
               <Text style={styles.fieldLabel}>Parent Title</Text>
               <TextInput
@@ -137,7 +124,7 @@ export default function SettingsScreen() {
                 value={parentTitle}
                 onChangeText={setParentTitle}
                 placeholder="e.g. Mum, Dad, Parent"
-                placeholderTextColor={colors.bark[600]}
+                placeholderTextColor={colors.bark[400]}
               />
               <View style={styles.editActions}>
                 <TouchableOpacity
@@ -220,6 +207,40 @@ export default function SettingsScreen() {
       <Text style={styles.versionText}>Quiddo v1.0.0</Text>
 
       <FeedbackModal visible={feedbackVisible} onClose={() => setFeedbackVisible(false)} />
+
+      {/* Delete account confirmation modal */}
+      <Modal visible={deleteConfirmVisible} transparent animationType="fade" onRequestClose={() => setDeleteConfirmVisible(false)}>
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Delete Account</Text>
+            <Text style={styles.modalDesc}>
+              This is permanent and cannot be undone. All your families, kids, accounts, chores, and goals will be deleted.
+            </Text>
+            <Text style={styles.modalDesc}>
+              Enter your email address to confirm:
+            </Text>
+            <Text style={styles.modalEmail}>{user?.email}</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={deleteConfirmEmail}
+              onChangeText={setDeleteConfirmEmail}
+              placeholder="your@email.com"
+              placeholderTextColor={colors.bark[400]}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoFocus
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancel} onPress={() => setDeleteConfirmVisible(false)}>
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalDelete} onPress={confirmDeleteAccount}>
+                <Text style={styles.modalDeleteText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </ScrollView>
   );
 }
@@ -317,4 +338,23 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: { color: colors.redearth[400], fontWeight: '600', fontSize: 16 },
   versionText: { textAlign: 'center', color: colors.bark[600], fontSize: 12, marginTop: 24 },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 },
+  modalCard: { backgroundColor: colors.white, borderRadius: 14, padding: 20, gap: 12 },
+  modalTitle: { fontFamily: fonts.display, fontSize: 18, fontWeight: '600', color: colors.bark[700] },
+  modalDesc: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], lineHeight: 19 },
+  modalEmail: { fontFamily: fonts.body, fontSize: 13, fontWeight: '600', color: colors.bark[700] },
+  modalInput: {
+    borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 10,
+    fontFamily: fonts.body, fontSize: 14, color: colors.bark[700],
+  },
+  modalActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  modalCancel: {
+    flex: 1, borderWidth: 1, borderColor: colors.bark[200], borderRadius: 8,
+    padding: 12, alignItems: 'center',
+  },
+  modalCancelText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600], fontWeight: '600' },
+  modalDelete: { flex: 1, backgroundColor: colors.redearth[400], borderRadius: 8, padding: 12, alignItems: 'center' },
+  modalDeleteText: { fontFamily: fonts.body, fontSize: 14, color: colors.white, fontWeight: '600' },
 });

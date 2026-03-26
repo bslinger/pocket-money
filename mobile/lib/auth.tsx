@@ -10,6 +10,7 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  needsOnboarding: boolean;
   isChildDevice: boolean;
   childSpender: ClaimDeviceResponse['spender'] | null;
   authError: string | null;
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     token: null,
     isLoading: true,
     isAuthenticated: false,
+    needsOnboarding: false,
     isChildDevice: false,
     childSpender: null,
     authError: null,
@@ -68,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           token: storedToken,
           isLoading: false,
           isAuthenticated: true,
+          needsOnboarding: false,
           isChildDevice: false,
           childSpender: null,
           authError: null,
@@ -87,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           token: storedToken,
           isLoading: false,
           isAuthenticated: true,
+          needsOnboarding: false,
           isChildDevice: true,
           childSpender: spender,
           authError: null,
@@ -100,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           token: null,
           isLoading: false,
           isAuthenticated: false,
+          needsOnboarding: false,
           isChildDevice: false,
           childSpender: null,
           authError: 'Your session has expired. Please sign in again.',
@@ -117,17 +122,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!state.isAuthenticated && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (state.isAuthenticated && inAuthGroup) {
-      // Both parent and child devices go to the same tabs — the dashboard
-      // component already renders a child-specific view when isParent is false
-      router.replace('/(app)/(tabs)');
+      if (state.needsOnboarding) {
+        router.replace('/(app)/onboarding');
+      } else {
+        // Both parent and child devices go to the same tabs — the dashboard
+        // component already renders a child-specific view when isParent is false
+        router.replace('/(app)/(tabs)');
+      }
     }
-  }, [state.isAuthenticated, state.isLoading, segments]);
+  }, [state.isAuthenticated, state.needsOnboarding, state.isLoading, segments]);
 
   const login = useCallback(async (email: string, password: string, deviceName: string) => {
     const response = await api.post('/auth/login', { email, password, device_name: deviceName });
-    const { user, token } = response.data.data;
+    const { user, token, needs_onboarding } = response.data.data;
     await setToken(token);
-    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
+    setState({ user, token, isLoading: false, isAuthenticated: true, needsOnboarding: !!needs_onboarding, isChildDevice: false, childSpender: null, authError: null });
     registerForPushNotifications(false);
   }, []);
 
@@ -145,9 +154,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password_confirmation: passwordConfirmation,
       device_name: deviceName,
     });
-    const { user, token } = response.data.data;
+    const { user, token, needs_onboarding } = response.data.data;
     await setToken(token);
-    setState({ user, token, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
+    setState({ user, token, isLoading: false, isAuthenticated: true, needsOnboarding: !!needs_onboarding, isChildDevice: false, childSpender: null, authError: null });
     registerForPushNotifications(false);
   }, []);
 
@@ -158,9 +167,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       first_name: firstName,
       last_name: lastName,
     });
-    const { user, token: sanctumToken } = response.data.data;
+    const { user, token: sanctumToken, needs_onboarding } = response.data.data;
     await setToken(sanctumToken);
-    setState({ user, token: sanctumToken, isLoading: false, isAuthenticated: true, isChildDevice: false, childSpender: null, authError: null });
+    setState({ user, token: sanctumToken, isLoading: false, isAuthenticated: true, needsOnboarding: !!needs_onboarding, isChildDevice: false, childSpender: null, authError: null });
     registerForPushNotifications(false);
   }, []);
 
@@ -168,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await api.post('/spender-devices/claim', { code, device_name: deviceName });
     const { token, spender } = response.data.data;
     await setToken(token);
-    setState({ user: null, token, isLoading: false, isAuthenticated: true, isChildDevice: true, childSpender: spender, authError: null });
+    setState({ user: null, token, isLoading: false, isAuthenticated: true, needsOnboarding: false, isChildDevice: true, childSpender: spender, authError: null });
     registerForPushNotifications(true);
   }, []);
 
@@ -185,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Ignore errors — we're logging out regardless
     }
     await clearToken();
-    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, isChildDevice: false, childSpender: null, authError: null });
+    setState({ user: null, token: null, isLoading: false, isAuthenticated: false, needsOnboarding: false, isChildDevice: false, childSpender: null, authError: null });
   }, []);
 
   return (

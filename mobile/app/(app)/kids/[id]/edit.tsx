@@ -180,7 +180,7 @@ export default function EditKidScreen() {
         value={name}
         onChangeText={setName}
         placeholder="Kid's name"
-        placeholderTextColor={colors.bark[600]}
+        placeholderTextColor={colors.bark[400]}
       />
 
       {/* Color */}
@@ -224,7 +224,7 @@ export default function EditKidScreen() {
             onChangeText={setPmAmount}
             placeholder="0.00"
             keyboardType="decimal-pad"
-            placeholderTextColor={colors.bark[600]}
+            placeholderTextColor={colors.bark[400]}
           />
         </View>
 
@@ -270,7 +270,7 @@ export default function EditKidScreen() {
               value={String(pmDayOfMonth)}
               onChangeText={(v) => setPmDayOfMonth(Math.min(31, Math.max(1, parseInt(v) || 1)))}
               keyboardType="number-pad"
-              placeholderTextColor={colors.bark[600]}
+              placeholderTextColor={colors.bark[400]}
             />
           </>
         )}
@@ -306,7 +306,7 @@ export default function EditKidScreen() {
                         onFocus={() => setFocusedSplitIndex(index)}
                         onBlur={() => setFocusedSplitIndex(null)}
                         keyboardType="decimal-pad"
-                        placeholderTextColor={colors.bark[600]}
+                        placeholderTextColor={colors.bark[400]}
                       />
                       <Text style={styles.splitPercent}>%</Text>
                     </View>

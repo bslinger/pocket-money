@@ -39,6 +39,7 @@ class AuthController extends Controller
             'data' => [
                 'user' => new UserResource($user),
                 'token' => $token,
+                'needs_onboarding' => $user->familyUsers()->doesntExist(),
             ],
         ]);
     }
@@ -64,6 +65,7 @@ class AuthController extends Controller
             'data' => [
                 'user' => new UserResource($user),
                 'token' => $token,
+                'needs_onboarding' => true,
             ],
         ], 201);
     }
@@ -93,8 +95,6 @@ class AuthController extends Controller
     public function deleteAccount(Request $request): JsonResponse
     {
         $user = $request->user();
-        $user->currentAccessToken()->delete();
-        $user->tokens()->delete();
         $user->delete();
 
         return response()->json(['message' => 'Account deleted']);
