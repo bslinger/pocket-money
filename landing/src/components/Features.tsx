@@ -36,24 +36,28 @@ export default function Features() {
           className="max-w-[660px] mx-auto bg-white rounded-[14px] overflow-hidden"
           style={{ border: '1px solid #EBE4D6' }}
         >
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2">
             {WHY_FEATURES.map((feat, i) => {
               const isRightCol = i % 2 === 1;
               const isLastRow = i >= WHY_FEATURES.length - 2;
+              const isLastItem = i === WHY_FEATURES.length - 1;
               return (
                 <div
                   key={feat.title}
-                  className="px-7 py-8 text-center"
-                  style={{
-                    borderBottom: isLastRow ? 'none' : '1px solid #EBE4D6',
-                    borderRight: isRightCol ? 'none' : '1px solid #EBE4D6',
-                  }}
+                  className={[
+                    'px-5 py-5',
+                    !isLastItem ? 'border-b border-[#EBE4D6]' : '',
+                    isLastRow && !isLastItem ? 'sm:border-b-0' : '',
+                    !isRightCol ? 'sm:border-r sm:border-[#EBE4D6]' : '',
+                  ].filter(Boolean).join(' ')}
                 >
-                  <div className="w-[52px] h-[52px] rounded-[14px] bg-eucalyptus-50 flex items-center justify-center text-2xl mx-auto mb-3.5">
-                    {feat.emoji}
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className="w-[36px] h-[36px] rounded-[10px] bg-eucalyptus-50 flex items-center justify-center text-lg flex-shrink-0">
+                      {feat.emoji}
+                    </div>
+                    <h3 className="font-display text-[17px] font-semibold text-bark-700 text-left">{feat.title}</h3>
                   </div>
-                  <h3 className="font-display text-[17px] font-semibold text-bark-700 mb-2">{feat.title}</h3>
-                  <p className="text-sm text-bark-500 leading-relaxed">{feat.desc}</p>
+                  <p className="text-sm text-bark-500 leading-relaxed text-left">{feat.desc}</p>
                 </div>
               );
             })}
@@ -62,7 +66,7 @@ export default function Features() {
       </section>
 
       {/* WHAT YOU GET */}
-      <section className="bg-eucalyptus-50 border-t border-eucalyptus-100 border-b border-b-eucalyptus-100 py-[72px] px-[5%]">
+      <section className="bg-eucalyptus-50 border-t border-eucalyptus-100 border-b border-b-eucalyptus-100 pt-10 pb-[72px] md:py-[72px] px-[5%]">
         <div className="max-w-[900px] mx-auto">
           <h2 className="font-display text-[34px] font-semibold text-bark-700 text-center mb-10">What you get</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

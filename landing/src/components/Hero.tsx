@@ -37,7 +37,7 @@ export default function Hero() {
 
   return (
     <section className="bg-bark-50 px-[5%]">
-      <div className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 min-h-[calc(100vh-60px)] items-center gap-[60px] py-[60px]">
+      <div className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-2 md:min-h-[calc(100vh-60px)] md:items-center gap-[60px] pt-10 pb-10 md:py-[60px]">
         {/* Phone mockup — hidden on mobile */}
         <div className="hidden md:flex order-first md:order-none">
           <PhoneMockup />
@@ -55,7 +55,7 @@ export default function Hero() {
             Kids earn pocket money and save up for what they want. When they're ready to spend, you pay on your card and it comes off their balance. No cash. No IOUs.
           </p>
 
-          <form id="waitlist-form" className="flex flex-col gap-3 max-w-[400px]" onSubmit={handleEmailSubmit}>
+          <form id="waitlist-form" className="flex flex-col gap-3 max-w-[400px] scroll-mt-[80px]" onSubmit={handleEmailSubmit}>
             <div className="grid grid-cols-2 gap-3">
               <input
                 type="text"
