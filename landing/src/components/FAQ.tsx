@@ -3,35 +3,35 @@ import { useState } from 'react';
 const FAQ_ITEMS = [
   {
     q: 'How does Quiddo work?',
-    a: "Think of it as a running tab for each kid. Every chore they complete and every pocket money day adds to their balance. When they want to buy something, you pay on your card and mark it as a spend in the app. Their balance goes down. No cash, no bank account.",
+    a: "It's a virtual ledger - think of it as a running tab for each kid. Every chore they complete and every pocket money day adds to their balance. When they want to buy something, you pay on your card and mark it as a spend in the app and their balance goes down.",
   },
   {
     q: 'So my kids never actually get the money?',
-    a: "Right. The balance is a number that goes up and down. They can't take it out of a wallet because it was never in one. When they've saved up enough and want something, they ask you to buy it, you log the spend, and their balance drops. For younger kids especially, this tends to click pretty quickly.",
+    a: "Right. The balance is a number that goes up and down. They can see what they've saved and what they've spent, and how long they need to wait to get that new book or toy. When they've saved up enough, they ask you to buy it, you log the spend, and their balance drops. For younger kids especially, this is a great way to start teaching them about money, and it tends to click quickly.",
   },
   {
     q: 'Do my kids need their own device?',
-    a: "Not for it to work, no. You can run the whole thing from your own phone. If your kids are old enough to care about their balance, giving them their own login to check it is useful, but plenty of parents manage everything themselves and just show the kids when they ask.",
+    a: "Not for it to work, no. You can run the whole thing from your own phone. If your kids are old enough to care about their balance, you can connect their device directly or send them a signup link, but plenty of parents manage everything themselves and just show the kids when they ask.",
   },
   {
     q: 'Can both parents use Quiddo?',
-    a: "Yes. Add your partner from the app and you'll both see the same balances and approval queues. Works for separated families too, where two households are contributing to the same kids' pocket money.",
+    a: "Yes! Add your partner from the app and you'll both see the same balances and approval queues. Works for separated families too, where two households are contributing to the same kids' pocket money and chore schedules.",
   },
   {
-    q: "What's the difference between chores and responsibilities?",
-    a: "Chores earn money directly. Approve the chore, the balance goes up. Responsibilities are different. They're the baseline stuff that has to happen before pocket money drops (making the bed, packing the bag). Miss too many and the weekly allowance doesn't unlock. You set the threshold.",
+    q: "What's the difference between chores that earn and responsibilities?",
+    a: "Some chores earn money directly. Approve the chore, the balance goes up. Responsibilities are different,  they're the jobs that are expected to be done before pocket money drops (cleaning their room, feeding the cat). Miss too many and the weekly allowance doesn't unlock. You set the threshold, or release a percentage based on how many were completed.",
   },
   {
     q: 'Does Quiddo work with points or a custom currency?',
-    a: "Yes. Dollars work, but a lot of families prefer points or their own currency, especially with younger kids. Call them whatever you want. You can even use different currencies for different children if that's useful.",
+    a: "Yes. Real money works, but a lot of families prefer points or their own currency, especially with younger kids. Call them whatever you want, assign a custom symbol. You can even use different currencies for different children or accounts if that's useful.",
   },
   {
     q: 'Is there a limit to how many children I can add?',
-    a: "Up to 12. One subscription, flat price, doesn't matter how many kids you have.",
+    a: "Up to 12 per family. One subscription, flat price, doesn't matter how many kids you have (well, unless it's more than 12).",
   },
   {
     q: 'What happens after my 30-day trial?',
-    a: "You'll be prompted to pick a plan. If you don't, the account goes read-only. You can still see everything, you just can't make changes. No credit card is needed to start.",
+    a: "You'll be prompted to pick a plan. If you don't, the account goes read-only. You can still see everything, you just can't make changes, and you can export all your data at any time. No credit card is needed to start.",
   },
 ];
 
