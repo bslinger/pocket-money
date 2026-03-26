@@ -153,6 +153,7 @@ class OnboardingController extends Controller
             unset($choreData['spender_ids']);
 
             $chore = Chore::create(array_merge($choreData, [
+                'emoji' => $choreData['emoji'] ?? '📋',
                 'family_id' => $family->id,
                 'is_active' => true,
                 'requires_approval' => false,

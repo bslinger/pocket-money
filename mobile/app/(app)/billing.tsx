@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Linking } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Linking, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
@@ -13,7 +14,9 @@ interface BillingData {
 }
 
 export default function BillingScreen() {
-  const { data, isLoading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['billing'],
     queryFn: async () => {
       // The billing info is assembled from the dashboard and subscription status
@@ -24,6 +27,12 @@ export default function BillingScreen() {
       };
     },
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const handleManageBilling = async () => {
     try {
@@ -66,7 +75,7 @@ export default function BillingScreen() {
   const onTrial = subscription?.on_trial ?? false;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       {/* Current Status */}
       <View style={styles.statusCard}>
         <Text style={styles.statusTitle}>Subscription Status</Text>

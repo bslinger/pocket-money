@@ -200,7 +200,17 @@ export default function AccountCreate({ spenders, preselectedSpenderId, family }
                         <Input
                           id="currency_name"
                           value={data.currency_name}
-                          onChange={e => setData('currency_name', e.target.value)}
+                          onChange={e => {
+                              const newName = e.target.value;
+                              setData(d => ({
+                                  ...d,
+                                  currency_name: newName,
+                                  currency_name_plural:
+                                      d.currency_name_plural === pluralize(d.currency_name)
+                                          ? pluralize(newName)
+                                          : d.currency_name_plural,
+                              }));
+                          }}
                           placeholder="e.g. Star, Gem"
                         />
                       </div>

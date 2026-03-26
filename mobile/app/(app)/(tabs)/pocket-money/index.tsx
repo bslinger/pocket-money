@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { api } from '@/lib/api';
@@ -22,6 +23,7 @@ interface ReleaseData {
 
 export default function PocketMoneyScreen() {
   const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['pocket-money-release'],
@@ -30,6 +32,12 @@ export default function PocketMoneyScreen() {
       return res.data.data;
     },
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const payMutation = useMutation({
     mutationFn: async ({ spenderId, amount }: { spenderId: string; amount: string }) => {
@@ -86,7 +94,7 @@ export default function PocketMoneyScreen() {
   const dueCount = spenders.filter((s) => s.is_due).length;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>Pocket Money</Text>
         {dueCount > 0 && (

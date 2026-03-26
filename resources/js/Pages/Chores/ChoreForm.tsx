@@ -34,6 +34,8 @@ export default function ChoreForm({ families, spenders, mode, chore, defaultSpen
     amount:            chore?.amount ?? '',
     frequency:         (chore?.frequency ?? 'weekly') as 'daily' | 'weekly' | 'monthly' | 'one_off',
     days_of_week:      chore?.days_of_week ?? [] as number[],
+    day_of_month:      chore?.day_of_month ?? 1 as number,
+    one_off_date:      chore?.one_off_date ?? '' as string,
     requires_approval: chore?.requires_approval ?? true,
     up_for_grabs:      chore?.up_for_grabs ?? false,
     is_active:         chore?.is_active ?? true,
@@ -190,6 +192,37 @@ export default function ChoreForm({ families, spenders, mode, chore, defaultSpen
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Day of month (monthly) */}
+          {data.frequency === 'monthly' && (
+            <div className="space-y-1.5">
+              <Label>Day of Month</Label>
+              <select
+                value={data.day_of_month}
+                onChange={e => setData('day_of_month', parseInt(e.target.value))}
+                className="w-24 rounded-md border border-bark-200 bg-bark-50 px-3 py-2 text-sm"
+              >
+                {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                  <option key={d} value={d}>{d}{d === 31 ? ' (or last)' : ''}</option>
+                ))}
+              </select>
+              {(data.day_of_month as number) > 28 && (
+                <p className="text-xs text-bark-400">For shorter months, this will fall on the last day.</p>
+              )}
+            </div>
+          )}
+
+          {/* One-off date */}
+          {data.frequency === 'one_off' && (
+            <div className="space-y-1.5">
+              <Label>Date</Label>
+              <Input
+                type="date"
+                value={data.one_off_date}
+                onChange={e => setData('one_off_date', e.target.value)}
+              />
             </div>
           )}
 

@@ -49,9 +49,9 @@ test.describe('EmojiPickerField', () => {
         test('mobile input shows default emoji and reverts to default if cleared', async ({ page }) => {
             await page.goto('/chores/create');
             const input = page.locator('input[aria-label="Pick emoji"]');
-            // Default emoji is 📋
-            await expect(input).toHaveValue('📋');
-            // Clearing and blurring should revert to default
+            // ChoreForm initialises emoji to 🧹; EmojiPickerField's defaultEmoji prop is 📋 (the fallback when cleared)
+            await expect(input).toHaveValue('🧹');
+            // Clearing and blurring should revert to the EmojiPickerField defaultEmoji (📋)
             await input.fill('');
             await input.blur();
             await expect(input).toHaveValue('📋');

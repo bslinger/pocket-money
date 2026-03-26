@@ -24,6 +24,8 @@ class StoreChoreRequest extends FormRequest
             'frequency' => ['required', 'in:daily,weekly,monthly,one_off'],
             'days_of_week' => ['nullable', 'array'],
             'days_of_week.*' => ['integer', 'min:0', 'max:6'],
+            'day_of_month' => ['nullable', 'integer', 'min:1', 'max:31'],
+            'one_off_date' => ['nullable', 'date'],
             'requires_approval' => ['boolean'],
             'up_for_grabs' => ['boolean'],
             'is_active' => ['boolean'],

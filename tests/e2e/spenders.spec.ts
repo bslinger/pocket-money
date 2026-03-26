@@ -46,9 +46,9 @@ test.describe('Spenders', () => {
         await expect(page).toHaveURL(/\/spenders\//);
         await expect(page.getByText('AutoSavingsKid')).toBeVisible();
 
-        // Should be on the spender show page — Accounts tab is default
+        // Should be on the spender show page — Accounts tab is default, Savings account visible with $0.00
         await expect(page.getByText('Savings')).toBeVisible();
-        await expect(page.getByText('$0.00')).toBeVisible();
+        await expect(page.getByRole('link', { name: /Savings.*\$0\.00/s })).toBeVisible();
     });
 
     test('shows validation error for empty spender name', async ({ page }) => {

@@ -49,6 +49,8 @@ test.describe('Chores', () => {
 
     test('shows validation error for missing chore name', async ({ page }) => {
         await page.goto('/chores/create');
+        // Assign a spender first so the JS guard doesn't block submission
+        await page.locator('button:has-text("Emma")').click();
         await page.locator('button:has-text("Create Chore")').click();
         await expect(page.getByText(/name field is required/i)).toBeVisible();
     });
@@ -163,6 +165,12 @@ test.describe('Chores', () => {
     });
 
     test('deleting a chore with completions soft-deletes it', async ({ page }) => {
+        // Get Emma's spender ID from her profile URL
+        await page.goto('/spenders');
+        await page.getByRole('link', { name: 'Emma' }).first().click();
+        await page.waitForURL(/\/spenders\//);
+        const spenderId = page.url().split('/spenders/')[1].split('/')[0];
+
         // Create a daily chore for Emma
         await page.goto('/chores/create');
         await page.fill('#name', 'Soft Delete Chore');
@@ -175,16 +183,27 @@ test.describe('Chores', () => {
         await page.click('button:has-text("Manage")');
         await expect(page.getByText('Soft Delete Chore')).toBeVisible();
 
-        // Navigate to the history page and note the URL for later
+        // Note the history URL to visit later
         const choreRow = page.locator('.divide-y > div').filter({ hasText: 'Soft Delete Chore' });
         const historyLink = choreRow.getByTitle('History');
         const historyHref = await historyLink.getAttribute('href');
+        const choreId = historyHref?.match(/\/chores\/([^/]+)\/history/)?.[1];
 
-        // Mark the chore as complete via the Schedule tab
-        await page.click('button:has-text("Schedule")');
-        await expect(page.getByText('Soft Delete Chore').first()).toBeVisible();
+        // Verify we extracted the IDs correctly
+        expect(spenderId, 'spenderId should not be null').toBeTruthy();
+        expect(choreId, 'choreId should not be null').toBeTruthy();
+
+        // Create a completion via the API by entering kid view (parents can complete chores when viewing as a spender)
+        const cookies = await page.context().cookies();
+        const xsrfToken = decodeURIComponent(cookies.find(c => c.name === 'XSRF-TOKEN')?.value ?? '');
+        const headers = { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': xsrfToken };
+        await page.request.post(`/spenders/${spenderId}/view-as`, { headers, data: { return_url: '/chores' } });
+        const completeRes = await page.request.post(`/chores/${choreId}/complete`, { headers, data: { spender_id: spenderId } });
+        expect(completeRes.ok(), `complete POST failed: ${completeRes.status()} — ${await completeRes.text()}`).toBeTruthy();
+        await page.request.delete('/view-as', { headers });
 
         // Now delete the chore from the Manage tab
+        await page.reload();
         await page.click('button:has-text("Manage")');
         await expect(page.getByText('Soft Delete Chore')).toBeVisible();
         page.once('dialog', dialog => dialog.accept());
@@ -192,7 +211,7 @@ test.describe('Chores', () => {
         await deleteRow.locator('button').last().click();
         await expect(page.getByText('Soft Delete Chore')).not.toBeVisible();
 
-        // The history page should still be accessible (completions preserved)
+        // The history page should still be accessible because the chore was soft-deleted (has completions)
         if (historyHref) {
             await page.goto(historyHref);
             await expect(page.getByText('Soft Delete Chore')).toBeVisible();
@@ -220,8 +239,7 @@ test.describe('Chores', () => {
         await page.click('button:has-text("Manage")');
 
         // The manage tab should show "Monthly · 15th" in the badge
-        await expect(page.getByText('Monthly')).toBeVisible();
-        await expect(page.getByText('15th')).toBeVisible();
+        await expect(page.getByText('Monthly · 15th')).toBeVisible();
     });
 
     test('creating a one-off chore shows date input', async ({ page }) => {
@@ -247,19 +265,19 @@ test.describe('Chores', () => {
         // Weekly is the default frequency
         await page.locator('select').last().selectOption('weekly');
 
-        // Select Mon (index 0) and Wed (index 2) and Fri (index 4)
-        await page.locator('button:has-text("Mon")').click();
-        await page.locator('button:has-text("Wed")').click();
-        await page.locator('button:has-text("Fri")').click();
+        // Select Mon, Wed, Fri — use exact match to avoid matching "Pocket Money" description text
+        await page.getByRole('button', { name: 'Mon', exact: true }).click();
+        await page.getByRole('button', { name: 'Wed', exact: true }).click();
+        await page.getByRole('button', { name: 'Fri', exact: true }).click();
 
         await page.click('button:has-text("Emma")');
         await page.click('button:has-text("Create Chore")');
         await page.waitForURL('/chores');
         await page.click('button:has-text("Manage")');
 
-        // The manage tab badge should show day abbreviations
-        await expect(page.getByText('Weekly')).toBeVisible();
-        await expect(page.getByText('Mon, Wed, Fri')).toBeVisible();
+        // The manage tab badge should show day abbreviations — find within this chore's row to avoid strict mode
+        const weeklyRow = page.locator('.divide-y > div').filter({ hasText: 'Weekly Days Chore' });
+        await expect(weeklyRow.getByText('Weekly · Mon, Wed, Fri')).toBeVisible();
     });
 
     test('can filter chores by kid', async ({ page }) => {

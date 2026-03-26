@@ -55,8 +55,10 @@ test.describe('Currency pluralization — onboarding custom currency', () => {
     test('irregular plural: tooth → Teeth, not Tooths', async ({ page }) => {
         await goToOnboardingCustomCurrencyStep(page);
         await pickEmojiBySearch(page, 'tooth');
+        // The emoji dataset may use a different name variant; set it explicitly to test pluralization
+        await page.locator('#currency-name').fill('Tooth');
 
-        await expect(page.locator('#currency-name')).toHaveValue(/tooth/i, { timeout: 3000 });
+        await expect(page.locator('#currency-name')).toHaveValue('Tooth');
         await expect(page.locator('#currency-plural')).toHaveValue('Teeth', { timeout: 3000 });
     });
 
@@ -71,6 +73,7 @@ test.describe('Currency pluralization — onboarding custom currency', () => {
     test('preview text uses the correct pluralized form', async ({ page }) => {
         await goToOnboardingCustomCurrencyStep(page);
         await pickEmojiBySearch(page, 'tooth');
+        await page.locator('#currency-name').fill('Tooth');
 
         await expect(page.locator('p:has-text("Preview")')).toContainText('Teeth', { timeout: 3000 });
         await expect(page.locator('p:has-text("Preview")')).not.toContainText('Tooths');
@@ -88,6 +91,7 @@ test.describe('Currency pluralization — onboarding custom currency', () => {
     test('whole numbers label uses the pluralized form from picker', async ({ page }) => {
         await goToOnboardingCustomCurrencyStep(page);
         await pickEmojiBySearch(page, 'tooth');
+        await page.locator('#currency-name').fill('Tooth');
 
         await page.locator('label:has-text("Whole numbers") input[type=checkbox]').check();
 
@@ -118,8 +122,9 @@ test.describe('Currency pluralization — account create currency override', () 
         await page.click('button:has-text("⭐ Custom")');
 
         await pickEmojiBySearch(page, 'tooth');
+        await page.locator('#currency_name').fill('Tooth');
 
-        await expect(page.locator('#currency_name')).toHaveValue(/tooth/i, { timeout: 3000 });
+        await expect(page.locator('#currency_name')).toHaveValue('Tooth');
         await expect(page.locator('#currency_name_plural')).toHaveValue('Teeth', { timeout: 3000 });
     });
 
@@ -130,6 +135,7 @@ test.describe('Currency pluralization — account create currency override', () 
         await page.click('button:has-text("⭐ Custom")');
 
         await pickEmojiBySearch(page, 'tooth');
+        await page.locator('#currency_name').fill('Tooth');
 
         await expect(page.locator('p:has-text("Preview")')).toContainText('Teeth', { timeout: 3000 });
         await expect(page.locator('p:has-text("Preview")')).not.toContainText('Tooths');

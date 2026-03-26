@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -10,7 +11,9 @@ export default function AccountDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
-  const { data: account, isLoading: accountLoading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: account, isLoading: accountLoading, refetch: refetchAccount } = useQuery({
     queryKey: ['account', id],
     queryFn: async () => {
       const res = await api.get<ApiResponse<Account>>(`/accounts/${id}`);
@@ -19,7 +22,7 @@ export default function AccountDetailScreen() {
     enabled: !!id,
   });
 
-  const { data: transactionsData, isLoading: txLoading } = useQuery({
+  const { data: transactionsData, isLoading: txLoading, refetch: refetchTx } = useQuery({
     queryKey: ['account-transactions', id],
     queryFn: async () => {
       const res = await api.get<ApiListResponse<Transaction>>(`/accounts/${id}/transactions`);
@@ -27,6 +30,12 @@ export default function AccountDetailScreen() {
     },
     enabled: !!id,
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refetchAccount(), refetchTx()]);
+    setRefreshing(false);
+  }, [refetchAccount, refetchTx]);
 
   const isLoading = accountLoading || txLoading;
 
@@ -78,6 +87,8 @@ export default function AccountDetailScreen() {
         estimatedItemSize={64}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
         renderItem={({ item }) => {
           const isCredit = item.type === 'credit';
           return (

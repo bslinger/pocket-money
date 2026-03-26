@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 type GoalTab = 'active' | 'completed';
@@ -24,14 +24,21 @@ export default function GoalsListScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<GoalTab>('active');
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data: goals, isLoading } = useQuery({
+  const { data: goals, isLoading, refetch } = useQuery({
     queryKey: ['goals'],
     queryFn: async () => {
       const res = await api.get<ApiResponse<GoalWithSpender[]>>('/goals');
       return res.data.data;
     },
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const reorderMutation = useMutation({
     mutationFn: async (goalIds: string[]) => {
@@ -95,7 +102,7 @@ export default function GoalsListScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>Goals</Text>
         <TouchableOpacity

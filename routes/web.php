@@ -104,7 +104,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('goals', SavingsGoalController::class);
 
         Route::resource('chores', ChoreController::class)->except('show');
-        Route::get('/chores/{chore}/history', [ChoreController::class, 'history'])->name('chores.history');
+        Route::get('/chores/{chore}/history', [ChoreController::class, 'history'])->name('chores.history')->withTrashed();
         Route::get('/chores-completions-for-date', [ChoreController::class, 'completionsForDate'])->name('chores.completions-for-date');
         Route::patch('/chore-completions/{completion}/approve', [ChoreCompletionController::class, 'approve'])->name('chore-completions.approve');
         Route::patch('/chore-completions/{completion}/unapprove', [ChoreCompletionController::class, 'unapprove'])->name('chore-completions.unapprove');

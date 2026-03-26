@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -45,7 +45,9 @@ export default function SpenderDevicesScreen() {
     }
   }, [secondsLeft, linkCode]);
 
-  const { data: devices = [], isLoading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: devices = [], isLoading, refetch } = useQuery({
     queryKey: ['spender-devices', id],
     queryFn: async () => {
       const res = await api.get(`/spenders/${id}/devices`);
@@ -53,6 +55,12 @@ export default function SpenderDevicesScreen() {
     },
     enabled: !!id,
   });
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const generateCode = async () => {
     setGenerating(true);
@@ -89,7 +97,7 @@ export default function SpenderDevicesScreen() {
   const qrValue = linkCode ? `quiddo://link?code=${linkCode.code}` : '';
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.eucalyptus[400]} />}>
       <Text style={styles.description}>
         Link a child's device so they can view their accounts and mark chores complete — no email needed.
       </Text>
