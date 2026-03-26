@@ -6,8 +6,6 @@ use App\Http\Requests\StoreChoreRequest;
 use App\Models\Chore;
 use App\Models\ChoreCompletion;
 use App\Services\AnalyticsService;
-use Bentonow\BentoLaravel\DataTransferObjects\EventData;
-use Bentonow\BentoLaravel\Facades\Bento;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -63,16 +61,6 @@ class ChoreController extends Controller
 
         $chore = Chore::create(array_merge($data, ['created_by' => $request->user()->id]));
         $chore->spenders()->sync($spenderIds);
-
-        rescue(function () use ($request, $chore): void {
-            Bento::trackEvent(collect([
-                new EventData(
-                    type: '$created_chore',
-                    email: $request->user()->email,
-                    fields: ['chore_name' => $chore->name],
-                ),
-            ]));
-        });
 
         rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'chore', 'created'));
 

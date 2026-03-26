@@ -7,8 +7,6 @@ use App\Models\Account;
 use App\Models\SavingsGoal;
 use App\Models\Spender;
 use App\Services\AnalyticsService;
-use Bentonow\BentoLaravel\DataTransferObjects\EventData;
-use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -144,19 +142,6 @@ class SavingsGoalController extends Controller
             $request->validated(),
             ['spender_id' => $request->spender_id, 'sort_order' => $maxOrder + 1]
         ));
-
-        rescue(function () use ($request, $goal): void {
-            Bento::trackEvent(collect([
-                new EventData(
-                    type: '$created_goal',
-                    email: $request->user()->email,
-                    fields: [
-                        'goal_name' => $goal->name,
-                        'target_amount' => $goal->target_amount,
-                    ],
-                ),
-            ]));
-        });
 
         rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'goal', 'created'));
 

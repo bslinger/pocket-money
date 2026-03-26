@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Listeners\SyncUserToBento;
+use App\Listeners\SyncUserToLoops;
 use App\Listeners\TrackSubscriptionEvent;
 use App\Listeners\TrackUserRegistered;
 use App\Services\AnalyticsService;
@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        Event::listen(Registered::class, SyncUserToBento::class);
+        Event::listen(Registered::class, SyncUserToLoops::class);
         Event::listen(Registered::class, TrackUserRegistered::class);
         Event::listen(WebhookReceived::class, TrackSubscriptionEvent::class);
 
@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
      */
     private function decodePushCredentials(): void
     {
-        $fcmBase64 = env('FCM_CREDENTIALS_BASE64');
+        $fcmBase64 = config('services.fcm.credentials_base64');
         if ($fcmBase64) {
             $path = storage_path('app/firebase-credentials.json');
             if (! File::exists($path)) {
@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        $apnBase64 = env('APN_PRIVATE_KEY_BASE64');
+        $apnBase64 = config('services.apn.private_key_base64');
         if ($apnBase64) {
             $path = storage_path('app/apns-auth-key.p8');
             if (! File::exists($path)) {

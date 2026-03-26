@@ -1,8 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import PhoneMockup from './PhoneMockup';
 
-const BENTO_PUBLISHABLE_KEY = 'p10b5d5502ce9037c8b15ad674cf8fb75';
-const BENTO_SITE_UUID = '3defb957e7a5d26f071cfc409b010b0f';
+const LOOPS_FORM_URL = 'https://app.loops.so/api/newsletter-form/cmn6vgp1u0ktn0i3cvwyyl33j';
 
 export default function Hero() {
   const [email, setEmail] = useState('');
@@ -13,16 +12,11 @@ export default function Hero() {
     if (!email || status === 'submitting' || status === 'success') return;
     setStatus('submitting');
     try {
-      const response = await fetch('https://app.bentonow.com/api/v1/batch/subscribers', {
+      const body = new URLSearchParams({ email });
+      const response = await fetch(LOOPS_FORM_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic ' + btoa(BENTO_PUBLISHABLE_KEY + ':'),
-        },
-        body: JSON.stringify({
-          site_uuid: BENTO_SITE_UUID,
-          subscribers: [{ email, tags: ['waitlist'] }],
-        }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
       });
       if (response.ok) {
         setStatus('success');

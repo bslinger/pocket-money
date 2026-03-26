@@ -14,8 +14,6 @@ use App\Models\SpenderUser;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\AnalyticsService;
-use Bentonow\BentoLaravel\DataTransferObjects\EventData;
-use Bentonow\BentoLaravel\Facades\Bento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -177,16 +175,6 @@ class SpenderController extends Controller
             'name' => 'Savings',
             'balance' => 0,
         ]);
-
-        rescue(function () use ($request, $spender): void {
-            Bento::trackEvent(collect([
-                new EventData(
-                    type: '$added_child',
-                    email: $request->user()->email,
-                    fields: ['child_name' => $spender->name],
-                ),
-            ]));
-        });
 
         rescue(fn () => app(AnalyticsService::class)->crudEvent($request->user(), 'spender', 'created'));
 

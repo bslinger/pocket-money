@@ -35,7 +35,8 @@ The landing page is an Astro project that renders React components to static HTM
 - **Mobile frontend:** Expo SDK 55, React Native 0.83, Expo Router, TanStack Query, MMKV
 - **Auth:** Laravel Sanctum — session auth for Inertia, token auth for mobile API
 - **Billing:** Laravel Cashier (Stripe)
-- **Email:** Bento
+- **Email (transactional):** Resend — native Laravel mail driver (`resend/resend-laravel`)
+- **Email (marketing):** Loops — waitlist/onboarding sequences; landing page form posts to public Loops newsletter form endpoint (no API key in frontend); server-side registration sync via `SyncUserToLoops` listener
 - **Push notifications:** Direct FCM HTTP v1 API + APNs from Laravel. NO Firebase SDK in mobile app.
 - **Testing:** Pest 4 (SQLite in-memory), Playwright E2E
 
