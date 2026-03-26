@@ -7,7 +7,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'So my kids never actually get the money?',
-    a: "Exactly — that's the point. The balance is virtual. It represents their purchasing power, not a pile of cash in their room. When they want something, they ask you to spend it for them, you approve it in the app, and the balance adjusts. It teaches saving and delayed gratification without the logistics of handling physical money.",
+    a: "Exactly — that's the point. The balance is virtual. It represents what they've earned and what they can ask you to spend on their behalf. When they want something, you buy it on your card and log it as a spend. They learn to wait and to save without you ever needing to handle cash.",
   },
   {
     q: 'Do my kids need their own device?',
