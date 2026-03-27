@@ -1,5 +1,5 @@
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -8,6 +8,7 @@ import { Label } from '@/Components/ui/label';
 import SocialLoginButtons from '@/Components/Auth/SocialLoginButtons';
 
 export default function Register() {
+    const { errors: pageErrors } = usePage().props as { errors: Record<string, string> };
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -23,6 +24,10 @@ export default function Register() {
     return (
         <GuestLayout>
             <Head title="Register" />
+
+            {pageErrors.social && (
+                <div className="mb-4 text-sm text-destructive">{pageErrors.social}</div>
+            )}
 
             <SocialLoginButtons verb="Register" />
 
