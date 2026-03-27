@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Events\FamilyUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Family;
 use App\Models\FamilyScreenDevice;
@@ -66,6 +67,8 @@ class FamilyScreenLinkCodeController extends Controller
             $request->input('device_name', ''),
         );
 
+        broadcast(new FamilyUpdated($family));
+
         return response()->json([
             'data' => [
                 'token' => $device->plainToken,
@@ -113,6 +116,8 @@ class FamilyScreenLinkCodeController extends Controller
         abort_unless($user->families()->where('families.id', $family->id)->exists(), 403);
 
         $device->revoke();
+
+        broadcast(new FamilyUpdated($family));
 
         return response()->json(['message' => 'Device revoked.']);
     }

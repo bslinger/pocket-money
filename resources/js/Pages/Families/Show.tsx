@@ -13,6 +13,7 @@ import EmojiPickerField from '@/Components/EmojiPickerField';
 import Modal from '@/Components/Modal';
 import { QRCodeSVG } from 'qrcode.react';
 import { useState, useEffect } from 'react';
+import { useFamilyChannel } from '@/hooks/useBroadcast';
 
 interface PendingInvitation {
     id: string;
@@ -48,6 +49,7 @@ const CURRENCY_PRESETS = [
 ];
 
 export default function FamilyShow({ family, authUserId, pendingInvitations, isAdmin, familyScreenDevices, flash }: Props) {
+    useFamilyChannel(family.id);
     return (
         <AuthenticatedLayout header={<h1 className="text-xl font-semibold">{family.name}</h1>}>
             <Head title={`${family.name} — Settings`} />
@@ -363,21 +365,28 @@ function useCountdown(expiresAt: string | null) {
 
 // ── Family screen ────────────────────────────────────────────────────────────
 
+function formatExactTime(iso: string): string {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 function FamilyScreenSection({ family, devices, flashLinkCode }: {
     family: Family;
     devices: FamilyScreenDeviceItem[];
     flashLinkCode?: { code: string; expires_at: string } | null;
 }) {
     const [generating, setGenerating] = useState(false);
-    const [showModal, setShowModal] = useState(false);
+    const [showCodeModal, setShowCodeModal] = useState(false);
     const [copied, setCopied] = useState(false);
     const [activeCode, setActiveCode] = useState<{ code: string; expires_at: string } | null>(flashLinkCode ?? null);
+    const [deviceToRemove, setDeviceToRemove] = useState<FamilyScreenDeviceItem | null>(null);
+    const [removing, setRemoving] = useState(false);
 
     const flashCodeValue = flashLinkCode?.code ?? null;
     useEffect(() => {
         if (flashLinkCode && flashCodeValue) {
             setActiveCode(flashLinkCode);
-            setShowModal(true);
+            setShowCodeModal(true);
         }
     }, [flashCodeValue]);
 
@@ -396,19 +405,11 @@ function FamilyScreenSection({ family, devices, flashLinkCode }: {
                 const code = page.props?.flash?.familyScreenLinkCode;
                 if (code) {
                     setActiveCode(code);
-                    setShowModal(true);
+                    setShowCodeModal(true);
                 }
             },
             onFinish: () => setGenerating(false),
         });
-    }
-
-    function handleButtonClick() {
-        if (activeCode && !isExpired) {
-            setShowModal(true);
-        } else {
-            handleGenerate();
-        }
     }
 
     function handleCopy(code: string) {
@@ -417,11 +418,24 @@ function FamilyScreenSection({ family, devices, flashLinkCode }: {
         setTimeout(() => setCopied(false), 2000);
     }
 
+    function handleConfirmRemove() {
+        if (!deviceToRemove) return;
+        setRemoving(true);
+        router.delete(route('families.family-screen-devices.revoke', { family: family.id, device: deviceToRemove.id }), {
+            preserveScroll: true,
+            onFinish: () => {
+                setRemoving(false);
+                setDeviceToRemove(null);
+            },
+        });
+    }
+
     const qrValue = activeCode ? `quiddo://link?code=${activeCode.code}` : '';
 
     return (
         <>
-            <Modal show={showModal && !!activeCode && !isExpired} maxWidth="sm" onClose={() => setShowModal(false)}>
+            {/* Link code modal */}
+            <Modal show={showCodeModal && !!activeCode && !isExpired} maxWidth="sm" onClose={() => setShowCodeModal(false)}>
                 {activeCode && (
                     <div className="p-6 text-center space-y-5">
                         <div>
@@ -449,9 +463,34 @@ function FamilyScreenSection({ family, devices, flashLinkCode }: {
                         <p className={`text-xs ${secondsLeft < 60 ? 'text-redearth-400' : 'text-muted-foreground'}`}>
                             Expires in {countdown}
                         </p>
-                        <Button variant="outline" size="sm" onClick={() => setShowModal(false)} className="w-full">
+                        <Button variant="outline" size="sm" onClick={() => setShowCodeModal(false)} className="w-full">
                             Done
                         </Button>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Remove device confirmation modal */}
+            <Modal show={!!deviceToRemove} maxWidth="sm" onClose={() => setDeviceToRemove(null)}>
+                {deviceToRemove && (
+                    <div className="p-6 space-y-4">
+                        <h3 className="text-lg font-semibold text-bark-700">Remove family screen</h3>
+                        <p className="text-sm text-muted-foreground">
+                            <span className="font-medium text-bark-700">{deviceToRemove.device_name || 'This device'}</span> will be immediately signed out and can no longer access your family's data. You can link it again with a new code.
+                        </p>
+                        {deviceToRemove.last_active_at && (
+                            <p className="text-xs text-muted-foreground">
+                                Last active: {formatExactTime(deviceToRemove.last_active_at)}
+                            </p>
+                        )}
+                        <div className="flex gap-3 pt-1">
+                            <Button variant="outline" className="flex-1" onClick={() => setDeviceToRemove(null)}>
+                                Cancel
+                            </Button>
+                            <Button variant="destructive" className="flex-1" disabled={removing} onClick={handleConfirmRemove}>
+                                {removing ? 'Removing…' : 'Remove'}
+                            </Button>
+                        </div>
                     </div>
                 )}
             </Modal>
@@ -462,7 +501,7 @@ function FamilyScreenSection({ family, devices, flashLinkCode }: {
                         <Monitor className="h-4 w-4" />
                         Family screen
                     </CardTitle>
-                    <Button variant="outline" size="sm" onClick={handleButtonClick} disabled={generating}>
+                    <Button variant="outline" size="sm" onClick={() => activeCode && !isExpired ? setShowCodeModal(true) : handleGenerate()} disabled={generating}>
                         {generating ? 'Generating…' : activeCode && !isExpired ? 'Show code' : 'Link a device'}
                     </Button>
                 </CardHeader>
@@ -481,8 +520,8 @@ function FamilyScreenSection({ family, devices, flashLinkCode }: {
                                         <p className="text-sm font-medium">{device.device_name}</p>
                                         <p className="text-xs text-muted-foreground">
                                             {device.last_active_at
-                                                ? `Last active ${new Date(device.last_active_at).toLocaleDateString()}`
-                                                : `Added ${new Date(device.created_at).toLocaleDateString()}`}
+                                                ? `Last active ${formatExactTime(device.last_active_at)}`
+                                                : `Added ${formatExactTime(device.created_at)}`}
                                         </p>
                                     </div>
                                     <Button
@@ -490,10 +529,7 @@ function FamilyScreenSection({ family, devices, flashLinkCode }: {
                                         size="icon"
                                         className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
                                         title="Remove device"
-                                        onClick={() => {
-                                            if (!confirm(`Remove "${device.device_name}"?`)) return;
-                                            router.delete(route('families.family-screen-devices.revoke', { family: family.id, device: device.id }), { preserveScroll: true });
-                                        }}
+                                        onClick={() => setDeviceToRemove(device)}
                                     >
                                         <X className="h-3.5 w-3.5" />
                                     </Button>

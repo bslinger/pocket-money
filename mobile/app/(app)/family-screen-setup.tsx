@@ -5,9 +5,10 @@ import { Feather } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 import { api } from '@/lib/api';
 import { useFamily } from '@/lib/family';
+import { getEcho } from '@/lib/echo';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import type { FamilyScreenDevice } from '@quiddo/shared';
 
 function useCountdown(expiresAt: string | null) {
@@ -59,6 +60,19 @@ export default function FamilyScreenSetupScreen() {
     await refetch();
     setRefreshing(false);
   }, [refetch]);
+
+  // Live updates via Echo — refresh device list when another device connects or is removed
+  useEffect(() => {
+    if (!activeFamily?.id) return;
+    const echo = getEcho(false);
+    const channel = echo.private(`family.${activeFamily.id}`);
+    channel.listen('.FamilyUpdated', () => {
+      queryClient.invalidateQueries({ queryKey: ['family-screen-devices', activeFamily.id] });
+    });
+    return () => {
+      echo.leave(`private-family.${activeFamily.id}`);
+    };
+  }, [activeFamily?.id]);
 
   const generateCode = async () => {
     if (!activeFamily) return;
@@ -148,9 +162,13 @@ export default function FamilyScreenSetupScreen() {
               <Feather name="monitor" size={18} color={colors.bark[600]} />
               <View style={styles.deviceInfo}>
                 <Text style={styles.deviceName}>{device.device_name || 'Unnamed device'}</Text>
-                {device.last_active_at && (
+                {device.last_active_at ? (
                   <Text style={styles.deviceMeta}>
-                    Active {formatDistanceToNow(new Date(device.last_active_at), { addSuffix: true })}
+                    Last active {format(new Date(device.last_active_at), 'd MMM yyyy, h:mm a')}
+                  </Text>
+                ) : (
+                  <Text style={styles.deviceMeta}>
+                    Added {format(new Date(device.created_at), 'd MMM yyyy, h:mm a')}
                   </Text>
                 )}
               </View>
