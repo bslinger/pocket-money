@@ -8,6 +8,8 @@ use App\Mail\FamilyInvitation;
 use App\Models\Account;
 use App\Models\Family;
 use App\Models\FamilyLinkCode;
+use App\Models\FamilyScreenDevice;
+use App\Models\FamilyScreenLinkCode;
 use App\Models\FamilyUser;
 use App\Models\Invitation;
 use App\Models\Spender;
@@ -91,6 +93,11 @@ class FamilyController extends Controller
             ->select(['id', 'email', 'role', 'expires_at'])
             ->get();
 
+        $familyScreenDevices = FamilyScreenDevice::where('family_id', $family->id)
+            ->whereNull('revoked_at')
+            ->orderByDesc('created_at')
+            ->get(['id', 'device_name', 'last_active_at', 'created_at']);
+
         return Inertia::render('Families/Show', [
             'family' => $family,
             'authUserId' => auth()->id(),
@@ -99,6 +106,7 @@ class FamilyController extends Controller
                 ->where('user_id', auth()->id())
                 ->where('role', FamilyRole::Admin)
                 ->exists(),
+            'familyScreenDevices' => $familyScreenDevices,
         ]);
     }
 
@@ -215,6 +223,37 @@ class FamilyController extends Controller
         $invitation->delete();
 
         return back()->with('success', 'Invitation revoked.');
+    }
+
+    public function generateFamilyScreenCode(Family $family): RedirectResponse
+    {
+        $user = auth()->user();
+        abort_unless($user->families()->where('families.id', $family->id)->exists(), 403);
+
+        $code = FamilyScreenLinkCode::create([
+            'family_id' => $family->id,
+            'code' => FamilyScreenLinkCode::generateCode(),
+            'created_by' => $user->id,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        /** @var Carbon $expiresAt */
+        $expiresAt = $code->expires_at;
+
+        return back()->with('familyScreenLinkCode', [
+            'code' => $code->code,
+            'expires_at' => $expiresAt->toIso8601String(),
+        ]);
+    }
+
+    public function revokeFamilyScreenDevice(Family $family, FamilyScreenDevice $device): RedirectResponse
+    {
+        abort_unless($device->family_id === $family->id, 403);
+        $this->assertAdmin($family);
+
+        $device->revoke();
+
+        return back()->with('success', 'Device removed.');
     }
 
     public function generateLinkCode(Family $family): JsonResponse|RedirectResponse

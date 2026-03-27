@@ -64,6 +64,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/families/{family}/switch', [FamilyController::class, 'switchActive'])->name('families.switch');
     Route::post('/families/{family}/invite', [FamilyController::class, 'invite'])->name('families.invite');
     Route::post('/families/{family}/link-code', [FamilyController::class, 'generateLinkCode'])->name('families.generate-link-code');
+    Route::post('/families/{family}/family-screen-link-code', [FamilyController::class, 'generateFamilyScreenCode'])->name('families.generate-family-screen-code');
+    Route::delete('/families/{family}/family-screen-devices/{device}', [FamilyController::class, 'revokeFamilyScreenDevice'])->name('families.family-screen-devices.revoke');
     Route::delete('/families/{family}/members/{user}', [FamilyController::class, 'removeMember'])->name('families.members.destroy');
     Route::patch('/families/{family}/members/{user}/role', [FamilyController::class, 'updateMemberRole'])->name('families.members.role');
     Route::delete('/families/{family}/invitations/{invitation}', [FamilyController::class, 'revokeInvitation'])->name('families.invitations.destroy');

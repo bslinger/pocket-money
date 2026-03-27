@@ -8,14 +8,24 @@ import { Label } from '@/Components/ui/label';
 import { guessNameFromEmoji } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { Clock, PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon, ArchiveRestore, X } from 'lucide-react';
+import { Clock, PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon, ArchiveRestore, X, Monitor, Copy, Check } from 'lucide-react';
 import EmojiPickerField from '@/Components/EmojiPickerField';
+import Modal from '@/Components/Modal';
+import { QRCodeSVG } from 'qrcode.react';
+import { useState, useEffect } from 'react';
 
 interface PendingInvitation {
     id: string;
     email: string;
     role: string;
     expires_at: string;
+}
+
+interface FamilyScreenDeviceItem {
+    id: string;
+    device_name: string;
+    last_active_at: string | null;
+    created_at: string;
 }
 
 interface Props {
@@ -26,6 +36,8 @@ interface Props {
     authUserId: string;
     pendingInvitations: PendingInvitation[];
     isAdmin: boolean;
+    familyScreenDevices: FamilyScreenDeviceItem[];
+    flash?: { familyScreenLinkCode?: { code: string; expires_at: string } | null };
 }
 
 const CURRENCY_PRESETS = [
@@ -35,7 +47,7 @@ const CURRENCY_PRESETS = [
     { label: 'Points',   symbol: '🏆', name: 'Point' },
 ];
 
-export default function FamilyShow({ family, authUserId, pendingInvitations, isAdmin }: Props) {
+export default function FamilyShow({ family, authUserId, pendingInvitations, isAdmin, familyScreenDevices, flash }: Props) {
     return (
         <AuthenticatedLayout header={<h1 className="text-xl font-semibold">{family.name}</h1>}>
             <Head title={`${family.name} — Settings`} />
@@ -43,6 +55,7 @@ export default function FamilyShow({ family, authUserId, pendingInvitations, isA
                 <FamilyDetailsSection family={family} />
                 <ParentsSection family={family} authUserId={authUserId} pendingInvitations={pendingInvitations} isAdmin={isAdmin} />
                 <SpendersSection family={family} />
+                <FamilyScreenSection family={family} devices={familyScreenDevices} flashLinkCode={flash?.familyScreenLinkCode} />
             </div>
         </AuthenticatedLayout>
     );
@@ -324,6 +337,173 @@ function ParentsSection({ family, authUserId, pendingInvitations, isAdmin }: {
                 )}
             </CardContent>
         </Card>
+    );
+}
+
+// ── useCountdown ────────────────────────────────────────────────────────────
+
+function useCountdown(expiresAt: string | null) {
+    const [secondsLeft, setSecondsLeft] = useState(() =>
+        expiresAt ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)) : 0
+    );
+
+    useEffect(() => {
+        if (!expiresAt) return;
+        const tick = () => setSecondsLeft(Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)));
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [expiresAt]);
+
+    const m = Math.floor(secondsLeft / 60);
+    const s = secondsLeft % 60;
+    const display = `${m}:${String(s).padStart(2, '0')}`;
+    return { secondsLeft, display };
+}
+
+// ── Family screen ────────────────────────────────────────────────────────────
+
+function FamilyScreenSection({ family, devices, flashLinkCode }: {
+    family: Family;
+    devices: FamilyScreenDeviceItem[];
+    flashLinkCode?: { code: string; expires_at: string } | null;
+}) {
+    const [generating, setGenerating] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [activeCode, setActiveCode] = useState<{ code: string; expires_at: string } | null>(flashLinkCode ?? null);
+
+    const flashCodeValue = flashLinkCode?.code ?? null;
+    useEffect(() => {
+        if (flashLinkCode && flashCodeValue) {
+            setActiveCode(flashLinkCode);
+            setShowModal(true);
+        }
+    }, [flashCodeValue]);
+
+    const { secondsLeft, display: countdown } = useCountdown(activeCode?.expires_at ?? null);
+    const isExpired = activeCode !== null && secondsLeft <= 0;
+
+    useEffect(() => {
+        if (isExpired) setActiveCode(null);
+    }, [isExpired]);
+
+    function handleGenerate() {
+        setGenerating(true);
+        router.post(route('families.generate-family-screen-code', family.id), {}, {
+            preserveScroll: true,
+            onSuccess: (page: any) => {
+                const code = page.props?.flash?.familyScreenLinkCode;
+                if (code) {
+                    setActiveCode(code);
+                    setShowModal(true);
+                }
+            },
+            onFinish: () => setGenerating(false),
+        });
+    }
+
+    function handleButtonClick() {
+        if (activeCode && !isExpired) {
+            setShowModal(true);
+        } else {
+            handleGenerate();
+        }
+    }
+
+    function handleCopy(code: string) {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    const qrValue = activeCode ? `quiddo://link?code=${activeCode.code}` : '';
+
+    return (
+        <>
+            <Modal show={showModal && !!activeCode && !isExpired} maxWidth="sm" onClose={() => setShowModal(false)}>
+                {activeCode && (
+                    <div className="p-6 text-center space-y-5">
+                        <div>
+                            <h3 className="text-lg font-semibold text-bark-700">Link a family screen</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Scan this QR code or enter the code on the tablet running Quiddo
+                            </p>
+                        </div>
+                        <div className="flex justify-center">
+                            <div className="bg-white p-4 rounded-xl border border-bark-200 inline-block">
+                                <QRCodeSVG value={qrValue} size={200} fgColor="#3A3028" bgColor="#FFFFFF" level="M" />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Or enter this code manually</p>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-3xl font-mono font-bold tracking-[0.3em] text-eucalyptus-400">
+                                    {activeCode.code}
+                                </span>
+                                <button onClick={() => handleCopy(activeCode.code)} className="text-muted-foreground hover:text-foreground p-1">
+                                    {copied ? <Check className="h-4 w-4 text-gumleaf-400" /> : <Copy className="h-4 w-4" />}
+                                </button>
+                            </div>
+                        </div>
+                        <p className={`text-xs ${secondsLeft < 60 ? 'text-redearth-400' : 'text-muted-foreground'}`}>
+                            Expires in {countdown}
+                        </p>
+                        <Button variant="outline" size="sm" onClick={() => setShowModal(false)} className="w-full">
+                            Done
+                        </Button>
+                    </div>
+                )}
+            </Modal>
+
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <Monitor className="h-4 w-4" />
+                        Family screen
+                    </CardTitle>
+                    <Button variant="outline" size="sm" onClick={handleButtonClick} disabled={generating}>
+                        {generating ? 'Generating…' : activeCode && !isExpired ? 'Show code' : 'Link a device'}
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-xs text-muted-foreground mb-3">
+                        Link a shared tablet or screen to display all kids' chores, goals, and balances.
+                    </p>
+                    {devices.length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-1">No devices linked yet.</p>
+                    ) : (
+                        <ul className="divide-y">
+                            {devices.map(device => (
+                                <li key={device.id} className="flex items-center gap-3 py-3">
+                                    <Monitor className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium">{device.device_name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {device.last_active_at
+                                                ? `Last active ${new Date(device.last_active_at).toLocaleDateString()}`
+                                                : `Added ${new Date(device.created_at).toLocaleDateString()}`}
+                                        </p>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
+                                        title="Remove device"
+                                        onClick={() => {
+                                            if (!confirm(`Remove "${device.device_name}"?`)) return;
+                                            router.delete(route('families.family-screen-devices.revoke', { family: family.id, device: device.id }), { preserveScroll: true });
+                                        }}
+                                    >
+                                        <X className="h-3.5 w-3.5" />
+                                    </Button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </CardContent>
+            </Card>
+        </>
     );
 }
 
