@@ -405,6 +405,74 @@ export interface ChildDashboard {
 }
 
 // ---------------------------------------------------------------------------
+// Family screen device linking (kiosk/tablet flow)
+// ---------------------------------------------------------------------------
+
+export interface FamilyScreenLinkCode {
+  id: string;
+  code: string;
+  family_name: string;
+  expires_at: string;
+}
+
+export interface FamilyScreenDevice {
+  id: string;
+  device_name: string;
+  last_active_at: string | null;
+  created_at: string;
+}
+
+export interface ClaimFamilyScreenResponse {
+  token: string;
+  device_id: string;
+  family: {
+    id: string;
+    name: string;
+    currency_symbol: string;
+  };
+}
+
+export interface FamilyScreenSpender {
+  id: string;
+  name: string;
+  color: string | null;
+  avatar_url: string | null;
+  balance: string;
+  goals: {
+    id: string;
+    name: string;
+    target_amount: string;
+    allocated_amount: string;
+    target_date: string | null;
+  }[];
+  chores: {
+    id: string;
+    name: string;
+    emoji: string | null;
+    frequency: ChoreFrequency;
+    amount: string | null;
+    reward_type: ChoreRewardType;
+  }[];
+  completions_today: {
+    id: string;
+    chore_id: string;
+    status: CompletionStatus;
+    completed_at: string;
+  }[];
+}
+
+export interface FamilyScreenDashboard {
+  family: {
+    id: string;
+    name: string;
+    currency_symbol: string;
+    currency_name: string;
+    use_integer_amounts: boolean;
+  };
+  spenders: FamilyScreenSpender[];
+}
+
+// ---------------------------------------------------------------------------
 // Push notifications
 // ---------------------------------------------------------------------------
 

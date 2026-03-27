@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Family;
 use App\Models\FamilyLinkCode;
+use App\Models\FamilyScreenLinkCode;
 use App\Models\Spender;
 use App\Models\SpenderLinkCode;
 use Illuminate\Http\JsonResponse;
@@ -61,6 +62,24 @@ class CodeLookupController extends Controller
                 'data' => [
                     'type' => 'family',
                     'family_name' => $family->name,
+                ],
+            ]);
+        }
+
+        $familyScreenCode = FamilyScreenLinkCode::where('code', $code)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->with('family')
+            ->first();
+
+        if ($familyScreenCode) {
+            /** @var Family $screenFamily */
+            $screenFamily = $familyScreenCode->family;
+
+            return response()->json([
+                'data' => [
+                    'type' => 'family_screen',
+                    'family_name' => $screenFamily->name,
                 ],
             ]);
         }

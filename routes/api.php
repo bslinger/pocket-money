@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\FamilyController;
 use App\Http\Controllers\Api\V1\FamilyLinkCodeController;
+use App\Http\Controllers\Api\V1\FamilyScreenDashboardController;
+use App\Http\Controllers\Api\V1\FamilyScreenLinkCodeController;
 use App\Http\Controllers\Api\V1\FeedbackController;
 use App\Http\Controllers\Api\V1\PocketMoneyController;
 use App\Http\Controllers\Api\V1\RecurringTransactionController;
@@ -35,6 +37,7 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->midd
 Route::post('/codes/lookup', [CodeLookupController::class, 'show'])->middleware('throttle:20,1');
 Route::post('/spender-devices/claim', [SpenderLinkCodeController::class, 'claim']);
 Route::post('/family-link-codes/claim', [FamilyLinkCodeController::class, 'claim']);
+Route::post('/family-screen-devices/claim', [FamilyScreenLinkCodeController::class, 'claim']);
 
 // ---------------------------------------------------------------------------
 // Authenticated (Sanctum token auth)
@@ -127,6 +130,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/spenders/{spender}/devices', [SpenderLinkCodeController::class, 'devices']);
     Route::delete('/spender-devices/{device}', [SpenderLinkCodeController::class, 'revokeDevice']);
 
+    // Family Screen Link Codes & Devices (parent manages family screen linking)
+    Route::post('/families/{family}/family-screen-link-code', [FamilyScreenLinkCodeController::class, 'store']);
+    Route::get('/families/{family}/family-screen-devices', [FamilyScreenLinkCodeController::class, 'devices']);
+    Route::delete('/family-screen-devices/{device}', [FamilyScreenLinkCodeController::class, 'revokeDevice']);
+
     // Broadcasting auth (mobile parent devices)
     Route::post('/broadcasting/auth', function (Request $request) {
         return Broadcast::auth($request);
@@ -134,6 +142,31 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     // Feedback
     Route::post('/feedback', [FeedbackController::class, 'store']);
+});
+
+// ---------------------------------------------------------------------------
+// Family screen auth (family screen device token, no user account needed)
+// ---------------------------------------------------------------------------
+Route::middleware('auth.family_screen')->group(function (): void {
+    Route::get('/family-screen/dashboard', [FamilyScreenDashboardController::class, 'index']);
+    Route::post('/family-screen/spenders/{spender}/chores/{chore}/complete', [FamilyScreenDashboardController::class, 'completeChore']);
+
+    // Broadcasting auth (family screen devices)
+    Route::post('/family-screen/broadcasting/auth', function (Request $request) {
+        $family = $request->attributes->get('family_screen_family');
+        $channelName = str_replace('private-', '', $request->input('channel_name', ''));
+
+        if ($channelName === 'family.'.$family->id) {
+            $socketId = $request->input('socket_id');
+            $secret = config('broadcasting.connections.reverb.app_secret');
+            $key = config('broadcasting.connections.reverb.app_key');
+            $signature = hash_hmac('sha256', $socketId.':'.$request->input('channel_name'), $secret);
+
+            return response()->json(['auth' => $key.':'.$signature]);
+        }
+
+        abort(403);
+    });
 });
 
 // ---------------------------------------------------------------------------

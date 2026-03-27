@@ -20,13 +20,14 @@ import { fonts } from '@/lib/fonts';
 
 type CodeInfo =
   | { type: 'spender'; spender_name: string; family_name: string }
-  | { type: 'family'; family_name: string };
+  | { type: 'family'; family_name: string }
+  | { type: 'family_screen'; family_name: string };
 
-type Step = 'code' | 'looking_up' | 'confirm_spender' | 'join_family';
+type Step = 'code' | 'looking_up' | 'confirm_spender' | 'join_family' | 'confirm_family_screen';
 
 export default function EnterCodeScreen() {
   const router = useRouter();
-  const { childLogin } = useAuth();
+  const { childLogin, familyScreenLogin } = useAuth();
 
   const [step, setStep] = useState<Step>('code');
   const [code, setCode] = useState('');
@@ -52,7 +53,9 @@ export default function EnterCodeScreen() {
       const res = await api.post('/codes/lookup', { code: trimmed });
       const info: CodeInfo = res.data.data;
       setCodeInfo(info);
-      setStep(info.type === 'spender' ? 'confirm_spender' : 'join_family');
+      if (info.type === 'spender') setStep('confirm_spender');
+      else if (info.type === 'family_screen') setStep('confirm_family_screen');
+      else setStep('join_family');
     } catch (e: any) {
       setError(e.response?.data?.message ?? 'Invalid or expired code.');
       setStep('code');
@@ -101,6 +104,19 @@ export default function EnterCodeScreen() {
     setError('');
     try {
       await childLogin(code, Platform.OS);
+    } catch (e: any) {
+      setError(e.response?.data?.message ?? 'Invalid or expired code.');
+      setStep('code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmFamilyScreen = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      await familyScreenLogin(code, Platform.OS);
     } catch (e: any) {
       setError(e.response?.data?.message ?? 'Invalid or expired code.');
       setStep('code');
@@ -215,6 +231,40 @@ export default function EnterCodeScreen() {
             >
               <Text style={styles.buttonText}>
                 {loading ? 'Linking...' : `Link as ${codeInfo.spender_name}`}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.backLink}
+              onPress={() => { setStep('code'); setCode(''); setError(''); }}
+            >
+              <Text style={styles.backLinkText}>Enter a different code</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {/* Step: confirm family screen link */}
+        {step === 'confirm_family_screen' && codeInfo?.type === 'family_screen' && (
+          <>
+            <Text style={styles.title}>Link family screen</Text>
+            <Text style={styles.subtitle}>
+              This device will be set up as a shared screen for:
+            </Text>
+
+            <View style={styles.infoCard}>
+              <Text style={styles.infoName}>{codeInfo.family_name}</Text>
+              <Text style={styles.infoFamily}>Family screen</Text>
+            </View>
+
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleConfirmFamilyScreen}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Linking...' : 'Set up family screen'}
               </Text>
             </TouchableOpacity>
 

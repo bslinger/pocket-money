@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthenticateFamilyScreenDevice;
 use App\Http\Middleware\AuthenticateSpenderDevice;
 use App\Http\Middleware\CollectCoverage;
 use App\Http\Middleware\EnsureFamilyMember;
@@ -45,6 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ensure.family' => EnsureFamilyMember::class,
             'subscribed.family' => EnsureFamilySubscribed::class,
             'auth.spender_device' => AuthenticateSpenderDevice::class,
+            'auth.family_screen' => AuthenticateFamilyScreenDevice::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

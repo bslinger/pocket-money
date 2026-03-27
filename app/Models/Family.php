@@ -88,4 +88,9 @@ class Family extends Model
     {
         return $this->hasMany(Chore::class);
     }
+
+    public function familyScreenDevices(): HasMany
+    {
+        return $this->hasMany(FamilyScreenDevice::class);
+    }
 }

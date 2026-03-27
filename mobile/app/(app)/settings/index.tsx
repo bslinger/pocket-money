@@ -179,6 +179,15 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Family Screen */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Shared devices</Text>
+        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(app)/family-screen-setup')}>
+          <Text style={styles.menuItemText}>Family screen</Text>
+          <Text style={styles.menuChevron}>›</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Data & Privacy */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Data & Privacy</Text>
