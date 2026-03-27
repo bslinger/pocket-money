@@ -100,11 +100,19 @@ class SpenderController extends Controller
             ? $spender->devices()->whereNull('revoked_at')->orderByDesc('last_active_at')->get()
             : collect();
 
+        $pocketMoneySchedule = $isParentInFamily
+            ? PocketMoneySchedule::where('spender_id', $spender->id)
+                ->where('is_active', true)
+                ->with(['account', 'splits.account'])
+                ->first()
+            : null;
+
         return Inertia::render('Spenders/Show', [
             'spender' => $spender,
             'pendingInvitations' => $pendingInvitations,
             'transactions' => $transactions,
             'spenderDevices' => $spenderDevices,
+            'pocketMoneySchedule' => $pocketMoneySchedule,
         ]);
     }
 

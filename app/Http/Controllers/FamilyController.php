@@ -84,9 +84,6 @@ class FamilyController extends Controller
     public function show(Family $family)
     {
         $family->load(['familyUsers.user']);
-        $family->setRelation('spenders',
-            $family->spenders()->withTrashed()->with('accounts')->get()
-        );
 
         $pendingInvitations = Invitation::where('family_id', $family->id)
             ->where('expires_at', '>', now())

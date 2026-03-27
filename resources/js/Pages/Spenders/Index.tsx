@@ -173,7 +173,7 @@ export default function SpendersIndex({ family, spenders }: Props) {
                                                     <Eye className="h-3.5 w-3.5" />
                                                 </Button>
                                                 <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                                                    <Link href={route('spenders.edit', spender.id)}>
+                                                    <Link href={route('spenders.show', spender.id) + '?tab=manage'}>
                                                         <Pencil className="h-3.5 w-3.5" />
                                                     </Link>
                                                 </Button>

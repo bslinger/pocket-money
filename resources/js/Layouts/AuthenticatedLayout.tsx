@@ -134,9 +134,9 @@ function FamilyAccountMenu({
                 {/* ── Account actions ── */}
                 <div className="py-2">
                     <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 cursor-pointer">
-                        <Link href={route('profile.edit')} prefetch>
+                        <Link href={route('settings')} prefetch>
                             <User className="h-3.5 w-3.5 shrink-0" />
-                            <span className="text-sm">Profile settings</span>
+                            <span className="text-sm">Account settings</span>
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="mx-1 rounded-md gap-2.5 cursor-pointer">
@@ -328,9 +328,9 @@ export default function AuthenticatedLayout({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-48">
                                     <DropdownMenuItem asChild>
-                                        <Link href={route('profile.edit')} prefetch className="flex items-center gap-2">
+                                        <Link href={route('settings')} prefetch className="flex items-center gap-2">
                                             <User className="h-4 w-4" />
-                                            Profile
+                                            Account settings
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>

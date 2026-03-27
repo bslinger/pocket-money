@@ -1,7 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { Spender, ChildInvitation, Account, Transaction, Family, Chore, ChoreCompletion } from '@/types/models';
+import SpenderSettingsForm from '@/Components/SpenderSettingsForm';
+import { Spender, ChildInvitation, Account, Transaction, Family, Chore, ChoreCompletion, PocketMoneySchedule } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -399,12 +400,14 @@ export default function SpenderShow({
     pendingInvitations,
     transactions,
     spenderDevices,
+    pocketMoneySchedule,
     flash,
 }: {
     spender: Spender;
     pendingInvitations: ChildInvitation[];
     transactions: (Transaction & { account: Account })[];
     spenderDevices: SpenderDevice[];
+    pocketMoneySchedule: PocketMoneySchedule | null;
     flash?: { linkCode?: { code: string; expires_at: string } | null };
 }) {
     const { auth } = usePage().props as any;
@@ -415,14 +418,20 @@ export default function SpenderShow({
     useFamilyChannel(spender.family_id);
     useSpenderChannel(spender.id);
     const [quickTxModal, setQuickTxModal] = useState<{ account: Account; type: 'credit' | 'debit' } | null>(null);
-    const [activeTab, setActiveTab] = useState<Tab>('accounts');
+    const [activeTab, setActiveTab] = useState<Tab>(() => {
+        if (typeof window !== 'undefined') {
+            const tab = new URLSearchParams(window.location.search).get('tab');
+            if (tab === 'manage') return 'manage';
+        }
+        return 'accounts';
+    });
 
     const tabs: { id: Tab; label: string; icon: LucideIcon; count?: number }[] = [
         { id: 'accounts', label: 'Accounts', icon: Wallet, count: spender.accounts?.length },
         { id: 'goals', label: 'Goals', icon: Target, count: spender.savings_goals?.filter(g => !g.is_completed).length },
         { id: 'chores', label: 'Chores', icon: CheckSquare, count: spender.chores?.length },
         { id: 'transactions', label: 'Transactions', icon: Receipt, count: transactions.length },
-        ...(isParent ? [{ id: 'manage' as Tab, label: 'Manage', icon: Settings }] : []),
+        ...(isParent ? [{ id: 'manage' as Tab, label: 'Settings', icon: Settings }] : []),
     ];
 
     return (
@@ -441,23 +450,15 @@ export default function SpenderShow({
                     </div>
                 </div>
                 {isParent && (
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="gap-1.5" asChild>
-                            <Link href={route('spenders.edit', spender.id)}>
-                                <Pencil className="h-3.5 w-3.5" />
-                                Edit
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-1.5"
-                            onClick={() => router.post(route('dashboard.view-as', spender.id), { return_url: window.location.pathname })}
-                        >
-                            <Eye className="h-3.5 w-3.5" />
-                            View as {spender.name}
-                        </Button>
-                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => router.post(route('dashboard.view-as', spender.id), { return_url: window.location.pathname })}
+                    >
+                        <Eye className="h-3.5 w-3.5" />
+                        View as {spender.name}
+                    </Button>
                 )}
             </div>
         }>
@@ -644,10 +645,11 @@ export default function SpenderShow({
                 </div>
             )}
 
-            {/* Manage tab — parent only */}
+            {/* Settings tab — parent only */}
             {activeTab === 'manage' && isParent && (
                 <div className="space-y-4">
-                    <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Manage</h2>
+                    <h2 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Settings</h2>
+                    <SpenderSettingsForm spender={spender} family={family} pocketMoneySchedule={pocketMoneySchedule} />
                     <ChildLoginCard spender={spender} pendingInvitations={pendingInvitations} />
                     <LinkedDevicesCard spender={spender} devices={spenderDevices} flashLinkCode={flash?.linkCode} />
                 </div>

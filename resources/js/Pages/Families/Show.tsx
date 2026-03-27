@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Family, FamilyUser, User, Spender } from '@/types/models';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Family, FamilyUser, User } from '@/types/models';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -8,7 +8,7 @@ import { Label } from '@/Components/ui/label';
 import { guessNameFromEmoji } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-import { Clock, PlusCircle, UserPlus, Pencil, Trash2, ShieldCheck, User as UserIcon, ArchiveRestore, X, Monitor, Copy, Check } from 'lucide-react';
+import { Clock, UserPlus, Trash2, ShieldCheck, User as UserIcon, X, Monitor, Copy, Check } from 'lucide-react';
 import EmojiPickerField from '@/Components/EmojiPickerField';
 import Modal from '@/Components/Modal';
 import { QRCodeSVG } from 'qrcode.react';
@@ -32,7 +32,6 @@ interface FamilyScreenDeviceItem {
 interface Props {
     family: Family & {
         family_users: (FamilyUser & { user: User })[];
-        spenders: (Spender & { accounts: { id: string }[] })[];
     };
     authUserId: string;
     pendingInvitations: PendingInvitation[];
@@ -56,7 +55,6 @@ export default function FamilyShow({ family, authUserId, pendingInvitations, isA
             <div className="space-y-6">
                 <FamilyDetailsSection family={family} />
                 <ParentsSection family={family} authUserId={authUserId} pendingInvitations={pendingInvitations} isAdmin={isAdmin} />
-                <SpendersSection family={family} />
                 <FamilyScreenSection family={family} devices={familyScreenDevices} flashLinkCode={flash?.familyScreenLinkCode} />
             </div>
         </AuthenticatedLayout>
@@ -543,101 +541,3 @@ function FamilyScreenSection({ family, devices, flashLinkCode }: {
     );
 }
 
-// ── Spenders ────────────────────────────────────────────────────────────────
-
-function SpendersSection({ family }: { family: Props['family'] }) {
-    const active   = family.spenders.filter(s => !s.deleted_at);
-    const archived = family.spenders.filter(s => !!s.deleted_at);
-
-    function archiveSpender(spender: Spender) {
-        if (!confirm(`Archive ${spender.name}? Their history is preserved and they can be restored later.`)) return;
-        router.delete(route('spenders.destroy', spender.id));
-    }
-
-    function restoreSpender(spender: Spender) {
-        router.post(route('spenders.restore', spender.id));
-    }
-
-    const SpenderRow = ({ s, isArchived }: { s: Spender; isArchived: boolean }) => (
-        <li key={s.id} className={`flex items-center gap-3 py-3 ${isArchived ? 'opacity-60' : ''}`}>
-            <Avatar className="h-9 w-9 shrink-0">
-                <AvatarImage src={s.avatar_url ?? undefined} />
-                <AvatarFallback
-                    style={{ backgroundColor: s.color ?? '#6366f1' }}
-                    className="text-white font-semibold text-sm"
-                >
-                    {s.name[0].toUpperCase()}
-                </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{s.name}</p>
-                <p className="text-xs text-muted-foreground">
-                    {isArchived ? (
-                        <span className="italic">Archived</span>
-                    ) : (
-                        <>
-                            {(s.accounts?.length ?? 0)} account{(s.accounts?.length ?? 0) !== 1 ? 's' : ''}
-                            {s.currency_symbol && (
-                                <span className="ml-2">{s.currency_symbol} custom currency</span>
-                            )}
-                        </>
-                    )}
-                </p>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-                {isArchived ? (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        title="Restore"
-                        onClick={() => restoreSpender(s)}
-                    >
-                        <ArchiveRestore className="h-3.5 w-3.5" />
-                    </Button>
-                ) : (
-                    <>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
-                            <Link href={route('spenders.edit', s.id)}>
-                                <Pencil className="h-3.5 w-3.5" />
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive"
-                            title="Archive"
-                            onClick={() => archiveSpender(s)}
-                        >
-                            <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                    </>
-                )}
-            </div>
-        </li>
-    );
-
-    return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-                <CardTitle className="text-base">Spenders</CardTitle>
-                <Button variant="outline" size="sm" asChild>
-                    <Link href={route('spenders.create')}>
-                        <PlusCircle className="h-4 w-4 mr-1.5" />
-                        Add spender
-                    </Link>
-                </Button>
-            </CardHeader>
-            <CardContent>
-                {family.spenders.length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-2">No spenders yet.</p>
-                ) : (
-                    <ul className="divide-y">
-                        {active.map(s => <SpenderRow key={s.id} s={s} isArchived={false} />)}
-                        {archived.map(s => <SpenderRow key={s.id} s={s} isArchived={true} />)}
-                    </ul>
-                )}
-            </CardContent>
-        </Card>
-    );
-}

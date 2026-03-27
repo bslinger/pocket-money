@@ -166,24 +166,11 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-      {/* Navigation Links */}
+      {/* Account */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account</Text>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(app)/family/')}>
-          <Text style={styles.menuItemText}>Families</Text>
-          <Text style={styles.menuChevron}>›</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(app)/billing')}>
           <Text style={styles.menuItemText}>Billing & Subscription</Text>
-          <Text style={styles.menuChevron}>›</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Family Screen */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Shared devices</Text>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(app)/family-screen-setup')}>
-          <Text style={styles.menuItemText}>Family screen</Text>
           <Text style={styles.menuChevron}>›</Text>
         </TouchableOpacity>
       </View>

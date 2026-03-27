@@ -86,7 +86,7 @@ export default function KidsListScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={(e) => { e.stopPropagation(); router.push(`/(app)/kids/${item.id}/edit`); }}
+                  onPress={(e) => { e.stopPropagation(); router.push({ pathname: '/(app)/(tabs)/kids/[id]', params: { id: item.id, tab: 'manage' } }); }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <Feather name="edit-2" size={16} color={colors.bark[600]} />

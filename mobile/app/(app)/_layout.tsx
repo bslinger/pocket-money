@@ -27,7 +27,6 @@ export default function AppLayout() {
       <Stack.Screen name="family/index" options={{ title: 'Family' }} />
       <Stack.Screen name="family/[id]" options={{ title: 'Family Details' }} />
       <Stack.Screen name="settings/index" options={{ title: 'Settings' }} />
-      <Stack.Screen name="family-screen-setup" options={{ title: 'Family Screen' }} />
       <Stack.Screen name="billing" options={{ title: 'Billing' }} />
       <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
       <Stack.Screen name="onboarding/continue" options={{ headerShown: false }} />

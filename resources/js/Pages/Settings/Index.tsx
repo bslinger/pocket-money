@@ -1,7 +1,7 @@
 import { PasswordInput } from '@/Components/ui/password-input';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { User } from '@/types/models';
 
@@ -45,6 +45,32 @@ export default function SettingsIndex({ user }: Props) {
   }
 
   const deleteForm = useForm({ password: '' });
+
+  const newPasswordRef = useRef<HTMLInputElement>(null);
+  const currentPasswordRef = useRef<HTMLInputElement>(null);
+  const passwordForm = useForm({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
+  });
+
+  function submitPassword(e: React.FormEvent) {
+    e.preventDefault();
+    passwordForm.put(route('password.update'), {
+      preserveScroll: true,
+      onSuccess: () => passwordForm.reset(),
+      onError: (errors) => {
+        if (errors.password) {
+          passwordForm.reset('password', 'password_confirmation');
+          newPasswordRef.current?.focus();
+        }
+        if (errors.current_password) {
+          passwordForm.reset('current_password');
+          currentPasswordRef.current?.focus();
+        }
+      },
+    });
+  }
 
   function submitProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -160,6 +186,63 @@ export default function SettingsIndex({ user }: Props) {
             {profileForm.recentlySuccessful && (
               <p className="text-gumleaf-600 text-sm text-right">Saved.</p>
             )}
+          </form>
+        </section>
+
+        {/* Password section */}
+        <section className="bg-white border border-bark-200 rounded-card p-6">
+          <h3 className="font-semibold text-bark-700 mb-4">Change Password</h3>
+          <form onSubmit={submitPassword} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Current password</label>
+              <PasswordInput
+                ref={currentPasswordRef}
+                value={passwordForm.data.current_password}
+                onChange={e => passwordForm.setData('current_password', e.target.value)}
+                className="w-full border border-bark-200 rounded-input px-3 py-2"
+                autoComplete="current-password"
+              />
+              {passwordForm.errors.current_password && (
+                <p className="text-redearth-400 text-xs mt-1">{passwordForm.errors.current_password}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-bark-700 mb-1">New password</label>
+              <PasswordInput
+                ref={newPasswordRef}
+                value={passwordForm.data.password}
+                onChange={e => passwordForm.setData('password', e.target.value)}
+                className="w-full border border-bark-200 rounded-input px-3 py-2"
+                autoComplete="new-password"
+              />
+              {passwordForm.errors.password && (
+                <p className="text-redearth-400 text-xs mt-1">{passwordForm.errors.password}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-bark-700 mb-1">Confirm new password</label>
+              <PasswordInput
+                value={passwordForm.data.password_confirmation}
+                onChange={e => passwordForm.setData('password_confirmation', e.target.value)}
+                className="w-full border border-bark-200 rounded-input px-3 py-2"
+                autoComplete="new-password"
+              />
+              {passwordForm.errors.password_confirmation && (
+                <p className="text-redearth-400 text-xs mt-1">{passwordForm.errors.password_confirmation}</p>
+              )}
+            </div>
+            <div className="flex items-center justify-end gap-3">
+              {passwordForm.recentlySuccessful && (
+                <p className="text-gumleaf-600 text-sm">Saved.</p>
+              )}
+              <button
+                type="submit"
+                disabled={passwordForm.processing}
+                className="px-5 py-2 bg-eucalyptus-400 text-white rounded-card hover:bg-eucalyptus-500 disabled:opacity-50 text-sm font-medium"
+              >
+                {passwordForm.processing ? 'Saving...' : 'Update Password'}
+              </button>
+            </div>
           </form>
         </section>
 

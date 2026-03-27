@@ -1,8 +1,11 @@
-import { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, RefreshControl, Switch, Alert } from 'react-native';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import QRCode from 'react-native-qrcode-svg';
+import { format } from 'date-fns';
 import { api } from '@/lib/api';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
@@ -14,7 +17,11 @@ import type {
   Chore,
   Transaction,
   ApiResponse,
+  PocketMoneySchedule,
+  PocketMoneyScheduleSplit,
+  SpenderDevice,
 } from '@quiddo/shared';
+import { SPENDER_COLORS, POCKET_MONEY_FREQUENCIES, DAYS_OF_WEEK } from '@quiddo/shared';
 
 const FREQUENCY_LABELS: Record<string, string> = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', one_off: 'One-off' };
 const REWARD_TYPE_LABELS: Record<string, string> = { earns: 'Earns', responsibility: 'Responsibility', no_reward: 'No Reward' };
@@ -28,19 +35,91 @@ const TABS: { key: TabKey; icon: keyof typeof Feather.glyphMap; label: string }[
   { key: 'goals', icon: 'target', label: 'Goals' },
   { key: 'chores', icon: 'check-square', label: 'Chores' },
   { key: 'transactions', icon: 'list', label: 'Txns' },
-  { key: 'manage', icon: 'settings', label: 'Manage' },
+  { key: 'manage', icon: 'settings', label: 'Settings' },
 ];
 
+interface SplitRow {
+  account_id: string;
+  account_name: string;
+  percentage: string;
+}
+
+function initSplitRows(schedule: PocketMoneySchedule | null | undefined, accounts: Account[]): SplitRow[] {
+  if (!accounts || accounts.length < 2) return [];
+  if (schedule?.splits && schedule.splits.length > 0) {
+    return schedule.splits.map((s: PocketMoneyScheduleSplit) => ({
+      account_id: s.account_id,
+      account_name: accounts.find(a => a.id === s.account_id)?.name ?? s.account_id,
+      percentage: String(parseFloat(String(s.percentage)).toFixed(2)),
+    }));
+  }
+  const equal = (100 / accounts.length).toFixed(2);
+  return accounts.map((a, i) => ({
+    account_id: a.id,
+    account_name: a.name,
+    percentage: i === accounts.length - 1
+      ? (100 - parseFloat(equal) * (accounts.length - 1)).toFixed(2)
+      : equal,
+  }));
+}
+
+function useCountdown(expiresAt: string | null) {
+  const calc = () => {
+    if (!expiresAt) return 0;
+    return Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+  };
+  const [secondsLeft, setSecondsLeft] = useState(calc);
+  useEffect(() => {
+    if (!expiresAt) return;
+    setSecondsLeft(calc());
+    const id = setInterval(() => setSecondsLeft(calc()), 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+  return { secondsLeft, display: `${minutes}:${seconds.toString().padStart(2, '0')}` };
+}
+
+interface SpenderDetail extends Spender {
+  pocket_money_schedule?: PocketMoneySchedule | null;
+}
+
 export default function KidDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, tab } = useLocalSearchParams<{ id: string; tab?: string }>();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabKey>('accounts');
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<TabKey>(() => tab === 'manage' ? 'manage' : 'accounts');
   const [refreshing, setRefreshing] = useState(false);
+
+  // Edit form state
+  const [editName, setEditName] = useState('');
+  const [editColor, setEditColor] = useState<string>(SPENDER_COLORS[0]);
+
+  // Pocket money state
+  const [pmAmount, setPmAmount] = useState('');
+  const [pmFrequency, setPmFrequency] = useState<'weekly' | 'monthly'>('weekly');
+  const [pmDayOfWeek, setPmDayOfWeek] = useState<number>(4);
+  const [pmDayOfMonth, setPmDayOfMonth] = useState<number>(1);
+  const [distributeOpen, setDistributeOpen] = useState(false);
+  const [splits, setSplits] = useState<SplitRow[]>([]);
+  const [focusedSplitIndex, setFocusedSplitIndex] = useState<number | null>(null);
+
+  // Device link code state
+  const [linkCode, setLinkCode] = useState<{ code: string; expires_at: string } | null>(null);
+  const [generatingCode, setGeneratingCode] = useState(false);
+
+  const { secondsLeft: codeSecondsLeft, display: codeCountdown } = useCountdown(linkCode?.expires_at ?? null);
+
+  useEffect(() => {
+    if (linkCode && codeSecondsLeft <= 0) {
+      setLinkCode(null);
+    }
+  }, [codeSecondsLeft, linkCode]);
 
   const { data: spender, isLoading, refetch } = useQuery({
     queryKey: ['spender', id],
     queryFn: async () => {
-      const res = await api.get<ApiResponse<Spender>>(`/spenders/${id}`);
+      const res = await api.get<ApiResponse<SpenderDetail>>(`/spenders/${id}`);
       return res.data.data;
     },
     enabled: !!id,
@@ -56,10 +135,124 @@ export default function KidDetailScreen() {
     queryKey: ['spender-devices', id],
     queryFn: async () => {
       const res = await api.get(`/spenders/${id}/devices`);
-      return res.data.data as { id: string; device_name: string; last_active_at: string | null; created_at: string }[];
+      return res.data.data as SpenderDevice[];
     },
     enabled: !!id && activeTab === 'manage',
   });
+
+  // Populate edit form when spender loads
+  useEffect(() => {
+    if (spender) {
+      setEditName(spender.name);
+      setEditColor(spender.color ?? SPENDER_COLORS[0]);
+      const schedule = spender.pocket_money_schedule;
+      if (schedule) {
+        setPmAmount(schedule.amount);
+        setPmFrequency(schedule.frequency);
+        if (schedule.day_of_week != null) setPmDayOfWeek(schedule.day_of_week);
+        if (schedule.day_of_month != null) setPmDayOfMonth(schedule.day_of_month);
+        const hasSplits = schedule.splits && schedule.splits.length > 0;
+        setDistributeOpen(!!hasSplits);
+        setSplits(initSplitRows(schedule, (spender.accounts ?? []) as Account[]));
+      } else if ((spender.accounts?.length ?? 0) > 1) {
+        setSplits(initSplitRows(null, (spender.accounts ?? []) as Account[]));
+      }
+    }
+  }, [spender]);
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      await api.put(`/spenders/${id}`, { name: editName, color: editColor });
+    },
+    onSuccess: () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      queryClient.invalidateQueries({ queryKey: ['spender', id] });
+      queryClient.invalidateQueries({ queryKey: ['spenders'] });
+    },
+    onError: (err: any) => {
+      Alert.alert('Error', err.response?.data?.message ?? 'Failed to update');
+    },
+  });
+
+  const saveScheduleMutation = useMutation({
+    mutationFn: async () => {
+      const useSplits = distributeOpen && splits.length > 1;
+      if (useSplits) {
+        const total = splits.reduce((sum, s) => sum + (parseFloat(s.percentage) || 0), 0);
+        if (Math.abs(total - 100) > 0.5) {
+          throw new Error('Percentages must add up to 100%.');
+        }
+      }
+      await api.post(`/spenders/${id}/pocket-money-schedule`, {
+        amount: pmAmount,
+        frequency: pmFrequency,
+        day_of_week: pmFrequency === 'weekly' ? pmDayOfWeek : null,
+        day_of_month: pmFrequency === 'monthly' ? pmDayOfMonth : null,
+        splits: useSplits
+          ? splits.map(s => ({ account_id: s.account_id, percentage: parseFloat(s.percentage) }))
+          : [],
+        account_id: null,
+      });
+    },
+    onSuccess: () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      queryClient.invalidateQueries({ queryKey: ['spender', id] });
+      queryClient.invalidateQueries({ queryKey: ['pocket-money-release'] });
+    },
+    onError: (err: any) => {
+      Alert.alert('Error', err.message ?? err.response?.data?.message ?? 'Failed to save schedule');
+    },
+  });
+
+  const deleteScheduleMutation = useMutation({
+    mutationFn: async () => {
+      if (spender?.pocket_money_schedule?.id) {
+        await api.delete(`/pocket-money-schedules/${spender.pocket_money_schedule.id}`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['spender', id] });
+      queryClient.invalidateQueries({ queryKey: ['pocket-money-release'] });
+      setPmAmount('');
+      setDistributeOpen(false);
+    },
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: async (deviceId: string) => {
+      await api.delete(`/spender-devices/${deviceId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['spender-devices', id] });
+    },
+  });
+
+  const generateCode = async () => {
+    setGeneratingCode(true);
+    try {
+      const res = await api.post(`/spenders/${id}/link-code`);
+      setLinkCode(res.data.data);
+    } catch {
+      Alert.alert('Error', 'Failed to generate link code');
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  const handleRevoke = (deviceId: string, deviceName: string) => {
+    Alert.alert(
+      'Revoke device',
+      `Remove ${deviceName || 'this device'}? They will need a new link code to reconnect.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Revoke', style: 'destructive', onPress: () => revokeMutation.mutate(deviceId) },
+      ],
+    );
+  };
+
+  function updateSplitPercentage(index: number, value: string) {
+    setSplits(prev => prev.map((s, i) => i === index ? { ...s, percentage: value } : s));
+  }
 
   if (isLoading || !spender) {
     return (
@@ -82,6 +275,11 @@ export default function KidDetailScreen() {
     (sum, a) => sum + parseFloat(a.balance),
     0,
   );
+
+  const hasSchedule = !!spender.pocket_money_schedule;
+  const hasMultipleAccounts = (spender.accounts?.length ?? 0) > 1;
+  const splitTotal = splits.reduce((sum, s) => sum + (parseFloat(s.percentage) || 0), 0);
+  const splitTotalOk = focusedSplitIndex !== null || Math.abs(splitTotal - 100) <= 0.5;
 
   const renderAccounts = () => {
     const accounts = spender.accounts ?? [];
@@ -305,51 +503,292 @@ export default function KidDetailScreen() {
     );
   };
 
-  const renderManage = () => {
+  const renderSettings = () => {
     const linkedUsers = spender.users ?? [];
+    const qrValue = linkCode ? `quiddo://link?code=${linkCode.code}` : '';
 
     return (
       <View style={styles.tabContent}>
-        {/* Edit Details */}
-        <TouchableOpacity
-          style={styles.manageItem}
-          onPress={() => router.push(`/(app)/kids/${spender.id}/edit`)}
-        >
-          <Feather name="edit-2" size={18} color={colors.bark[600]} />
-          <Text style={styles.manageItemText}>Edit details</Text>
-          <Feather name="chevron-right" size={18} color={colors.bark[600]} />
-        </TouchableOpacity>
+        {/* Spender Details */}
+        <View style={styles.settingsCard}>
+          <Text style={styles.settingsCardTitle}>Spender details</Text>
+
+          <View style={styles.settingsPreview}>
+            <View style={[styles.previewAvatar, { backgroundColor: editColor }]}>
+              <Text style={styles.previewAvatarText}>
+                {editName.trim().length > 0 ? editName[0].toUpperCase() : '?'}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.settingsLabel}>Name</Text>
+          <TextInput
+            style={styles.settingsInput}
+            value={editName}
+            onChangeText={setEditName}
+            placeholder="Kid's name"
+            placeholderTextColor={colors.bark[400]}
+          />
+
+          <Text style={styles.settingsLabel}>Colour</Text>
+          <View style={styles.colorGrid}>
+            {SPENDER_COLORS.map((color) => (
+              <TouchableOpacity
+                key={color}
+                style={[
+                  styles.colorSwatch,
+                  { backgroundColor: color },
+                  editColor === color && styles.colorSwatchSelected,
+                ]}
+                onPress={() => setEditColor(color)}
+              >
+                {editColor === color && <Text style={styles.colorCheck}>✓</Text>}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={() => updateMutation.mutate()}
+            disabled={updateMutation.isPending}
+          >
+            <Text style={styles.saveButtonText}>
+              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Pocket Money Schedule */}
+        <View style={styles.settingsCard}>
+          <Text style={styles.settingsCardTitle}>Pocket money schedule</Text>
+
+          {hasSchedule && spender.pocket_money_schedule && (
+            <View style={styles.scheduleActiveChip}>
+              <Text style={styles.scheduleActiveText}>
+                Active: {spender.pocket_money_schedule.amount} {
+                  spender.pocket_money_schedule.frequency === 'weekly'
+                    ? `every ${DAYS_OF_WEEK.find(d => d.value === spender.pocket_money_schedule!.day_of_week)?.label ?? ''}`
+                    : `on day ${spender.pocket_money_schedule.day_of_month ?? 1} of each month`
+                }
+              </Text>
+            </View>
+          )}
+
+          <Text style={styles.settingsLabel}>Amount</Text>
+          <View style={styles.amountRow}>
+            <Text style={styles.dollarSign}>$</Text>
+            <TextInput
+              style={styles.amountInput}
+              value={pmAmount}
+              onChangeText={setPmAmount}
+              placeholder="0.00"
+              keyboardType="decimal-pad"
+              placeholderTextColor={colors.bark[400]}
+            />
+          </View>
+
+          <Text style={styles.settingsLabel}>Frequency</Text>
+          <View style={styles.optionRow}>
+            {POCKET_MONEY_FREQUENCIES.map((f) => (
+              <TouchableOpacity
+                key={f}
+                style={[styles.optionChip, pmFrequency === f && styles.optionChipActive]}
+                onPress={() => setPmFrequency(f)}
+              >
+                <Text style={[styles.optionChipText, pmFrequency === f && styles.optionChipTextActive]}>
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {pmFrequency === 'weekly' && (
+            <>
+              <Text style={styles.settingsLabel}>Pay day</Text>
+              <View style={styles.daysRow}>
+                {DAYS_OF_WEEK.map((d) => (
+                  <TouchableOpacity
+                    key={d.value}
+                    style={[styles.dayChip, pmDayOfWeek === d.value && styles.dayChipActive]}
+                    onPress={() => setPmDayOfWeek(d.value)}
+                  >
+                    <Text style={[styles.dayChipText, pmDayOfWeek === d.value && styles.dayChipTextActive]}>
+                      {d.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
+          )}
+
+          {pmFrequency === 'monthly' && (
+            <>
+              <Text style={styles.settingsLabel}>Day of month</Text>
+              <TextInput
+                style={[styles.settingsInput, { width: 80, textAlign: 'center' }]}
+                value={String(pmDayOfMonth)}
+                onChangeText={(v) => setPmDayOfMonth(Math.min(31, Math.max(1, parseInt(v) || 1)))}
+                keyboardType="number-pad"
+                placeholderTextColor={colors.bark[400]}
+              />
+            </>
+          )}
+
+          {hasMultipleAccounts && (
+            <View style={styles.distributeSection}>
+              <View style={styles.distributeHeader}>
+                <Text style={styles.distributeLabel}>Distribute between accounts</Text>
+                <Switch
+                  value={distributeOpen}
+                  onValueChange={(val) => {
+                    setDistributeOpen(val);
+                    if (val && splits.length === 0) {
+                      setSplits(initSplitRows(null, (spender.accounts ?? []) as Account[]));
+                    }
+                  }}
+                  trackColor={{ false: colors.bark[200], true: colors.eucalyptus[400] }}
+                  thumbColor={colors.white}
+                />
+              </View>
+
+              {distributeOpen && splits.length > 0 && (
+                <View style={styles.splitsList}>
+                  {splits.map((split, index) => (
+                    <View key={split.account_id} style={styles.splitRow}>
+                      <Text style={styles.splitAccountName} numberOfLines={1}>{split.account_name}</Text>
+                      <View style={styles.splitInputRow}>
+                        <TextInput
+                          style={styles.splitInput}
+                          value={split.percentage}
+                          onChangeText={(v) => updateSplitPercentage(index, v)}
+                          onFocus={() => setFocusedSplitIndex(index)}
+                          onBlur={() => setFocusedSplitIndex(null)}
+                          keyboardType="decimal-pad"
+                          placeholderTextColor={colors.bark[400]}
+                        />
+                        <Text style={styles.splitPercent}>%</Text>
+                      </View>
+                    </View>
+                  ))}
+                  <Text style={[styles.splitTotalText, !splitTotalOk && styles.splitTotalError]}>
+                    Total: {splitTotal.toFixed(2)}% {splitTotalOk ? '✓' : '(must equal 100%)'}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={[styles.scheduleButton, (!pmAmount || (distributeOpen && !splitTotalOk)) && styles.scheduleButtonDisabled]}
+            onPress={() => saveScheduleMutation.mutate()}
+            disabled={saveScheduleMutation.isPending || !pmAmount || (distributeOpen && !splitTotalOk)}
+          >
+            <Text style={styles.scheduleButtonText}>
+              {saveScheduleMutation.isPending ? 'Saving...' : hasSchedule ? 'Update Schedule' : 'Set Schedule'}
+            </Text>
+          </TouchableOpacity>
+
+          {hasSchedule && (
+            <TouchableOpacity
+              style={styles.removeScheduleButton}
+              onPress={() =>
+                Alert.alert('Remove Schedule', 'Remove pocket money schedule?', [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Remove', style: 'destructive', onPress: () => deleteScheduleMutation.mutate() },
+                ])
+              }
+            >
+              <Text style={styles.removeScheduleText}>Remove Schedule</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {/* Child Login Accounts */}
-        <View style={styles.manageSection}>
-          <View style={styles.manageSectionHeader}>
+        <View style={styles.settingsCard}>
+          <View style={styles.settingsSectionHeader}>
             <Feather name="user" size={16} color={colors.bark[600]} />
-            <Text style={styles.manageSectionTitle}>Child Login Accounts</Text>
+            <Text style={styles.settingsCardTitle}>Child login accounts</Text>
           </View>
           {linkedUsers.length > 0 ? (
             linkedUsers.map((user: any) => (
-              <View key={user.id} style={styles.manageSubItem}>
+              <View key={user.id} style={styles.linkedUserRow}>
                 <Feather name="link-2" size={14} color={colors.bark[600]} />
-                <Text style={styles.manageSubItemText}>{user.email}</Text>
+                <Text style={styles.linkedUserText}>{user.email}</Text>
               </View>
             ))
           ) : (
-            <Text style={styles.manageEmptyText}>No login accounts linked</Text>
+            <Text style={styles.settingsEmptyText}>No login accounts linked — use the web app to invite a child.</Text>
           )}
         </View>
 
         {/* Linked Devices */}
-        <TouchableOpacity
-          style={styles.manageItem}
-          onPress={() => router.push(`/(app)/kids/${spender.id}/devices`)}
-        >
-          <Feather name="smartphone" size={18} color={colors.bark[600]} />
-          <Text style={styles.manageItemText}>Linked devices</Text>
-          <View style={styles.manageBadge}>
-            <Text style={styles.manageBadgeText}>{devices.length}</Text>
+        <View style={styles.settingsCard}>
+          <View style={styles.settingsSectionHeader}>
+            <Feather name="smartphone" size={16} color={colors.bark[600]} />
+            <Text style={styles.settingsCardTitle}>Linked devices</Text>
           </View>
-          <Feather name="chevron-right" size={18} color={colors.bark[600]} />
-        </TouchableOpacity>
+          <Text style={styles.settingsDescription}>
+            Link a child's device so they can view their accounts and mark chores complete. No email needed.
+          </Text>
+
+          {linkCode && codeSecondsLeft > 0 ? (
+            <View style={styles.codeCard}>
+              <Text style={styles.codeLabel}>Scan this QR code or enter the code below</Text>
+              <View style={styles.qrContainer}>
+                <QRCode value={qrValue} size={160} color={colors.bark[700]} backgroundColor={colors.white} />
+              </View>
+              <Text style={styles.codeDivider}>or enter manually</Text>
+              <Text style={styles.codeText}>{linkCode.code}</Text>
+              <Text style={[styles.codeExpiry, codeSecondsLeft < 60 && styles.codeExpiryUrgent]}>
+                Expires in {codeCountdown}
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.generateButton}
+              onPress={generateCode}
+              disabled={generatingCode}
+            >
+              <Feather name="smartphone" size={18} color={colors.white} />
+              <Text style={styles.generateButtonText}>
+                {generatingCode ? 'Generating...' : 'Generate Link Code'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {devices.length > 0 && (
+            <View style={{ marginTop: 16 }}>
+              <Text style={styles.devicesSectionTitle}>Active Devices</Text>
+              {devices.map((device) => (
+                <View key={device.id} style={styles.deviceCard}>
+                  <Feather name="smartphone" size={18} color={colors.bark[600]} />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={styles.deviceName}>{device.device_name || 'Unnamed device'}</Text>
+                    {device.last_active_at ? (
+                      <Text style={styles.deviceMeta}>
+                        Last active {format(new Date(device.last_active_at), 'd MMM yyyy, h:mm a')}
+                      </Text>
+                    ) : (
+                      <Text style={styles.deviceMeta}>
+                        Added {format(new Date(device.created_at), 'd MMM yyyy, h:mm a')}
+                      </Text>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleRevoke(device.id, device.device_name)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Feather name="trash-2" size={18} color={colors.redearth[400]} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {devices.length === 0 && !linkCode && (
+            <Text style={styles.settingsEmptyText}>No devices linked yet.</Text>
+          )}
+        </View>
       </View>
     );
   };
@@ -359,7 +798,7 @@ export default function KidDetailScreen() {
     goals: renderGoals,
     chores: renderChores,
     transactions: renderTransactions,
-    manage: renderManage,
+    manage: renderSettings,
   };
 
   return (
@@ -398,14 +837,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bark[100] },
   content: { padding: 16 },
   header: { alignItems: 'center', marginBottom: 20 },
-  avatarLarge: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarLargeText: { fontFamily: fonts.body, color: colors.white, fontSize: 30 },
   name: { fontFamily: fonts.display, fontSize: 22, color: colors.bark[700], marginTop: 12 },
   balance: { fontFamily: fonts.display, fontSize: 32, color: colors.bark[700], marginTop: 4 },
   tabBar: {
@@ -524,39 +955,204 @@ const styles = StyleSheet.create({
   progressText: { fontFamily: fonts.body, fontSize: 12, color: colors.wattle[400], width: 36 },
   choreEmoji: { fontSize: 22 },
   txAmount: { fontFamily: fonts.display, fontSize: 16 },
-  manageItem: {
+  emptyText: { fontFamily: fonts.body, color: colors.bark[600], fontSize: 14, textAlign: 'center', padding: 24 },
+
+  // Settings tab
+  settingsCard: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+  },
+  settingsCardTitle: { fontFamily: fonts.body, fontSize: 15, fontWeight: '700', color: colors.bark[700], marginBottom: 12 },
+  settingsSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  settingsLabel: { fontFamily: fonts.body, fontSize: 13, fontWeight: '600', color: colors.bark[700], marginBottom: 6, marginTop: 12 },
+  settingsInput: {
+    backgroundColor: colors.bark[100],
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: colors.bark[700],
+    fontFamily: fonts.body,
+  },
+  settingsDescription: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], marginBottom: 12 },
+  settingsEmptyText: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], marginTop: 4 },
+  settingsPreview: { alignItems: 'center', marginVertical: 8 },
+  previewAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewAvatarText: { color: colors.white, fontSize: 24, fontWeight: '700' },
+  colorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  colorSwatch: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  colorSwatchSelected: { borderWidth: 3, borderColor: colors.bark[700] },
+  colorCheck: { color: colors.white, fontSize: 14, fontWeight: '700' },
+  saveButton: {
+    backgroundColor: colors.eucalyptus[400],
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  saveButtonText: { fontFamily: fonts.body, color: colors.white, fontWeight: '600', fontSize: 15 },
+  scheduleActiveChip: {
+    backgroundColor: colors.gumleaf[400] + '20',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 4,
+  },
+  scheduleActiveText: { fontFamily: fonts.body, fontSize: 13, color: colors.gumleaf[400], fontWeight: '500' },
+  amountRow: { flexDirection: 'row', alignItems: 'center' },
+  dollarSign: { fontFamily: fonts.body, fontSize: 20, fontWeight: '700', color: colors.bark[700], marginRight: 6 },
+  amountInput: {
+    flex: 1,
+    backgroundColor: colors.bark[100],
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.bark[700],
+    fontFamily: fonts.body,
+  },
+  optionRow: { flexDirection: 'row', gap: 8 },
+  optionChip: {
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: colors.bark[100],
+  },
+  optionChipActive: { borderColor: colors.eucalyptus[400], backgroundColor: colors.eucalyptus[400] },
+  optionChipText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  optionChipTextActive: { color: colors.white, fontWeight: '600' },
+  daysRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+  dayChip: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.bark[100],
+  },
+  dayChipActive: { backgroundColor: colors.eucalyptus[400], borderColor: colors.eucalyptus[400] },
+  dayChipText: { fontFamily: fonts.body, fontSize: 11, color: colors.bark[700] },
+  dayChipTextActive: { color: colors.white, fontWeight: '600' },
+  distributeSection: {
+    marginTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.bark[100],
+    paddingTop: 14,
+  },
+  distributeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  distributeLabel: { fontFamily: fonts.body, fontSize: 14, fontWeight: '600', color: colors.bark[700] },
+  splitsList: { marginTop: 12, gap: 10 },
+  splitRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  splitAccountName: { flex: 1, fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  splitInputRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  splitInput: {
+    width: 72,
+    backgroundColor: colors.bark[100],
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    borderRadius: 8,
+    padding: 8,
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.bark[700],
+    textAlign: 'right',
+    fontFamily: fonts.body,
+  },
+  splitPercent: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600], fontWeight: '600' },
+  splitTotalText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginTop: 6, textAlign: 'right' },
+  splitTotalError: { color: colors.redearth[400] },
+  scheduleButton: {
+    backgroundColor: colors.eucalyptus[400],
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  scheduleButtonDisabled: { backgroundColor: colors.bark[200] },
+  scheduleButtonText: { fontFamily: fonts.body, color: colors.white, fontWeight: '600', fontSize: 14 },
+  removeScheduleButton: { alignItems: 'center', marginTop: 10 },
+  removeScheduleText: { fontFamily: fonts.body, color: colors.redearth[400], fontSize: 14, fontWeight: '500' },
+  linkedUserRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
+  linkedUserText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
+  codeCard: {
+    backgroundColor: colors.bark[100],
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.eucalyptus[400] + '30',
+  },
+  codeLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], marginBottom: 16, textAlign: 'center' },
+  qrContainer: {
+    padding: 12,
     backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.bark[200],
+    marginBottom: 16,
+  },
+  codeDivider: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginBottom: 12 },
+  codeText: { fontFamily: fonts.display, fontSize: 32, color: colors.eucalyptus[400], letterSpacing: 6, marginBottom: 12 },
+  codeExpiry: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600] },
+  codeExpiryUrgent: { color: colors.redearth[400] },
+  generateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.eucalyptus[400],
     borderRadius: 12,
     padding: 14,
     marginBottom: 8,
-    borderWidth: 1,
-    borderColor: colors.bark[200],
   },
-  manageItemText: { fontFamily: fonts.body, fontSize: 15, color: colors.bark[700], flex: 1 },
-  manageBadge: {
-    backgroundColor: colors.bark[200],
+  generateButtonText: { fontFamily: fonts.body, color: colors.white, fontSize: 15 },
+  devicesSectionTitle: { fontFamily: fonts.body, fontSize: 11, color: colors.bark[600], textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },
+  deviceCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.bark[100],
     borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  manageBadgeText: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600] },
-  manageSection: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
+    padding: 12,
+    marginBottom: 6,
     borderWidth: 1,
     borderColor: colors.bark[200],
   },
-  manageSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-  manageSectionTitle: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
-  manageSubItem: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
-  manageSubItemText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600] },
-  manageEmptyText: { fontFamily: fonts.body, fontSize: 13, color: colors.bark[600], paddingVertical: 4 },
-  emptyText: { fontFamily: fonts.body, color: colors.bark[600], fontSize: 14, textAlign: 'center', padding: 24 },
+  deviceName: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[700] },
+  deviceMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.bark[600], marginTop: 2 },
+
   // Skeleton
   headerSkeleton: { alignItems: 'center', marginBottom: 20, padding: 16 },
   skeletonAvatar: {

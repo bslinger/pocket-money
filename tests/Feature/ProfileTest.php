@@ -10,7 +10,7 @@ class ProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_profile_page_is_displayed(): void
+    public function test_profile_page_redirects_to_settings(): void
     {
         $user = User::factory()->create();
 
@@ -18,7 +18,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
-        $response->assertOk();
+        $response->assertRedirect(route('settings'));
     }
 
     public function test_profile_information_can_be_updated(): void
