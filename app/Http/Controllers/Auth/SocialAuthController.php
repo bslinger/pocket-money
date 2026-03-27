@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User as OAuth2User;
 
 class SocialAuthController extends Controller
@@ -20,10 +21,10 @@ class SocialAuthController extends Controller
         $this->validateProvider($provider);
 
         if ($provider === 'facebook') {
-            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            /** @var AbstractProvider $driver */
             $driver = Socialite::driver($provider);
 
-            return $driver->scopes(['email'])->redirect();
+            return $driver->scopes(['email'])->with(['auth_type' => 'rerequest'])->redirect();
         }
 
         return Socialite::driver($provider)->redirect();
