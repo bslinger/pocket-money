@@ -7,6 +7,7 @@ use App\Http\Middleware\EnsureFamilyMember;
 use App\Http\Middleware\EnsureFamilySubscribed;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireParent;
+use App\Http\Middleware\RequireStagingAuth;
 use App\Http\Middleware\SwitchTestDatabase;
 use App\Http\Middleware\UpdateLastCatchupAt;
 use Illuminate\Foundation\Application;
@@ -28,11 +29,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(prepend: [
+            RequireStagingAuth::class,
             CollectCoverage::class,
             SwitchTestDatabase::class,
         ]);
 
         $middleware->api(prepend: [
+            RequireStagingAuth::class,
             SwitchTestDatabase::class,
         ]);
 

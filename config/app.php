@@ -41,6 +41,10 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
+    'staging_auth_user' => env('STAGING_AUTH_USER'),
+
+    'staging_auth_pass' => env('STAGING_AUTH_PASS'),
+
     /*
     |--------------------------------------------------------------------------
     | Application URL
