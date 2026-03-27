@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar_url',
         'uses_apple_relay',
         'stripe_customer_id',
+        'last_catchup_at',
     ];
 
     protected $hidden = [
@@ -42,6 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_catchup_at' => 'datetime',
             'password' => 'hashed',
             'uses_apple_relay' => 'boolean',
         ];

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Family;
 use App\Models\Spender;
+use App\Services\CatchupService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,6 +39,7 @@ class HandleInertiaRequests extends Middleware
                 'familyScreenLinkCode' => $request->session()->get('familyScreenLinkCode'),
                 'error' => $request->session()->get('error'),
             ],
+            'catchup' => fn () => $this->resolveCatchup($request),
             'auth' => [
                 'user' => $request->user(),
                 'isParent' => $request->user()?->isParent() ?? false,
@@ -49,6 +51,21 @@ class HandleInertiaRequests extends Middleware
                 'subscription' => fn () => $this->resolveSubscriptionStatus($request),
             ],
         ];
+    }
+
+    /**
+     * Build catch-up data for parents: pocket money events and goals met since last_catchup_at.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function resolveCatchup(Request $request): ?array
+    {
+        $user = $request->user();
+        if (! $user || ! $user->isParent()) {
+            return null;
+        }
+
+        return app(CatchupService::class)->buildForUser($user);
     }
 
     /**

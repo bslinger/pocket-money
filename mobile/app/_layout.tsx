@@ -1,9 +1,9 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { queryClient } from '@/lib/queryClient';
@@ -12,14 +12,30 @@ import { FamilyProvider } from '@/lib/family';
 import { useNotificationListeners } from '@/lib/notifications';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
+import { api } from '@/lib/api';
+import CatchupModal from '@/components/CatchupModal';
+import type { CatchupData } from '@quiddo/shared';
 
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, isChildDevice, isFamilyScreen } = useAuth();
+  const [catchupDismissed, setCatchupDismissed] = useState(false);
   useNotificationListeners();
+
+  const isParent = isAuthenticated && !isChildDevice && !isFamilyScreen;
+
+  const { data: catchupData } = useQuery<CatchupData>({
+    queryKey: ['catchup'],
+    queryFn: async () => {
+      const response = await api.get<{ data: CatchupData }>('/catchup');
+      return response.data.data;
+    },
+    enabled: isParent,
+    staleTime: Infinity,
+  });
 
   if (isLoading) {
     return (
@@ -36,6 +52,13 @@ function AppContent() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(app)" />
       </Stack>
+      {catchupData && catchupData.has_events && !catchupDismissed && (
+        <CatchupModal
+          visible
+          catchup={catchupData}
+          onDismiss={() => setCatchupDismissed(true)}
+        />
+      )}
     </FamilyProvider>
   );
 }

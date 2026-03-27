@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CatchupController;
 use App\Http\Controllers\Api\V1\ChildDashboardController;
 use App\Http\Controllers\Api\V1\ChildDeviceTokenController;
 use App\Http\Controllers\Api\V1\ChoreCompletionController;
@@ -43,6 +44,11 @@ Route::post('/family-screen-devices/claim', [FamilyScreenLinkCodeController::cla
 // Authenticated (Sanctum token auth)
 // ---------------------------------------------------------------------------
 Route::middleware('auth:sanctum')->group(function (): void {
+
+    // Catch-up
+    Route::get('/catchup', [CatchupController::class, 'check'])->name('api.v1.catchup.check');
+    Route::post('/catchup/pocket-money-events/{event}/release', [CatchupController::class, 'release'])->name('api.v1.catchup.release');
+    Route::post('/catchup/pocket-money-events/{event}/reverse', [CatchupController::class, 'reverse'])->name('api.v1.catchup.reverse');
 
     // Auth
     Route::get('/auth/user', [AuthController::class, 'user']);

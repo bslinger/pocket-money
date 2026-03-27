@@ -473,6 +473,45 @@ export interface FamilyScreenDashboard {
 }
 
 // ---------------------------------------------------------------------------
+// Catch-up ("while you were away" summary)
+// ---------------------------------------------------------------------------
+
+export type PocketMoneyEventStatus = 'released' | 'withheld';
+
+export interface PocketMoneyEvent {
+  id: string;
+  scheduled_for: string; // YYYY-MM-DD
+  amount: string; // decimal:2
+  status: PocketMoneyEventStatus;
+  transaction_id: string | null;
+}
+
+export interface CatchupGoalMet {
+  id: string;
+  name: string;
+  target_amount: string; // decimal:2
+  completed_at: string;
+}
+
+export interface CatchupSpenderSummary {
+  spender: {
+    id: string;
+    name: string;
+    color: string | null;
+    avatar_url: string | null;
+    currency_symbol: string | null;
+    use_integer_amounts: boolean | null;
+  };
+  pocket_money_events: PocketMoneyEvent[];
+  goals_met: CatchupGoalMet[];
+}
+
+export interface CatchupData {
+  has_events: boolean;
+  spenders: CatchupSpenderSummary[];
+}
+
+// ---------------------------------------------------------------------------
 // Push notifications
 // ---------------------------------------------------------------------------
 

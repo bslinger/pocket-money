@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BillingTransferController;
+use App\Http\Controllers\CatchupController;
 use App\Http\Controllers\ChildInvitationController;
 use App\Http\Controllers\ChoreCompletionController;
 use App\Http\Controllers\ChoreController;
@@ -75,6 +76,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Billing routes — exempt from subscription check
     Route::middleware('require.parent')->group(function () {
+        Route::post('/catchup/pocket-money-events/{event}/release', [CatchupController::class, 'release'])->name('catchup.release');
+        Route::post('/catchup/pocket-money-events/{event}/reverse', [CatchupController::class, 'reverse'])->name('catchup.reverse');
+
         Route::get('/billing', [BillingController::class, 'index'])->name('billing');
         Route::post('/billing/checkout', [BillingController::class, 'checkout'])->name('billing.checkout');
         Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');

@@ -1,5 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode, useState } from 'react';
+import CatchupModal from '@/Components/CatchupModal';
+import type { CatchupData } from '@quiddo/shared';
 import { Button } from '@/Components/ui/button';
 import {
     DropdownMenu,
@@ -211,7 +213,7 @@ export default function AuthenticatedLayout({
     header,
     children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-    const { auth } = usePage().props as any;
+    const { auth, catchup } = usePage().props as any;
     const user = auth.user;
     const isParent: boolean = auth.isParent ?? false;
     const activeFamily = auth.activeFamily ?? null;
@@ -219,6 +221,11 @@ export default function AuthenticatedLayout({
     const viewingAsSpender: { id: string; name: string } | null = auth.viewingAsSpender ?? null;
     const subscription = auth.subscription ?? null;
     const isFrozen = subscription?.frozen ?? false;
+
+    const catchupData: CatchupData | null = catchup ?? null;
+    const [catchupDismissed, setCatchupDismissed] = useState(false);
+    const showCatchup = isParent && catchupData?.has_events && !catchupDismissed;
+
     return (
         <div className="min-h-screen bg-bark-100">
             {/* Safe-area colour fill — matches topmost bar background */}
@@ -374,6 +381,10 @@ export default function AuthenticatedLayout({
             <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pb-24 sm:pb-8">
                 {children}
             </main>
+
+            {showCatchup && catchupData && (
+                <CatchupModal catchup={catchupData} onDismiss={() => setCatchupDismissed(true)} />
+            )}
         </div>
     );
 }

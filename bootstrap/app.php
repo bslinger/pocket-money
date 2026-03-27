@@ -8,6 +8,7 @@ use App\Http\Middleware\EnsureFamilySubscribed;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireParent;
 use App\Http\Middleware\SwitchTestDatabase;
+use App\Http\Middleware\UpdateLastCatchupAt;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -39,6 +40,11 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleCors::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            UpdateLastCatchupAt::class,
+        ]);
+
+        $middleware->api(append: [
+            UpdateLastCatchupAt::class,
         ]);
 
         $middleware->alias([

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\CompletionStatus;
+use App\Models\PocketMoneyEvent;
 use App\Models\PocketMoneySchedule;
 use App\Models\Transaction;
 use App\Services\AnalyticsService;
@@ -32,10 +33,20 @@ class RunPocketMoney extends Command
         foreach ($due as $schedule) {
             /** @var PocketMoneySchedule $schedule */
             $spender = $schedule->spender;
+            $scheduledFor = $schedule->next_run_at?->toDateString() ?? now()->toDateString();
 
-            $paid = $this->checkAndPay($schedule);
-            $status = $paid ? 'paid' : 'skipped (responsibilities not met)';
+            $transactionId = $this->checkAndPay($schedule);
+            $status = $transactionId !== null ? 'paid' : 'skipped (responsibilities not met)';
             $this->line("  - {$spender->name}: {$status}");
+
+            PocketMoneyEvent::create([
+                'spender_id' => $spender->id,
+                'schedule_id' => $schedule->id,
+                'scheduled_for' => $scheduledFor,
+                'amount' => $schedule->amount,
+                'status' => $transactionId !== null ? 'released' : 'withheld',
+                'transaction_id' => $transactionId,
+            ]);
 
             // Advance next_run_at regardless
             $schedule->next_run_at = $this->advanceDate($schedule);
@@ -45,7 +56,7 @@ class RunPocketMoney extends Command
         $this->info('Done.');
     }
 
-    private function checkAndPay(PocketMoneySchedule $schedule): bool
+    private function checkAndPay(PocketMoneySchedule $schedule): ?string
     {
         $spender = $schedule->spender;
 
@@ -70,11 +81,13 @@ class RunPocketMoney extends Command
             );
 
             if (! $allMet) {
-                return false;
+                return null;
             }
         }
 
-        DB::transaction(function () use ($schedule, $spender) {
+        $transactionId = null;
+
+        DB::transaction(function () use ($schedule, $spender, &$transactionId) {
             $splits = $schedule->splits;
 
             if ($splits->isNotEmpty()) {
@@ -89,7 +102,7 @@ class RunPocketMoney extends Command
 
                     $remaining -= $amt;
 
-                    Transaction::create([
+                    $tx = Transaction::create([
                         'account_id' => $split->account_id,
                         'type' => 'credit',
                         'amount' => $amt,
@@ -98,11 +111,15 @@ class RunPocketMoney extends Command
                         'created_by' => $schedule->created_by,
                     ]);
 
+                    if ($i === 0) {
+                        $transactionId = $tx->id;
+                    }
+
                     $split->account->increment('balance', $amt);
                 }
             } else {
                 $account = $schedule->account ?? SpenderService::mainAccount($spender);
-                Transaction::create([
+                $tx = Transaction::create([
                     'account_id' => $account->id,
                     'type' => 'credit',
                     'amount' => $schedule->amount,
@@ -110,6 +127,7 @@ class RunPocketMoney extends Command
                     'occurred_at' => now(),
                     'created_by' => $schedule->created_by,
                 ]);
+                $transactionId = $tx->id;
                 $account->increment('balance', (float) $schedule->amount);
             }
         });
@@ -120,7 +138,7 @@ class RunPocketMoney extends Command
             1,
         ));
 
-        return true;
+        return $transactionId;
     }
 
     private function advanceDate(PocketMoneySchedule $schedule): Carbon
