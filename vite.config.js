@@ -18,13 +18,13 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
             'ziggy-js': path.resolve(__dirname, './vendor/tightenco/ziggy/src/js/index.js'),
         },
+        dedupe: ['react', 'react-dom'],
     },
     server: {
         host: '0.0.0.0',
-        port: 5173,
+        port: 5176,
         hmr: {
             host: 'localhost',
-            port: 5173,
         },
     },
 });

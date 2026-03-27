@@ -1,9 +1,18 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 
 export default function FamilyScreenLayout() {
+  useEffect(() => {
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    return () => {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    };
+  }, []);
+
   return (
     <Tabs
       screenOptions={{
