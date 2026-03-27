@@ -61,7 +61,7 @@ export default function Pricing() {
         </div>
 
         <p className="text-[13px] text-bark-400 mt-5">
-          All plans include a 30-day free trial · No credit card required · Cancel any time
+          All plans include a 14-day free trial · Cancel any time
         </p>
       </div>
     </section>

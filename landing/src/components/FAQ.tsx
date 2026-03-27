@@ -30,8 +30,8 @@ const FAQ_ITEMS = [
     a: "No limit. One subscription, flat price, add as many kids as you need.",
   },
   {
-    q: 'What happens after my 30-day trial?',
-    a: "You'll be prompted to pick a plan. If you don't, the account goes read-only. You can still see everything, you just can't make changes, and you can export all your data at any time. No credit card is needed to start.",
+    q: 'What happens after my 14-day trial?',
+    a: "You'll be prompted to pick a plan. If you don't, the account goes read-only. You can still see everything, you just can't make changes, and you can export all your data at any time.",
   },
 ];
 

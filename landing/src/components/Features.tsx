@@ -134,7 +134,7 @@ export default function Features() {
                                 get started</h3>
                             <ul className="flex flex-col gap-2.5">
                                 {[
-                                    'Sign up with your email. No credit card needed for the trial.',
+                                    'Sign up with your email and get started in minutes.',
                                     'Set up your family name and currency type',
                                     'Add your children and their weekly pocket money amounts',
                                     'Create your first chore and watch it go',
