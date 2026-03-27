@@ -19,6 +19,13 @@ class SocialAuthController extends Controller
     {
         $this->validateProvider($provider);
 
+        if ($provider === 'facebook') {
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver($provider);
+
+            return $driver->scopes(['email'])->redirect();
+        }
+
         return Socialite::driver($provider)->redirect();
     }
 
@@ -35,6 +42,10 @@ class SocialAuthController extends Controller
 
         $isApple = $provider === 'apple';
         $email = $socialUser->getEmail();
+
+        if (! $email && $provider === 'facebook') {
+            return redirect()->route('login')->withErrors(['social' => 'Your Facebook account doesn\'t have an email address. Please sign in with Google or use your email and password instead.']);
+        }
         $usesRelay = $isApple && $email && str_ends_with($email, '@privaterelay.appleid.com');
 
         // Apple only returns the name on the first authorisation — capture it from the raw response
