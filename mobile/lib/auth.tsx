@@ -228,10 +228,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     disconnectEcho();
-    try {
-      await unregisterPushToken(state.isChildDevice);
-    } catch {
-      // Best-effort — don't block logout
+    if (!state.isFamilyScreen) {
+      try {
+        await unregisterPushToken(state.isChildDevice);
+      } catch {
+        // Best-effort — don't block logout
+      }
     }
     try {
       await api.post('/auth/logout');
