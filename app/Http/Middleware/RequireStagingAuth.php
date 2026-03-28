@@ -10,7 +10,7 @@ class RequireStagingAuth
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (config('app.env') !== 'staging') {
+        if (config('app.env') !== 'staging' || $request->is('api/*')) {
             return $next($request);
         }
 
