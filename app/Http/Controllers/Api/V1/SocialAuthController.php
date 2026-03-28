@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Models\SocialAccount;
 use App\Services\SocialAuthService;
 use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
@@ -32,20 +33,26 @@ class SocialAuthController extends Controller
             'facebook' => $this->verifyFacebook($request->token),
         };
 
-        // If the provider didn't return an email, check if the client supplied one.
-        // If neither, signal to the app that it should collect the email and retry.
+        // If the provider didn't return an email, check if this social account is already linked.
+        // If so, proceed directly. If not, the client must supply an email before we can continue.
         if (empty($socialData['email'])) {
-            if (empty($request->email)) {
-                return response()->json([
-                    'data' => [
-                        'needs_email' => true,
-                        'provider_id' => $socialData['provider_id'],
-                        'name' => $socialData['name'],
-                    ],
-                ]);
-            }
+            $alreadyLinked = SocialAccount::where('provider', $socialData['provider'])
+                ->where('provider_id', $socialData['provider_id'])
+                ->exists();
 
-            $socialData['email'] = $request->email;
+            if (! $alreadyLinked) {
+                if (empty($request->email)) {
+                    return response()->json([
+                        'data' => [
+                            'needs_email' => true,
+                            'provider_id' => $socialData['provider_id'],
+                            'name' => $socialData['name'],
+                        ],
+                    ]);
+                }
+
+                $socialData['email'] = $request->email;
+            }
         }
 
         $user = $this->socialAuth->findOrCreateUser($socialData);

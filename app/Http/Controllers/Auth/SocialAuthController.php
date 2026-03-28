@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\SocialAccount;
 use App\Services\SocialAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
@@ -49,20 +49,25 @@ class SocialAuthController extends Controller
         $token = $socialUser instanceof OAuth2User ? $socialUser->token : null;
         $refreshToken = $socialUser instanceof OAuth2User ? $socialUser->refreshToken : null;
 
-        // If the provider didn't return an email, collect it from the user directly.
+        // If the provider didn't return an email, check if this social account is already linked.
+        // If so, log in directly. If not, collect the email before creating the account.
         if (! $email) {
-            $name = $socialUser->getName();
+            $alreadyLinked = SocialAccount::where('provider', $provider)
+                ->where('provider_id', $socialUser->getId())
+                ->exists();
 
-            session()->put('pending_social_auth', [
-                'provider' => $provider,
-                'provider_id' => $socialUser->getId(),
-                'name' => $name,
-                'avatar_url' => $socialUser->getAvatar(),
-                'token' => $token,
-                'refresh_token' => $refreshToken,
-            ]);
+            if (! $alreadyLinked) {
+                session()->put('pending_social_auth', [
+                    'provider' => $provider,
+                    'provider_id' => $socialUser->getId(),
+                    'name' => $socialUser->getName(),
+                    'avatar_url' => $socialUser->getAvatar(),
+                    'token' => $token,
+                    'refresh_token' => $refreshToken,
+                ]);
 
-            return redirect()->route('auth.social.complete-profile');
+                return redirect()->route('auth.social.complete-profile');
+            }
         }
 
         $usesRelay = $isApple && str_ends_with($email, '@privaterelay.appleid.com');
@@ -113,7 +118,7 @@ class SocialAuthController extends Controller
         }
 
         $request->validate([
-            'email' => ['required', 'email', Rule::unique('users', 'email')],
+            'email' => ['required', 'email'],
         ]);
 
         /** @var array{provider: string, provider_id: string, name: string|null, avatar_url: string|null, token: string|null, refresh_token: string|null} $pending */

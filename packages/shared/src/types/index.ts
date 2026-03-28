@@ -46,6 +46,12 @@ export interface User {
   email_verified_at: string | null;
 }
 
+export interface SocialAccount {
+  provider: SocialProvider;
+  name: string | null;
+  email: string | null;
+}
+
 export interface Family {
   id: string;
   name: string;

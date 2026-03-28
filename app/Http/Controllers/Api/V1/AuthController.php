@@ -83,13 +83,23 @@ class AuthController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'display_name' => ['nullable', 'string', 'max:255'],
             'parent_title' => ['nullable', 'string', 'max:255'],
+            'avatar_key' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $request->user()->update($request->only(['name', 'display_name', 'parent_title']));
+        $request->user()->update($request->only(['name', 'display_name', 'parent_title', 'avatar_key']));
 
         return response()->json([
             'data' => new UserResource($request->user()->fresh()),
         ]);
+    }
+
+    public function socialAccounts(Request $request): JsonResponse
+    {
+        $accounts = $request->user()->socialAccounts()
+            ->get(['provider', 'name', 'email'])
+            ->keyBy('provider');
+
+        return response()->json(['data' => $accounts]);
     }
 
     public function deleteAccount(Request $request): JsonResponse

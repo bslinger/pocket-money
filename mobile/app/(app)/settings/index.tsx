@@ -1,13 +1,21 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, Modal, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
 import { fonts } from '@/lib/fonts';
 import FeedbackModal from '@/components/FeedbackModal';
+import type { SocialAccount, SocialProvider } from '@quiddo/shared';
+
+const PROVIDER_LABELS: Record<SocialProvider, string> = {
+  google: 'Google',
+  apple: 'Apple',
+  facebook: 'Facebook',
+};
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
@@ -19,14 +27,61 @@ export default function SettingsScreen() {
   const [parentTitle, setParentTitle] = useState(user?.parent_title ?? '');
   const [editingProfile, setEditingProfile] = useState(false);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [avatarKey, setAvatarKey] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const { data: socialAccounts } = useQuery<Record<string, SocialAccount>>({
+    queryKey: ['social-accounts'],
+    queryFn: async () => {
+      const res = await api.get<{ data: Record<string, SocialAccount> }>('/auth/social-accounts');
+      return res.data.data;
+    },
+  });
+
+  const pickAvatar = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      setAvatarPreview(asset.uri);
+      setUploadingAvatar(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', {
+          uri: asset.uri,
+          type: asset.mimeType ?? 'image/jpeg',
+          name: asset.fileName ?? 'avatar.jpg',
+        } as any);
+        const res = await api.post('/uploads', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setAvatarKey(res.data.key);
+      } catch {
+        Alert.alert('Upload failed', 'Could not upload the photo.');
+        setAvatarPreview(null);
+      } finally {
+        setUploadingAvatar(false);
+      }
+    }
+  };
 
   const updateProfileMutation = useMutation({
     mutationFn: async () => {
-      await api.put('/auth/user', {
+      const payload: Record<string, unknown> = {
         name,
         display_name: displayName || null,
         parent_title: parentTitle || null,
-      });
+      };
+      if (avatarKey !== null) {
+        payload.avatar_key = avatarKey;
+      }
+      await api.put('/auth/user', payload);
     },
     onSuccess: () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -147,9 +202,21 @@ export default function SettingsScreen() {
           ) : (
             <>
               <View style={styles.profileRow}>
-                <View style={styles.profileAvatar}>
-                  <Text style={styles.profileAvatarText}>{user?.name?.[0]?.toUpperCase() ?? '?'}</Text>
-                </View>
+                <TouchableOpacity onPress={pickAvatar} disabled={uploadingAvatar}>
+                  {avatarPreview || user?.avatar_url ? (
+                    <Image
+                      source={{ uri: avatarPreview ?? user?.avatar_url ?? undefined }}
+                      style={styles.profileAvatarImage}
+                    />
+                  ) : (
+                    <View style={styles.profileAvatar}>
+                      <Text style={styles.profileAvatarText}>{user?.name?.[0]?.toUpperCase() ?? '?'}</Text>
+                    </View>
+                  )}
+                  <View style={styles.avatarEditBadge}>
+                    <Text style={styles.avatarEditBadgeText}>{uploadingAvatar ? '…' : '✎'}</Text>
+                  </View>
+                </TouchableOpacity>
                 <View style={styles.profileInfo}>
                   <Text style={styles.profileName}>{user?.name}</Text>
                   {user?.display_name && (
@@ -174,6 +241,31 @@ export default function SettingsScreen() {
           <Text style={styles.menuChevron}>›</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Connected accounts */}
+      {socialAccounts && Object.keys(socialAccounts).length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Connected Accounts</Text>
+          <View style={styles.card}>
+            {Object.values(socialAccounts).map((account, index, arr) => (
+              <View
+                key={account.provider}
+                style={[styles.connectedRow, index < arr.length - 1 && styles.connectedRowBorder]}
+              >
+                <View>
+                  <Text style={styles.connectedProvider}>
+                    {PROVIDER_LABELS[account.provider as SocialProvider] ?? account.provider}
+                  </Text>
+                  {(account.name || account.email) && (
+                    <Text style={styles.connectedDetail}>{account.name ?? account.email}</Text>
+                  )}
+                </View>
+                <Text style={styles.connectedBadge}>Connected</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
 
       {/* Data & Privacy */}
       <View style={styles.section}>
@@ -353,4 +445,18 @@ const styles = StyleSheet.create({
   modalCancelText: { fontFamily: fonts.body, fontSize: 14, color: colors.bark[600], fontWeight: '600' },
   modalDelete: { flex: 1, backgroundColor: colors.redearth[400], borderRadius: 8, padding: 12, alignItems: 'center' },
   modalDeleteText: { fontFamily: fonts.body, fontSize: 14, color: colors.white, fontWeight: '600' },
+
+  profileAvatarImage: { width: 52, height: 52, borderRadius: 26 },
+  avatarEditBadge: {
+    position: 'absolute', bottom: 0, right: 0,
+    backgroundColor: colors.eucalyptus[400], borderRadius: 10,
+    width: 20, height: 20, justifyContent: 'center', alignItems: 'center',
+  },
+  avatarEditBadgeText: { color: colors.white, fontSize: 10, fontWeight: '700' },
+
+  connectedRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
+  connectedRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.bark[100] },
+  connectedProvider: { fontSize: 14, fontWeight: '600', color: colors.bark[700] },
+  connectedDetail: { fontSize: 12, color: colors.bark[400], marginTop: 2 },
+  connectedBadge: { fontSize: 12, color: colors.eucalyptus[400], fontWeight: '600' },
 });

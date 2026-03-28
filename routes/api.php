@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::put('/auth/user', [AuthController::class, 'updateProfile']);
     Route::delete('/auth/user', [AuthController::class, 'deleteAccount']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/social-accounts', [AuthController::class, 'socialAccounts']);
 
     // Uploads
     Route::post('/uploads', [ImageUploadController::class, 'store']);

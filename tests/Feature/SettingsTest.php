@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SocialAccount;
 use App\Models\User;
 
 describe('settings', function () {
@@ -10,7 +11,20 @@ describe('settings', function () {
         $this->actingAs($user)
             ->get(route('settings'))
             ->assertOk()
-            ->assertInertia(fn($page) => $page->component('Settings/Index'));
+            ->assertInertia(fn ($page) => $page->component('Settings/Index'));
+    });
+
+    it('passes social accounts to the settings page', function () {
+        $user = User::factory()->create();
+        SocialAccount::factory()->for($user)->create(['provider' => 'google', 'name' => 'Jane Doe', 'email' => 'jane@gmail.com']);
+
+        $this->actingAs($user)
+            ->get(route('settings'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Settings/Index')
+                ->has('socialAccounts.google')
+            );
     });
 
     it('updates display name and email', function () {
@@ -19,16 +33,29 @@ describe('settings', function () {
         $this->actingAs($user)
             ->put(route('settings.profile.update'), [
                 'display_name' => 'New Name',
-                'email'        => $user->email,
+                'email' => $user->email,
             ])
             ->assertRedirect(route('settings'));
 
         expect($user->fresh()->display_name)->toBe('New Name');
     });
 
+    it('saves avatar_key when provided', function () {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->put(route('settings.profile.update'), [
+                'email' => $user->email,
+                'avatar_key' => 'uploads/abc123/avatar.jpg',
+            ])
+            ->assertRedirect(route('settings'));
+
+        expect($user->fresh()->avatar_key)->toBe('uploads/abc123/avatar.jpg');
+    });
+
     it('validates email uniqueness', function () {
         $existing = User::factory()->create();
-        $user     = User::factory()->create();
+        $user = User::factory()->create();
 
         $this->actingAs($user)
             ->put(route('settings.profile.update'), [
@@ -43,7 +70,7 @@ describe('settings', function () {
         $this->actingAs($user)
             ->put(route('settings.profile.update'), [
                 'display_name' => 'Updated',
-                'email'        => $user->email,
+                'email' => $user->email,
             ])
             ->assertSessionHasNoErrors();
     });
@@ -59,7 +86,7 @@ describe('settings', function () {
 
     it('deletes the account when correct password is provided', function () {
         $user = User::factory()->create(['password' => bcrypt('secret123')]);
-        $id   = $user->id;
+        $id = $user->id;
 
         $this->actingAs($user)
             ->delete(route('settings.account.destroy'), ['password' => 'secret123'])

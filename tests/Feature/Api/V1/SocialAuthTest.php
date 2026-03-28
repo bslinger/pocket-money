@@ -110,7 +110,7 @@ test('facebook: creates a new user with email', function () {
     $this->assertDatabaseHas('social_accounts', ['provider' => 'facebook', 'provider_id' => 'fb-uid-123']);
 });
 
-test('facebook: returns 422 when facebook does not return an email', function () {
+test('facebook: signals needs_email when no email returned and account not yet linked', function () {
     Http::fake([
         'https://graph.facebook.com/me*' => Http::response([
             'id' => 'fb-uid-no-email',
@@ -122,8 +122,31 @@ test('facebook: returns 422 when facebook does not return an email', function ()
     $this->postJson('/api/v1/auth/social/facebook', [
         'token' => 'fake-fb-access-token',
         'device_name' => 'test',
-    ])->assertUnprocessable()
-        ->assertJsonValidationErrors(['email']);
+    ])->assertOk()
+        ->assertJsonPath('data.needs_email', true);
+});
+
+test('facebook: logs in directly on repeat sign-in even when no email returned', function () {
+    $user = User::factory()->create();
+    SocialAccount::factory()->for($user)->create([
+        'provider' => 'facebook',
+        'provider_id' => 'fb-uid-returning',
+    ]);
+
+    Http::fake([
+        'https://graph.facebook.com/me*' => Http::response([
+            'id' => 'fb-uid-returning',
+            'name' => 'FB User',
+            // no email — Facebook privacy setting
+        ]),
+    ]);
+
+    $this->postJson('/api/v1/auth/social/facebook', [
+        'token' => 'fake-fb-access-token',
+        'device_name' => 'test',
+    ])->assertOk()
+        ->assertJsonStructure(['data' => ['user', 'token']])
+        ->assertJsonPath('data.user.id', $user->id);
 });
 
 test('facebook: returns 422 when token is invalid', function () {

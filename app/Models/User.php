@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\ImageUploadController;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -29,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'display_name',
         'parent_title',
         'avatar_url',
+        'avatar_key',
         'uses_apple_relay',
         'stripe_customer_id',
         'last_catchup_at',
@@ -47,6 +50,15 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'uses_apple_relay' => 'boolean',
         ];
+    }
+
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->avatar_key
+                ? ImageUploadController::url($this->avatar_key)
+                : ($this->attributes['avatar_url'] ?? null),
+        );
     }
 
     /** @return HasMany<SocialAccount, $this> */

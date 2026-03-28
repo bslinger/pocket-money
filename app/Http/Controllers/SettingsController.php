@@ -2,26 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class SettingsController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return Inertia::render('Settings/Index', [
-            'user' => auth()->user(),
+            'user' => $user,
+            'socialAccounts' => $user->socialAccounts()
+                ->get(['provider', 'name', 'email'])
+                ->keyBy('provider'),
         ]);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'display_name' => 'nullable|string|max:255',
             'parent_title' => 'nullable|string|max:100',
-            'email'        => 'required|email|max:255|unique:users,email,' . auth()->id(),
-            'avatar_url'   => 'nullable|url|max:255',
+            'email' => 'required|email|max:255|unique:users,email,'.auth()->id(),
+            'avatar_key' => 'nullable|string|max:500',
         ]);
 
         auth()->user()->update($validated);

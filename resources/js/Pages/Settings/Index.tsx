@@ -1,11 +1,18 @@
 import { PasswordInput } from '@/Components/ui/password-input';
+import ImageUpload from '@/Components/ImageUpload';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState, useRef } from 'react';
 import { MessageSquare } from 'lucide-react';
-import { User } from '@/types/models';
+import { User, SocialAccount } from '@quiddo/shared';
 
 const PARENT_TITLE_OPTIONS = ['Mum', 'Mom', 'Dad', 'Papa', 'Pop', 'Nana', 'Grandma', 'Grandpa', 'Carer'];
+
+const PROVIDER_LABELS: Record<string, string> = {
+  google: 'Google',
+  apple: 'Apple',
+  facebook: 'Facebook',
+};
 
 function deriveDropdownValue(title: string | null): string {
   if (!title) return '';
@@ -15,9 +22,10 @@ function deriveDropdownValue(title: string | null): string {
 
 interface Props {
   user: User;
+  socialAccounts: Record<string, SocialAccount>;
 }
 
-export default function SettingsIndex({ user }: Props) {
+export default function SettingsIndex({ user, socialAccounts }: Props) {
   const [parentTitleDropdown, setParentTitleDropdown] = useState(deriveDropdownValue(user.parent_title));
   const [customTitle, setCustomTitle] = useState(
     user.parent_title && !PARENT_TITLE_OPTIONS.includes(user.parent_title) ? user.parent_title : ''
@@ -27,7 +35,7 @@ export default function SettingsIndex({ user }: Props) {
     display_name: user.display_name ?? '',
     parent_title: user.parent_title ?? '',
     email: user.email,
-    avatar_url: user.avatar_url ?? '',
+    avatar_key: null as string | null,
   });
 
   function handleDropdownChange(value: string) {
@@ -159,17 +167,17 @@ export default function SettingsIndex({ user }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-bark-700 mb-1">
-                Avatar URL <span className="text-bark-400">(optional)</span>
+                Photo <span className="text-bark-400">(optional)</span>
               </label>
-              <input
-                type="url"
-                value={profileForm.data.avatar_url}
-                onChange={e => profileForm.setData('avatar_url', e.target.value)}
-                placeholder="https://..."
-                className="w-full border border-bark-200 rounded-input px-3 py-2"
+              <ImageUpload
+                currentUrl={user.avatar_url}
+                aspect={1}
+                label="Upload photo"
+                onUpload={key => profileForm.setData('avatar_key', key)}
+                onClear={() => profileForm.setData('avatar_key', null)}
               />
-              {profileForm.errors.avatar_url && (
-                <p className="text-redearth-400 text-xs mt-1">{profileForm.errors.avatar_url}</p>
+              {profileForm.errors.avatar_key && (
+                <p className="text-redearth-400 text-xs mt-1">{profileForm.errors.avatar_key}</p>
               )}
             </div>
 
@@ -188,6 +196,26 @@ export default function SettingsIndex({ user }: Props) {
             )}
           </form>
         </section>
+
+        {/* Connected accounts */}
+        {Object.keys(socialAccounts).length > 0 && (
+          <section className="bg-white border border-bark-200 rounded-card p-6">
+            <h3 className="font-semibold text-bark-700 mb-4">Connected Accounts</h3>
+            <div className="space-y-3">
+              {Object.values(socialAccounts).map(account => (
+                <div key={account.provider} className="flex items-center justify-between py-2 border-b border-bark-100 last:border-0">
+                  <div>
+                    <p className="text-sm font-medium text-bark-700">{PROVIDER_LABELS[account.provider] ?? account.provider}</p>
+                    {(account.name || account.email) && (
+                      <p className="text-xs text-bark-400">{account.name ?? account.email}</p>
+                    )}
+                  </div>
+                  <span className="text-xs text-gumleaf-400 font-medium">Connected</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Password section */}
         <section className="bg-white border border-bark-200 rounded-card p-6">
