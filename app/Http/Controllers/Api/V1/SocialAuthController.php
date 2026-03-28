@@ -23,6 +23,7 @@ class SocialAuthController extends Controller
         $request->validate([
             'token' => ['required', 'string'],
             'device_name' => ['required', 'string'],
+            'email' => ['nullable', 'email'],
         ]);
 
         $socialData = match ($provider) {
@@ -31,11 +32,20 @@ class SocialAuthController extends Controller
             'facebook' => $this->verifyFacebook($request->token),
         };
 
-        // Facebook may not return an email — require it upfront
-        if ($provider === 'facebook' && empty($socialData['email'])) {
-            throw ValidationException::withMessages([
-                'email' => ['Please provide your email address to continue.'],
-            ]);
+        // If the provider didn't return an email, check if the client supplied one.
+        // If neither, signal to the app that it should collect the email and retry.
+        if (empty($socialData['email'])) {
+            if (empty($request->email)) {
+                return response()->json([
+                    'data' => [
+                        'needs_email' => true,
+                        'provider_id' => $socialData['provider_id'],
+                        'name' => $socialData['name'],
+                    ],
+                ]);
+            }
+
+            $socialData['email'] = $request->email;
         }
 
         $user = $this->socialAuth->findOrCreateUser($socialData);

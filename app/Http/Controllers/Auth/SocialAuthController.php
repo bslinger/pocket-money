@@ -7,9 +7,12 @@ use App\Services\SocialAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\AbstractProvider;
+use Laravel\Socialite\Two\FacebookProvider;
 use Laravel\Socialite\Two\User as OAuth2User;
 
 class SocialAuthController extends Controller
@@ -21,10 +24,10 @@ class SocialAuthController extends Controller
         $this->validateProvider($provider);
 
         if ($provider === 'facebook') {
-            /** @var AbstractProvider $driver */
+            /** @var FacebookProvider $driver */
             $driver = Socialite::driver($provider);
 
-            return $driver->scopes(['email'])->with(['auth_type' => 'rerequest'])->redirect();
+            return $driver->scopes(['email'])->reRequest()->redirect();
         }
 
         return Socialite::driver($provider)->redirect();
@@ -43,11 +46,26 @@ class SocialAuthController extends Controller
 
         $isApple = $provider === 'apple';
         $email = $socialUser->getEmail();
+        $token = $socialUser instanceof OAuth2User ? $socialUser->token : null;
+        $refreshToken = $socialUser instanceof OAuth2User ? $socialUser->refreshToken : null;
 
-        if (! $email && $provider === 'facebook') {
-            return redirect()->route('login')->withErrors(['social' => 'Your Facebook account doesn\'t have an email address. Please sign in with Google or use your email and password instead.']);
+        // If the provider didn't return an email, collect it from the user directly.
+        if (! $email) {
+            $name = $socialUser->getName();
+
+            session()->put('pending_social_auth', [
+                'provider' => $provider,
+                'provider_id' => $socialUser->getId(),
+                'name' => $name,
+                'avatar_url' => $socialUser->getAvatar(),
+                'token' => $token,
+                'refresh_token' => $refreshToken,
+            ]);
+
+            return redirect()->route('auth.social.complete-profile');
         }
-        $usesRelay = $isApple && $email && str_ends_with($email, '@privaterelay.appleid.com');
+
+        $usesRelay = $isApple && str_ends_with($email, '@privaterelay.appleid.com');
 
         // Apple only returns the name on the first authorisation — capture it from the raw response
         $name = $socialUser->getName();
@@ -61,9 +79,6 @@ class SocialAuthController extends Controller
             }
         }
 
-        $token = $socialUser instanceof OAuth2User ? $socialUser->token : null;
-        $refreshToken = $socialUser instanceof OAuth2User ? $socialUser->refreshToken : null;
-
         $user = $this->socialAuth->findOrCreateUser([
             'provider' => $provider,
             'provider_id' => $socialUser->getId(),
@@ -73,6 +88,46 @@ class SocialAuthController extends Controller
             'token' => $token,
             'refresh_token' => $refreshToken,
             'uses_apple_relay' => $usesRelay,
+        ]);
+
+        Auth::login($user, remember: true);
+
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
+
+    public function showCompleteProfile(): Response|RedirectResponse
+    {
+        if (! session()->has('pending_social_auth')) {
+            return redirect()->route('login');
+        }
+
+        return Inertia::render('Auth/CompleteProfile', [
+            'name' => session('pending_social_auth.name'),
+        ]);
+    }
+
+    public function completeProfile(Request $request): RedirectResponse
+    {
+        if (! session()->has('pending_social_auth')) {
+            return redirect()->route('login');
+        }
+
+        $request->validate([
+            'email' => ['required', 'email', Rule::unique('users', 'email')],
+        ]);
+
+        /** @var array{provider: string, provider_id: string, name: string|null, avatar_url: string|null, token: string|null, refresh_token: string|null} $pending */
+        $pending = session()->pull('pending_social_auth');
+
+        $user = $this->socialAuth->findOrCreateUser([
+            'provider' => $pending['provider'],
+            'provider_id' => $pending['provider_id'],
+            'email' => $request->email,
+            'name' => $pending['name'],
+            'avatar_url' => $pending['avatar_url'],
+            'token' => $pending['token'],
+            'refresh_token' => $pending['refresh_token'],
+            'uses_apple_relay' => false,
         ]);
 
         Auth::login($user, remember: true);

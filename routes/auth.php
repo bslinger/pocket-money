@@ -27,6 +27,14 @@ Route::middleware('guest')->group(function () {
         ->withoutMiddleware(['guest'])
         ->middleware('throttle:10,1')
         ->defaults('provider', 'apple');
+
+    // Email collection when a social provider doesn't return one
+    Route::get('auth/social/complete-profile', [SocialAuthController::class, 'showCompleteProfile'])
+        ->name('auth.social.complete-profile');
+
+    Route::post('auth/social/complete-profile', [SocialAuthController::class, 'completeProfile'])
+        ->middleware('throttle:10,1')
+        ->name('auth.social.complete-profile.store');
 });
 
 Route::middleware('guest')->group(function () {

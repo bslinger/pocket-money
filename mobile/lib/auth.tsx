@@ -26,10 +26,16 @@ interface SocialLoginParams {
   lastName?: string;
 }
 
+interface PendingSocialLogin extends SocialLoginParams {
+  providerName: string | null;
+}
+
 interface AuthContextValue extends AuthState {
+  pendingSocialLogin: PendingSocialLogin | null;
   login: (email: string, password: string, deviceName: string) => Promise<void>;
   register: (name: string, email: string, password: string, passwordConfirmation: string, deviceName: string) => Promise<void>;
   socialLogin: (params: SocialLoginParams) => Promise<void>;
+  completeSocialLogin: (email: string) => Promise<void>;
   childLogin: (code: string, deviceName: string) => Promise<void>;
   familyScreenLogin: (code: string, deviceName: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -51,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authError: null,
   });
 
+  const [pendingSocialLogin, setPendingSocialLogin] = useState<PendingSocialLogin | null>(null);
   const router = useRouter();
   const segments = useSegments();
 
@@ -205,11 +212,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       first_name: firstName,
       last_name: lastName,
     });
-    const { user, token: sanctumToken, needs_onboarding } = response.data.data;
+    const data = response.data.data;
+
+    if (data.needs_email) {
+      setPendingSocialLogin({ provider, token, deviceName, firstName, lastName, providerName: data.name ?? null });
+      router.push('/(auth)/complete-profile');
+      return;
+    }
+
+    const { user, token: sanctumToken, needs_onboarding } = data;
     await setToken(sanctumToken);
     setState({ user, token: sanctumToken, isLoading: false, isAuthenticated: true, needsOnboarding: !!needs_onboarding, isChildDevice: false, childSpender: null, isFamilyScreen: false, familyScreenFamily: null, authError: null });
     registerForPushNotifications(false);
   }, []);
+
+  const completeSocialLogin = useCallback(async (email: string) => {
+    if (!pendingSocialLogin) return;
+    const { provider, token, deviceName, firstName, lastName } = pendingSocialLogin;
+    const response = await api.post(`/auth/social/${provider}`, {
+      token,
+      device_name: deviceName,
+      first_name: firstName,
+      last_name: lastName,
+      email,
+    });
+    const { user, token: sanctumToken, needs_onboarding } = response.data.data;
+    setPendingSocialLogin(null);
+    await setToken(sanctumToken);
+    setState({ user, token: sanctumToken, isLoading: false, isAuthenticated: true, needsOnboarding: !!needs_onboarding, isChildDevice: false, childSpender: null, isFamilyScreen: false, familyScreenFamily: null, authError: null });
+    registerForPushNotifications(false);
+  }, [pendingSocialLogin]);
 
   const childLogin = useCallback(async (code: string, deviceName: string) => {
     const response = await api.post('/spender-devices/claim', { code, device_name: deviceName });
@@ -245,7 +277,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, socialLogin, childLogin, familyScreenLogin, logout }}>
+    <AuthContext.Provider value={{ ...state, pendingSocialLogin, login, register, socialLogin, completeSocialLogin, childLogin, familyScreenLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );
