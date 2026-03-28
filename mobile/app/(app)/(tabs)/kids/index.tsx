@@ -1,6 +1,7 @@
+import { useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { Feather } from '@expo/vector-icons';
 import { api } from '@/lib/api';
@@ -11,6 +12,7 @@ import type { Spender, ApiResponse } from '@quiddo/shared';
 
 export default function KidsListScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data: spenders, isLoading, refetch } = useQuery({
     queryKey: ['spenders'],
@@ -19,6 +21,12 @@ export default function KidsListScreen() {
       return res.data.data;
     },
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      queryClient.invalidateQueries({ queryKey: ['spenders'] });
+    }, [queryClient]),
+  );
 
   if (isLoading) {
     return (
